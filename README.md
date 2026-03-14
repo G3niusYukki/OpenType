@@ -457,6 +457,41 @@ git push origin feature/amazing-feature
 
 ---
 
+## 🗺️ Roadmap
+
+### ✅ Completed (v0.1.0 - v0.1.1)
+
+- [x] **Core Voice Input** - Basic dictation with global hotkey
+- [x] **4 Voice Input Modes** - Basic, Hands-free, Translate, Edit
+- [x] **Multi-Provider Support** - 7+ AI providers for post-processing
+- [x] **Local Transcription** - whisper.cpp integration
+- [x] **AI Post-Processing** - Filler word removal, text enhancement
+- [x] **Visual Feedback** - Tray icon states, notifications
+- [x] **Hold-to-Speak** - Fixed simultaneous shortcut handling
+
+### 🚧 In Progress
+
+- [ ] **Chinese Cloud ASR** - 阿里云, 腾讯云, 百度, 科大讯飞 integration
+- [ ] **Keyboard Shortcut Customization** - User-defined hotkeys in UI
+- [ ] **API Key Encryption** - Secure storage using macOS Keychain
+
+### 📋 Planned
+
+- [ ] **Windows Support** - Cross-platform compatibility
+- [ ] **Real-time Transcription** - Streaming ASR for instant feedback
+- [ ] **Voice Commands** - "New paragraph", "Delete last word", etc.
+- [ ] **Custom AI Prompts** - User-defined post-processing templates
+- [ ] **Audio Device Selection** - Choose input source in settings
+- [ ] **Session History Export** - Export transcriptions to various formats
+
+### 💡 Ideas
+
+- [ ] **Voice Profiles** - Per-app dictation profiles
+- [ ] **Collaborative Editing** - Share and edit transcriptions
+- [ ] **Plugin System** - Third-party extensions
+
+---
+
 ## 📞 Support
 
 - **Issues**: [GitHub Issues](https://github.com/G3niusYukki/OpenType/issues)

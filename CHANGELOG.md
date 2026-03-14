@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2024-03-14
+
+### Fixed
+- Fixed keyboard shortcuts not responding by refactoring to singleton uIOhook manager
+- Added tray icon state indicator (changes icon when recording)
+- Fixed multiple simultaneous hold-to-speak shortcuts (basic, translate, edit modes)
+- Added accessibility permission check on macOS startup
+
+### Added
+- Visual feedback for recording state in tray icon
+- Better error handling for keyboard shortcut registration failures
+
+## [0.1.0] - 2024-03-14
+
 ### Added
 - Four voice input modes with toggle switches:
   - Basic Voice Input (hold-to-speak)
