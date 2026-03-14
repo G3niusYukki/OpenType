@@ -267,14 +267,14 @@ export class TranscriptionService {
       // -f: input file
       // -m: model path
       // -l: language
-      // -otxt: output as text
+      // -otxt: output as text (flag, no value)
       // -of: output file (without extension)
-      // -np: no progress bar
+      // -np: no progress bar (flag, no value)
       const args = [
         '-f', audioPath,
         '-m', modelPath,
         '-l', this.config.language || 'en',
-        '-otxt', 'true',
+        '-otxt',
         '-of', outputFile.replace('.txt', ''),
         '-np'
       ];
@@ -577,15 +577,21 @@ export class TranscriptionService {
     const texts: string[] = [];
     
     for (const line of lines) {
+      const trimmed = line.trim();
       // Skip lines that look like metadata/timestamps
       if (line.match(/^\[\d{2}:\d{2}:\d{2}\.\d{3} --> \d{2}:\d{2}:\d{2}\.\d{3}\]/)) {
         continue;
       }
-      // Skip empty lines and headers
-      if (!line.trim() || line.includes('whisper') || line.includes('model')) {
+      // Skip empty lines and log messages
+      if (!trimmed || 
+          trimmed.includes('whisper') || 
+          trimmed.includes('model') ||
+          trimmed.includes('output_txt:') ||
+          trimmed.includes('saving output to') ||
+          trimmed.startsWith('[') && trimmed.includes(']')) {
         continue;
       }
-      texts.push(line.trim());
+      texts.push(trimmed);
     }
     
     return texts.length > 0 ? texts.join(' ') : null;
