@@ -1,7 +1,7 @@
 {
   "name": "opentype",
   "version": "0.1.0",
-  "description": "A macOS-first dictation assistant with BYOK AI providers",
+  "description": "AI-Powered Voice-to-Text for macOS. Type with your voice anywhere with 4 input modes, multi-provider AI processing, and privacy-first design.",
   "main": "dist/main/main.js",
   "private": true,
   "scripts": {
@@ -20,9 +20,37 @@
     "dist:mac": "npm run build && electron-builder --mac",
     "typecheck": "tsc --noEmit -p src/main/tsconfig.json && tsc --noEmit -p src/renderer/tsconfig.json"
   },
-  "keywords": ["dictation", "speech-to-text", "electron", "ai", "productivity"],
-  "author": "OpenType",
+  "keywords": [
+    "dictation",
+    "speech-to-text",
+    "voice-to-text",
+    "electron",
+    "ai",
+    "productivity",
+    "macos",
+    "whisper",
+    "transcription",
+    "voice-recognition"
+  ],
+  "author": {
+    "name": "OpenType Contributors",
+    "url": "https://github.com/G3niusYukki/OpenType/graphs/contributors"
+  },
   "license": "MIT",
+  "homepage": "https://github.com/G3niusYukki/OpenType#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/G3niusYukki/OpenType.git"
+  },
+  "bugs": {
+    "url": "https://github.com/G3niusYukki/OpenType/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "os": [
+    "darwin"
+  ],
   "devDependencies": {
     "@types/node": "^22.13.10",
     "@types/react": "^19.0.0",
@@ -46,6 +74,7 @@
   "build": {
     "appId": "com.opentype.app",
     "productName": "OpenType",
+    "copyright": "Copyright © 2024 OpenType Contributors",
     "directories": {
       "output": "release"
     },

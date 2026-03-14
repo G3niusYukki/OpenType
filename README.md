@@ -1,298 +1,470 @@
 # OpenType
 
-A macOS-first dictation assistant built with Electron + React + TypeScript. OpenType provides seamless voice-to-text transcription with BYOK (Bring Your Own Key) AI provider support.
+<p align="center">
+  <img src="resources/icon.png" alt="OpenType Logo" width="120" height="120">
+</p>
 
-> **Current status:** Working audio capture and transcription pipeline. Requires `ffmpeg` for recording and optionally `whisper.cpp` for local transcription, or an OpenAI API key for cloud transcription.
+<p align="center">
+  <strong>AI-Powered Voice-to-Text for macOS</strong><br>
+  Type with your voice. Anywhere. Anytime.
+</p>
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Platform](https://img.shields.io/badge/platform-macOS-lightgrey.svg)
+<p align="center">
+  <a href="https://github.com/G3niusYukki/OpenType/releases"><img src="https://img.shields.io/github/v/release/G3niusYukki/OpenType?include_prereleases&color=blue" alt="Release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"></a>
+  <img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg" alt="Platform">
+  <img src="https://img.shields.io/badge/Electron-36+-9fe2bf.svg" alt="Electron">
+  <img src="https://img.shields.io/badge/React-19-61dafb.svg" alt="React">
+</p>
 
-## Features
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#usage">Usage</a> •
+  <a href="#configuration">Configuration</a> •
+  <a href="#development">Development</a>
+</p>
 
-- 🎙️ **One-click dictation** - Start recording with a global hotkey or tray click
-- 🔑 **BYOK Providers** - Use your own API keys for OpenAI, Anthropic, Groq, or local models
-- 💻 **Local-first transcription** - Offline transcription with whisper.cpp (no cloud required)
-- 📋 **Smart text insertion** - Pastes text at cursor using AppleScript (macOS native)
-- 📝 **Transcription history** - Browse, copy, and manage past dictations
-- 📖 **Custom dictionary** - Define custom word replacements for technical terms
-- ⚡ **Global hotkey** - `Cmd+Shift+D` by default, fully customizable
-- 🎯 **Tray integration** - Lives in your menu bar, always accessible
+---
 
-## Architecture
+## 🌟 Features
+
+### 🎙️ Four Voice Input Modes
+
+OpenType provides four distinct ways to interact with voice input:
+
+| Mode | Shortcut | Description |
+|------|----------|-------------|
+| **Basic Voice Input** | `Cmd+Shift+D` | Hold to speak, release to send. Automatically removes filler words. |
+| **Hands-Free Mode** | `Cmd+Space` | Toggle continuous recording. Press again to stop. |
+| **Translate to English** | `Cmd+Shift+T` | Speak in Chinese, get structured English output. |
+| **Edit Selected Text** | `Cmd+Shift+E` | Select text, speak commands like "translate" or "make it formal". |
+
+### 🤖 AI-Powered Processing
+
+- **Filler Word Removal** - Automatically removes "um", "uh", "嗯", "啊"
+- **Repetition Removal** - "你好你好" → "你好"
+- **Self-Correction Detection** - Keeps only the final version when you correct yourself
+- **AI Post-Processing** - Optional text polishing and improvement
+
+### 🔌 Multi-Provider Support
+
+#### Transcription Providers (Audio → Text)
+- **Local** - [whisper.cpp](https://github.com/ggerganov/whisper.cpp) (offline, private)
+- **OpenAI** - Whisper API (fast, accurate)
+- **Groq** - Ultra-fast Whisper inference
+- **阿里云** - Chinese ASR (coming soon)
+- **腾讯云** - Chinese ASR (coming soon)
+- **百度** - Chinese ASR (coming soon)
+- **科大讯飞** - Chinese ASR (coming soon)
+
+#### AI Post-Processing Providers (Text Enhancement)
+- **OpenAI** - GPT-4o, GPT-4o-mini
+- **Anthropic** - Claude 3.5 Sonnet, Claude 3 Opus
+- **DeepSeek** - DeepSeek Chat
+- **智谱 GLM** - GLM-4 series
+- **MiniMax** - abab6.5
+- **Moonshot (Kimi)** - Moonshot-v1
+- **Groq** - Llama 3.1, Mixtral
+
+### ⚡ Smart System Integration
+
+- **Global Hotkeys** - Works from any app
+- **Smart Text Insertion** - Pastes at cursor using native AppleScript
+- **Menu Bar Tray** - Always accessible from the menu bar
+- **Clipboard Fallback** - If paste fails, text is copied to clipboard
+- **Transcription History** - Browse and manage past recordings
+
+### 🛡️ Privacy-First Design
+
+- **BYOK (Bring Your Own Key)** - Use your own API keys
+- **Local-First** - Offline transcription with whisper.cpp
+- **No Data Collection** - Your voice never leaves your machine (with local mode)
+
+---
+
+## 📸 Screenshots
+
+<p align="center">
+  <img src="resources/screenshot-home.png" alt="Home Screen" width="600">
+  <br>
+  <em>Main transcription interface with before/after comparison</em>
+</p>
+
+<p align="center">
+  <img src="resources/screenshot-settings.png" alt="Settings" width="600">
+  <br>
+  <em>Provider configuration and voice input mode settings</em>
+</p>
+
+---
+
+## 🚀 Installation
+
+### Requirements
+
+- **macOS 11+** (Big Sur or later)
+- **Node.js 18+** (for development)
+- **ffmpeg** (required for audio recording)
+
+### Quick Install (Binary)
+
+Download the latest release from [Releases](https://github.com/G3niusYukki/OpenType/releases):
+
+```bash
+# Download and install
+curl -L -o OpenType.dmg https://github.com/G3niusYukki/OpenType/releases/latest/download/OpenType.dmg
+open OpenType.dmg
+```
+
+### Build from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/G3niusYukki/OpenType.git
+cd OpenType
+
+# Install dependencies
+npm install
+
+# Install ffmpeg (required)
+brew install ffmpeg
+
+# Optional: Install whisper.cpp for local transcription
+brew install whisper.cpp
+
+# Download Whisper model (for local transcription)
+mkdir -p "~/Library/Application Support/OpenType/models"
+curl -L -o "~/Library/Application Support/OpenType/models/ggml-base.bin" \
+  "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin"
+
+# Run in development mode
+npm run dev
+
+# Build for production
+npm run build
+npm run dist:mac
+```
+
+---
+
+## 🎯 Usage
+
+### First Launch
+
+1. **Launch OpenType** - It will appear in your menu bar
+2. **Grant Permissions** - You'll be prompted for:
+   - **Microphone** - Required for recording
+   - **Accessibility** - Required for global hotkeys and text insertion
+   - **Automation** - Required for AppleScript text insertion
+3. **Configure Provider** - Open Settings and add your API key or set up local transcription
+
+### Voice Input Modes
+
+#### Basic Voice Input (`Cmd+Shift+D`)
+
+1. Hold `Cmd+Shift+D`
+2. Speak naturally
+3. Release to stop recording
+4. Text is automatically inserted at your cursor
+
+#### Hands-Free Mode (`Cmd+Space`)
+
+1. Press `Cmd+Space` to start recording
+2. Speak continuously
+3. Press `Cmd+Space` again to stop
+4. Text is processed and inserted
+
+#### Translate to English (`Cmd+Shift+T`)
+
+1. Press `Cmd+Shift+T`
+2. Speak in Chinese
+3. Release or press again to stop
+4. English translation is inserted
+
+#### Edit Selected Text (`Cmd+Shift+E`)
+
+1. Select text in any app
+2. Press `Cmd+Shift+E`
+3. Speak your command:
+   - "翻译成英文" → Translate to English
+   - "正式一点" → Make it formal
+   - "加个标题" → Add a title
+   - "总结这段内容" → Summarize this
+4. Edited text replaces the selection
+
+### Custom Dictionary
+
+Add custom word replacements for technical terms:
+
+1. Open Settings → Dictionary
+2. Add entries like:
+   - `ASR` → `Automatic Speech Recognition`
+   - `whisper` → `Whisper (OpenAI's speech model)`
+
+---
+
+## ⚙️ Configuration
+
+### Voice Input Mode Toggles
+
+Enable or disable individual voice input modes in Settings:
+
+- **Basic Voice Input** - On/Off
+- **Hands-Free Mode** - On/Off
+- **Translate to English** - On/Off
+- **Edit Selected Text** - On/Off
+
+### AI Post-Processing Options
+
+Configure text enhancement:
+
+- **Remove Filler Words** - Remove "um", "uh", etc.
+- **Remove Repetition** - Remove repeated words
+- **Detect Self-Correction** - Apply speaker corrections
+- **Show Comparison** - Display before/after in results
+
+### Provider Configuration
+
+#### Local Transcription (Free, Offline)
+
+1. Install whisper.cpp: `brew install whisper.cpp`
+2. Download a model (see Installation)
+3. Select "Local" in transcription provider settings
+
+#### OpenAI Cloud (Pay-per-use)
+
+1. Get API key from [OpenAI](https://platform.openai.com/api-keys)
+2. Add key in Settings → Transcription Providers → OpenAI
+3. Select "OpenAI" in preferred provider
+
+#### AI Post-Processing
+
+1. Configure any supported AI provider (DeepSeek, OpenAI, etc.)
+2. Enable "AI Post-Processing" in settings
+3. Select processing options
+
+---
+
+## 🏗️ Architecture
 
 ```
 OpenType/
 ├── src/
-│   ├── main/                 # Electron main process
-│   │   ├── main.ts           # Entry point, window/tray management
-│   │   ├── store.ts          # electron-store persistence
-│   │   ├── audio-capture.ts  # Mic recording via ffmpeg
-│   │   ├── transcription.ts  # ASR (whisper.cpp / OpenAI)
-│   │   ├── text-inserter.ts  # macOS clipboard paste
-│   │   └── providers.ts      # AI provider management
-│   ├── preload/              # Electron preload script
-│   │   └── preload.ts        # Secure IPC bridge
-│   └── renderer/             # React frontend
-│       ├── components/       # UI components
-│       ├── pages/            # Main views
-│       └── stores/           # State management
-├── resources/                # Icons, entitlements
-└── dist/                     # Build output
+│   ├── main/                    # Electron main process
+│   │   ├── main.ts              # Entry point, lifecycle
+│   │   ├── store.ts             # Configuration persistence
+│   │   ├── audio-capture.ts     # Microphone recording (ffmpeg)
+│   │   ├── transcription.ts     # ASR (whisper.cpp / cloud APIs)
+│   │   ├── aiPostProcessor.ts   # AI text enhancement
+│   │   ├── text-inserter.ts     # macOS text insertion
+│   │   └── providers.ts         # Provider management
+│   ├── preload/                 # Electron preload
+│   │   └── preload.ts           # Secure IPC bridge
+│   └── renderer/                # React frontend
+│       ├── pages/
+│       │   ├── HomePage.tsx
+│       │   ├── SettingsPage.tsx
+│       │   ├── HistoryPage.tsx
+│       │   └── DictionaryPage.tsx
+│       └── components/
+├── resources/                   # Icons, entitlements
+└── dist/                        # Build output
 ```
 
-## Quick Start
-
-### Prerequisites
-
-- **macOS 11+** (Big Sur or later)
-- **Node.js 18+**
-- **npm or yarn**
-- **ffmpeg** (required for audio recording)
-
-### macOS Setup
-
-#### 1. Install ffmpeg
-
-```bash
-# Using Homebrew (recommended)
-brew install ffmpeg
-
-# Verify installation
-ffmpeg -version
-```
-
-#### 2. Install whisper.cpp (optional - for local transcription)
-
-```bash
-# Using Homebrew
-brew install whisper.cpp
-
-# Verify installation
-whisper-cpp --help
-```
-
-#### 3. Download a Whisper model (required for local transcription)
-
-```bash
-# Create models directory
-mkdir -p "~/Library/Application Support/OpenType/models"
-
-# Download base model (~74MB, good balance of speed/accuracy)
-curl -L -o "~/Library/Application Support/OpenType/models/ggml-base.bin" \
-  "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin"
-
-# Or download a different size:
-# tiny (~39MB) - fastest, less accurate
-# small (~466MB) - slower, more accurate
-# medium (~1.5GB) - slow, very accurate
-# large (~3.1GB) - slowest, most accurate
-```
-
-Model sizes reference:
-| Model | Size | RAM | Speed | Accuracy |
-|-------|------|-----|-------|----------|
-| tiny | 39 MB | ~273 MB | ⚡⚡⚡ | ⭐⭐ |
-| base | 74 MB | ~442 MB | ⚡⚡ | ⭐⭐⭐ |
-| small | 466 MB | ~965 MB | ⚡ | ⭐⭐⭐⭐ |
-| medium | 1.5 GB | ~2.3 GB | 🐢 | ⭐⭐⭐⭐⭐ |
-| large | 3.1 GB | ~4.2 GB | 🐢🐢 | ⭐⭐⭐⭐⭐ |
-
-#### 4. Clone and install
-
-```bash
-git clone <repo>
-cd OpenType
-npm install
-```
-
-#### 5. Run in dev mode
-
-```bash
-npm run dev
-```
-
-### Build
-
-```bash
-# Build for macOS
-npm run dist:mac
-
-# Output: release/OpenType-0.1.0.dmg
-```
-
-## Configuration
-
-### First-time Setup
-
-1. Launch OpenType (it will appear in your menu bar)
-2. Grant permissions when prompted (see Permissions section below)
-3. Click the tray icon or press `Cmd+Shift+D` to dictate
-4. Configure transcription provider in Settings:
-   - **Local (free, offline)**: Install whisper.cpp + model
-   - **OpenAI Cloud**: Add API key (pay-per-use)
-
-### AI Providers
-
-OpenType supports multiple transcription providers:
-
-| Provider | Type | Speed | Privacy | Setup |
-|----------|------|-------|---------|-------|
-| whisper.cpp | Local | Medium | ✅ Offline only | Install whisper.cpp + download model |
-| OpenAI | Cloud | Fast | ☁️ Sent to API | Add API key in settings |
-| Anthropic | Cloud | N/A | ☁️ Text processing only | Configure for LLM post-processing |
-| Groq | Cloud | Very Fast | ☁️ Sent to API | Add API key in settings |
-
-### macOS Permissions
-
-OpenType requires these macOS permissions. You'll be prompted on first use:
-
-#### Microphone Access
-**Required for:** Recording your voice
-
-```bash
-# Grant manually if needed
-osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/OpenType.app", hidden:false}'
-```
-
-Settings path: **System Settings → Privacy & Security → Microphone → OpenType**
-
-#### Accessibility Access
-**Required for:** Global hotkey capture, text insertion
-
-Settings path: **System Settings → Privacy & Security → Accessibility → OpenType**
-
-#### Automation (Apple Events)
-**Required for:** Pasting text at cursor position
-
-Settings path: **System Settings → Privacy & Security → Automation → OpenType → System Events**
-
-## Troubleshooting
-
-### "Recording Error: ffmpeg not available"
-```bash
-# Install ffmpeg
-brew install ffmpeg
-
-# Verify
-which ffmpeg
-```
-
-### "Transcription unavailable - No transcription provider"
-Either:
-1. Install whisper.cpp + model (see Setup step 2-3), OR
-2. Add OpenAI API key in Settings
-
-### "Whisper model not found"
-```bash
-# Check models directory
-ls -la "~/Library/Application Support/OpenType/models/"
-
-# Download base model
-curl -L -o "~/Library/Application Support/OpenType/models/ggml-base.bin" \
-  "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin"
-```
-
-### Audio recording starts but no text appears
-1. Check mic permissions in System Settings
-2. Check console logs: `Console.app` → search "OpenType"
-3. Try recording with ffmpeg directly:
-   ```bash
-   ffmpeg -f avfoundation -i ":0" -ar 16000 -ac 1 -c:a pcm_s16le ~/test.wav
-   ```
-
-### Text doesn't paste at cursor
-1. Check Accessibility permission in System Settings
-2. Check Automation permission (System Events)
-3. Some apps don't support AppleScript paste - text is copied to clipboard instead
-
-## Development
-
-### Audio Capture
-
-Uses ffmpeg with AVFoundation (macOS native audio framework):
-
-```bash
-# Equivalent command run internally:
-ffmpeg -f avfoundation -i ":0" -ar 16000 -ac 1 -c:a pcm_s16le output.wav
-```
-
-- `-f avfoundation`: Use macOS AVFoundation framework
-- `-i ":0"`: Default audio input device
-- `-ar 16000`: 16kHz sample rate (optimal for Whisper)
-- `-ac 1`: Mono audio
-- `-c:a pcm_s16le`: 16-bit PCM WAV format
-
-### Transcription Flow
+### Data Flow
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────────┐
-│   Record    │ ──▶ │  Stop/Save  │ ──▶ │  Transcribe     │
-│  (ffmpeg)   │     │  (.wav file)│     │ (whisper.cpp    │
-└─────────────┘     └─────────────┘     │  or OpenAI API) │
-                                        └────────┬────────┘
-                                                 │
-                    ┌─────────────┐              │
-                    │   Insert    │ ◀────────────┘
-                    │ (AppleScript)│
-                    └─────────────┘
+│   Hotkey    │────▶│   Record    │────▶│  Audio File     │
+│   Pressed   │     │  (ffmpeg)   │     │  (.wav)         │
+└─────────────┘     └─────────────┘     └────────┬────────┘
+                                                  │
+                       ┌──────────────────────────┘
+                       ▼
+              ┌─────────────────┐
+              │  Transcription  │
+              │ (whisper.cpp /  │
+              │  Cloud API)     │
+              └────────┬────────┘
+                       │
+        ┌──────────────┼──────────────┐
+        ▼              ▼              ▼
+┌──────────────┐ ┌──────────┐ ┌──────────────┐
+│  Translation │ │  Post-   │ │   Edit       │
+│   (CN→EN)    │ │Processing│ │   Mode       │
+└──────────────┘ └────┬─────┘ └──────────────┘
+                      │
+                      ▼
+              ┌─────────────┐
+              │   Insert    │
+              │(AppleScript)│
+              └─────────────┘
 ```
 
-### Text Insertion
+---
 
-Primary method uses AppleScript for native paste:
+## 🛠️ Development
 
-```applescript
-tell application "System Events"
-  keystroke "v" using command down
-end tell
-```
+### Tech Stack
 
-Fallback: Copy to clipboard (user pastes manually)
-
-### Store Schema
-
-```typescript
-{
-  hotkey: string;              // Global shortcut
-  language: string;            // Transcription language (default: en-US)
-  autoPunctuation: boolean;    // Auto-add punctuation
-  providers: ProviderConfig[]; // AI provider settings
-  history: HistoryItem[];      // Transcription history
-  dictionary: DictionaryEntry[]; // Custom word replacements
-}
-```
-
-## Tech Stack
-
-- **Electron** - Desktop app framework
+- **Electron 36+** - Desktop framework
 - **React 19** - UI library
-- **TypeScript** - Type safety
+- **TypeScript 5.8+** - Type safety
 - **Vite** - Build tool
-- **Zustand** - State management (ready)
+- **Zustand** - State management
+- **Lucide React** - Icons
 - **electron-store** - Persistence
-- **Lucide** - Icons
-- **ffmpeg** - Audio capture (macOS AVFoundation)
-- **whisper.cpp** - Local transcription
 
-## Model Storage Locations
+### Scripts
 
-whisper.cpp looks for models in these locations (in order):
+```bash
+# Development
+npm run dev              # Start dev mode (hot reload)
+npm run dev:main         # Watch main process
+npm run dev:renderer     # Start Vite dev server
+npm run dev:preload      # Watch preload script
 
-1. `~/Library/Application Support/OpenType/models/` (app-specific)
-2. `/opt/homebrew/share/whisper.cpp/` (Homebrew default)
-3. `/usr/local/share/whisper.cpp/` (Intel Mac Homebrew)
-4. `~/.local/share/whisper.cpp/` (user local)
+# Building
+npm run build            # Build all
+npm run build:main       # Build main process
+npm run build:preload    # Build preload script
+npm run build:renderer   # Build renderer
 
-## License
+# Distribution
+npm run dist             # Build distributables
+npm run dist:mac         # Build for macOS
 
-MIT License - see [LICENSE](LICENSE) file
+# Utilities
+npm run kill             # Kill running instance
+npm run restart          # Kill, build, restart
+npm run typecheck        # Type check all
+```
 
-## Contributing
+### Project Structure
 
-Contributions welcome! Please read our contributing guidelines before submitting PRs.
+```
+src/
+├── main/              # Electron main process (Node.js)
+├── preload/           # Preload script (secure bridge)
+└── renderer/          # React frontend (Chromium)
+    ├── pages/         # Route-level pages
+    ├── components/    # Reusable components
+    └── i18n/          # Internationalization
+```
 
-## Acknowledgments
+---
 
-Built with inspiration from VoiceInk and similar dictation tools.
+## 🔒 Privacy & Security
+
+### Data Handling
+
+- **Voice Data**: Only stored locally during processing, deleted after transcription
+- **API Keys**: Stored in macOS Keychain via electron-store
+- **Transcription History**: Stored locally in `~/Library/Application Support/OpenType/`
+- **No Telemetry**: No usage data sent to developers
+
+### Permissions
+
+OpenType requires these macOS permissions:
+
+| Permission | Purpose | Settings Path |
+|------------|---------|---------------|
+| **Microphone** | Record your voice | System Settings → Privacy & Security → Microphone |
+| **Accessibility** | Global hotkeys, text insertion | System Settings → Privacy & Security → Accessibility |
+| **Automation** | AppleScript text insertion | System Settings → Privacy & Security → Automation |
+
+---
+
+## 🐛 Troubleshooting
+
+### "Failed to start audio capture"
+
+**Cause**: Microphone permission not granted
+
+**Solution**:
+1. Go to System Settings → Privacy & Security → Microphone
+2. Enable OpenType
+3. Restart the app
+
+### "ffmpeg not found"
+
+```bash
+brew install ffmpeg
+```
+
+### "Whisper model not found"
+
+```bash
+mkdir -p "~/Library/Application Support/OpenType/models"
+curl -L -o "~/Library/Application Support/OpenType/models/ggml-base.bin" \
+  "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin"
+```
+
+### "No transcription provider configured"
+
+Either:
+1. Install whisper.cpp + model (see above), OR
+2. Add OpenAI/Groq API key in Settings
+
+### Text doesn't paste
+
+1. Check Accessibility permission
+2. Check Automation permission (System Events)
+3. Try manually pasting (Cmd+V) - text is always copied to clipboard
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+### Quick Start for Contributors
+
+```bash
+# Fork and clone
+git clone https://github.com/YOUR_USERNAME/OpenType.git
+cd OpenType
+
+# Install dependencies
+npm install
+
+# Create branch
+git checkout -b feature/amazing-feature
+
+# Make changes, commit, push
+git commit -m "Add amazing feature"
+git push origin feature/amazing-feature
+
+# Open Pull Request
+```
+
+---
+
+## 📜 License
+
+[MIT License](LICENSE) © 2024 OpenType Contributors
+
+---
+
+## 🙏 Acknowledgments
+
 - [whisper.cpp](https://github.com/ggerganov/whisper.cpp) - Port of OpenAI's Whisper
 - [OpenAI Whisper](https://github.com/openai/whisper) - Speech recognition model
+- [Electron](https://www.electronjs.org/) - Desktop framework
+- [React](https://react.dev/) - UI library
+- Inspired by [TypeLess](https://typeless.app/) and similar dictation tools
+
+---
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/G3niusYukki/OpenType/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/G3niusYukki/OpenType/discussions)
+- **Email**: [Open an issue](https://github.com/G3niusYukki/OpenType/issues/new)
+
+---
+
+<p align="center">
+  Made with ❤️ by the OpenType community
+</p>
