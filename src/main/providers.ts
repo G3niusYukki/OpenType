@@ -10,7 +10,19 @@ interface Provider {
   supportedModels: string[];
 }
 
-const AVAILABLE_PROVIDERS: Provider[] = [
+interface Provider {
+  id: string;
+  name: string;
+  description: string;
+  requireApiKey: boolean;
+  defaultBaseUrl?: string;
+  defaultModel?: string;
+  supportedModels: string[];
+  category: 'transcription' | 'post-processing';
+}
+
+// Providers that support audio-to-text transcription (ASR)
+const TRANSCRIPTION_PROVIDERS: Provider[] = [
   {
     id: 'openai',
     name: 'OpenAI',
@@ -18,13 +30,7 @@ const AVAILABLE_PROVIDERS: Provider[] = [
     requireApiKey: true,
     defaultModel: 'whisper-1',
     supportedModels: ['whisper-1'],
-  },
-  {
-    id: 'anthropic',
-    name: 'Anthropic',
-    description: 'Use Claude for post-processing',
-    requireApiKey: true,
-    supportedModels: ['claude-3-sonnet', 'claude-3-opus', 'claude-3-haiku'],
+    category: 'transcription',
   },
   {
     id: 'groq',
@@ -34,15 +40,70 @@ const AVAILABLE_PROVIDERS: Provider[] = [
     defaultBaseUrl: 'https://api.groq.com/openai/v1/audio/transcriptions',
     defaultModel: 'whisper-large-v3',
     supportedModels: ['whisper-large-v3', 'whisper-large-v3-turbo', 'distil-whisper-large-v3-en'],
+    category: 'transcription',
+  },
+  // Chinese ASR Providers - TODO: Implement API integration
+  {
+    id: 'aliyun-asr',
+    name: '阿里云语音识别',
+    description: '阿里云智能语音交互，支持中文及多方言识别',
+    requireApiKey: true,
+    defaultBaseUrl: 'https://nls-gateway-cn-shanghai.aliyuncs.com/stream/v1/asr',
+    defaultModel: 'default',
+    supportedModels: ['default'],
+    category: 'transcription',
+  },
+  {
+    id: 'tencent-asr',
+    name: '腾讯云语音识别',
+    description: '腾讯云ASR，支持实时和录音文件识别',
+    requireApiKey: true,
+    defaultBaseUrl: 'https://asr.tencentcloudapi.com',
+    defaultModel: '16k_zh',
+    supportedModels: ['16k_zh', '16k_en', '8k_zh'],
+    category: 'transcription',
+  },
+  {
+    id: 'baidu-asr',
+    name: '百度语音识别',
+    description: '百度AI语音识别，中文识别准确率高',
+    requireApiKey: true,
+    defaultBaseUrl: 'https://vop.baidu.com/server_api',
+    defaultModel: 'dev_pid_1537',
+    supportedModels: ['dev_pid_1537', 'dev_pid_1737'],
+    category: 'transcription',
+  },
+  {
+    id: 'iflytek-asr',
+    name: '科大讯飞',
+    description: '讯飞语音识别，支持多种方言和专业领域',
+    requireApiKey: true,
+    defaultBaseUrl: 'https://iat-api.xfyun.cn/v2/iat',
+    defaultModel: 'iat',
+    supportedModels: ['iat'],
+    category: 'transcription',
+  },
+];
+
+// Providers that support text post-processing (LLMs)
+const POST_PROCESSING_PROVIDERS: Provider[] = [
+  {
+    id: 'anthropic',
+    name: 'Anthropic',
+    description: 'Use Claude for post-processing',
+    requireApiKey: true,
+    supportedModels: ['claude-3-sonnet', 'claude-3-opus', 'claude-3-haiku'],
+    category: 'post-processing',
   },
   {
     id: 'deepseek',
     name: 'DeepSeek',
-    description: 'DeepSeek AI for transcription and post-processing',
+    description: 'DeepSeek AI for post-processing and text optimization',
     requireApiKey: true,
     defaultBaseUrl: 'https://api.deepseek.com',
     defaultModel: 'deepseek-chat',
     supportedModels: ['deepseek-chat', 'deepseek-coder'],
+    category: 'post-processing',
   },
   {
     id: 'zhipu',
@@ -52,34 +113,57 @@ const AVAILABLE_PROVIDERS: Provider[] = [
     defaultBaseUrl: 'https://open.bigmodel.cn/api/paas/v4',
     defaultModel: 'glm-4',
     supportedModels: ['glm-4', 'glm-4-flash', 'glm-4-long'],
+    category: 'post-processing',
   },
   {
     id: 'minimax',
     name: 'MiniMax',
-    description: 'MiniMax 海螺 AI，支持语音识别和文本处理',
+    description: 'MiniMax 海螺 AI，文本后处理',
     requireApiKey: true,
     defaultBaseUrl: 'https://api.minimax.chat/v1',
     defaultModel: 'abab6.5s-chat',
     supportedModels: ['abab6.5s-chat', 'abab6.5-chat'],
+    category: 'post-processing',
   },
   {
     id: 'moonshot',
     name: 'Kimi (Moonshot)',
-    description: 'Moonshot Kimi AI，支持长文本处理和语音识别',
+    description: 'Moonshot Kimi AI，长文本后处理',
     requireApiKey: true,
     defaultBaseUrl: 'https://api.moonshot.cn/v1',
     defaultModel: 'moonshot-v1-8k',
     supportedModels: ['moonshot-v1-8k', 'moonshot-v1-32k', 'moonshot-v1-128k'],
+    category: 'post-processing',
+  },
+  {
+    id: 'openai',
+    name: 'OpenAI',
+    description: 'Use OpenAI GPT for post-processing',
+    requireApiKey: true,
+    supportedModels: ['gpt-4o', 'gpt-4o-mini', 'gpt-4'],
+    category: 'post-processing',
+  },
+  {
+    id: 'groq',
+    name: 'Groq',
+    description: 'Use Groq LLM for post-processing',
+    requireApiKey: true,
+    supportedModels: ['llama-3.1-70b', 'mixtral-8x7b'],
+    category: 'post-processing',
   },
   {
     id: 'local',
     name: 'Local Model',
-    description: 'Use local whisper.cpp or similar',
+    description: 'Use local LLM for post-processing',
     requireApiKey: false,
-    defaultBaseUrl: 'http://localhost:8080',
-    supportedModels: ['local-whisper'],
+    defaultBaseUrl: 'http://localhost:11434',
+    supportedModels: ['local-llm'],
+    category: 'post-processing',
   },
 ];
+
+// Combined list for backward compatibility
+const AVAILABLE_PROVIDERS: Provider[] = [...TRANSCRIPTION_PROVIDERS, ...POST_PROCESSING_PROVIDERS];
 
 export class ProviderManager {
   private store: Store;
@@ -90,6 +174,14 @@ export class ProviderManager {
 
   listProviders(): Provider[] {
     return AVAILABLE_PROVIDERS;
+  }
+
+  listTranscriptionProviders(): Provider[] {
+    return TRANSCRIPTION_PROVIDERS;
+  }
+
+  listPostProcessingProviders(): Provider[] {
+    return POST_PROCESSING_PROVIDERS;
   }
 
   getConfig(providerId: string): { provider: Provider; config: ProviderConfig } | null {

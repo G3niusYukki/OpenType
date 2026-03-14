@@ -239,6 +239,8 @@ class OpenTypeApp {
 
     // Providers
     ipcMain.handle('providers:list', () => this.providerManager.listProviders());
+    ipcMain.handle('providers:list-transcription', () => this.providerManager.listTranscriptionProviders());
+    ipcMain.handle('providers:list-post-processing', () => this.providerManager.listPostProcessingProviders());
     ipcMain.handle('providers:get-config', (_, id: string) => this.providerManager.getConfig(id));
     ipcMain.handle('providers:set-config', (_, id: string, config: unknown) => {
       const result = this.providerManager.setConfig(id, (config || {}) as any);

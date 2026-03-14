@@ -47,6 +47,8 @@ declare global {
 
       // Providers
       providersList: () => Promise<unknown[]>;
+      providersListTranscription: () => Promise<unknown[]>;
+      providersListPostProcessing: () => Promise<unknown[]>;
       providersGetConfig: (id: string) => Promise<unknown>;
       providersSetConfig: (id: string, config: unknown) => Promise<void>;
       providersTest: (id: string) => Promise<{ success: boolean; error?: string }>;

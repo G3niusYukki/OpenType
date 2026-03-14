@@ -10,6 +10,7 @@ interface Provider {
   defaultBaseUrl?: string;
   defaultModel?: string;
   supportedModels: string[];
+  category?: 'transcription' | 'post-processing';
 }
 
 interface ProviderConfig {
@@ -42,7 +43,8 @@ export function SettingsPage() {
   const [language, setLanguage] = useState('en-US');
   const [autoPunctuation, setAutoPunctuation] = useState(true);
   const [preferredProvider, setPreferredProvider] = useState<'local' | 'cloud' | 'auto'>('auto');
-  const [providers, setProviders] = useState<Provider[]>([]);
+  const [transcriptionProviders, setTranscriptionProviders] = useState<Provider[]>([]);
+  const [postProcessingProviders, setPostProcessingProviders] = useState<Provider[]>([]);
   const [providerConfigs, setProviderConfigs] = useState<Record<string, ProviderConfig>>({});
   const [testingProvider, setTestingProvider] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ id: string; success: boolean; error?: string } | null>(null);
@@ -106,12 +108,14 @@ export function SettingsPage() {
   };
 
   const loadProviders = async () => {
-    const [list, configs] = await Promise.all([
-      window.electronAPI.providersList(),
+    const [transcriptionList, postProcessingList, configs] = await Promise.all([
+      window.electronAPI.providersListTranscription(),
+      window.electronAPI.providersListPostProcessing(),
       window.electronAPI.storeGet('providers'),
     ]);
     
-    setProviders(list as Provider[]);
+    setTranscriptionProviders(transcriptionList as Provider[]);
+    setPostProcessingProviders(postProcessingList as Provider[]);
     
     const configMap: Record<string, ProviderConfig> = {};
     (configs as ProviderConfig[] || []).forEach((c) => {
@@ -536,8 +540,236 @@ export function SettingsPage() {
         </div>
       </section>
 
-      {/* Providers Section */}
       <section>
+        <h2 style={{
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#666',
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          marginBottom: '20px',
+        }}>
+          {t.settings.transcriptionProviders || 'Transcription Providers'}
+        </h2>
+        <p style={{
+          fontSize: '13px',
+          color: '#888',
+          marginBottom: '16px',
+        }}>
+          {t.settings.transcriptionProvidersDescription || 'Configure speech-to-text services for audio transcription'}
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {transcriptionProviders.map((provider) => {
+            const config = providerConfigs[provider.id] || { enabled: false };
+            const isTesting = testingProvider === provider.id;
+            const testRes = testResult?.id === provider.id ? testResult : null;
+
+            return (
+              <div
+                key={provider.id}
+                style={{
+                  background: '#161616',
+                  border: '1px solid #222',
+                  borderRadius: '12px',
+                  padding: '20px',
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: config.enabled ? '16px' : 0,
+                }}
+                >
+                  <div>
+                    <h3 style={{
+                      fontSize: '16px',
+                      fontWeight: 600,
+                      color: '#fff',
+                      margin: '0 0 4px 0',
+                    }}
+                    >
+                      {provider.name}
+                    </h3>
+                    <p style={{
+                      fontSize: '13px',
+                      color: '#666',
+                      margin: 0,
+                    }}
+                    >
+                      {provider.description}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => updateProviderConfig(provider.id, { enabled: !config.enabled })}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      border: config.enabled ? '1px solid #22c55e' : '1px solid #333',
+                      background: config.enabled ? 'rgba(34, 197, 94, 0.1)' : '#222',
+                      color: config.enabled ? '#22c55e' : '#666',
+                      fontSize: '13px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {config.enabled ? t.settings.enabled : 'Disabled'}
+                  </button>
+                </div>
+
+                {config.enabled && (
+                  <div style={{
+                    paddingTop: '16px',
+                    borderTop: '1px solid #222',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                  }}
+                  >
+                    {provider.requireApiKey && (
+                      <div>
+                        <label style={{
+                          fontSize: '12px',
+                          color: '#666',
+                          marginBottom: '6px',
+                          display: 'block',
+                        }}
+                        >
+                          {t.settings.apiKey}
+                        </label>
+                        <input
+                          type="password"
+                          value={config.apiKey || ''}
+                          onChange={(e) => updateProviderConfig(provider.id, { apiKey: e.target.value })}
+                          placeholder={`${provider.name} API key`}
+                          style={{
+                            width: '100%',
+                            padding: '10px 14px',
+                            background: '#0f0f0f',
+                            border: '1px solid #2a2a2a',
+                            borderRadius: '6px',
+                            color: '#fff',
+                            fontSize: '13px',
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {provider.supportedModels.length > 1 && (
+                      <div>
+                        <label style={{
+                          fontSize: '12px',
+                          color: '#666',
+                          marginBottom: '6px',
+                          display: 'block',
+                        }}
+                        >
+                          {t.settings.model}
+                        </label>
+                        <select
+                          value={config.model || provider.defaultModel || provider.supportedModels[0]}
+                          onChange={(e) => updateProviderConfig(provider.id, { model: e.target.value })}
+                          style={{
+                            width: '100%',
+                            padding: '10px 14px',
+                            background: '#0f0f0f',
+                            border: '1px solid #2a2a2a',
+                            borderRadius: '6px',
+                            color: '#fff',
+                            fontSize: '13px',
+                          }}
+                        >
+                          {provider.supportedModels.map((model) => (
+                            <option key={model} value={model}>{model}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {provider.defaultBaseUrl && (
+                      <div>
+                        <label style={{
+                          fontSize: '12px',
+                          color: '#666',
+                          marginBottom: '6px',
+                          display: 'block',
+                        }}
+                        >
+                          {t.settings.baseUrl}
+                        </label>
+                        <input
+                          type="text"
+                          value={config.baseUrl || provider.defaultBaseUrl}
+                          onChange={(e) => updateProviderConfig(provider.id, { baseUrl: e.target.value })}
+                          style={{
+                            width: '100%',
+                            padding: '10px 14px',
+                            background: '#0f0f0f',
+                            border: '1px solid #2a2a2a',
+                            borderRadius: '6px',
+                            color: '#fff',
+                            fontSize: '13px',
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      marginTop: '4px',
+                    }}
+                    >
+                      <button
+                        onClick={() => testProvider(provider.id)}
+                        disabled={isTesting}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '8px 14px',
+                          borderRadius: '6px',
+                          border: '1px solid #333',
+                          background: '#222',
+                          color: '#999',
+                          fontSize: '13px',
+                          cursor: isTesting ? 'not-allowed' : 'pointer',
+                          opacity: isTesting ? 0.6 : 1,
+                        }}
+                      >
+                        <Zap size={14} />
+                        {isTesting ? t.settings.testing : t.settings.test}
+                      </button>
+
+                      {testRes && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '13px',
+                          color: testRes.success ? '#22c55e' : '#ef4444',
+                        }}
+                        >
+                          {testRes.success ? (
+                            <><Check size={14} /> Connected</>
+                          ) : (
+                            <><AlertCircle size={14} /> {testRes.error}</>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section style={{ marginTop: '32px' }}>
         <h2 style={{
           fontSize: '14px',
           fontWeight: 600,
@@ -547,11 +779,19 @@ export function SettingsPage() {
           marginBottom: '20px',
         }}
         >
-          {t.settings.providers}
+          {t.settings.postProcessingProviders || 'Post-Processing Providers'}
         </h2>
+        <p style={{
+          fontSize: '13px',
+          color: '#888',
+          marginBottom: '16px',
+        }}
+        >
+          {t.settings.postProcessingProvidersDescription || 'Configure AI providers for text optimization and polishing'}
+        </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {providers.map((provider) => {
+          {postProcessingProviders.map((provider) => {
             const config = providerConfigs[provider.id] || { enabled: false };
             const isTesting = testingProvider === provider.id;
             const testRes = testResult?.id === provider.id ? testResult : null;

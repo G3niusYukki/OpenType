@@ -47,6 +47,10 @@ export interface Translations {
     preferredProviderCloud: string;
     providers: string;
     providersDescription: string;
+    transcriptionProviders: string;
+    transcriptionProvidersDescription: string;
+    postProcessingProviders: string;
+    postProcessingProvidersDescription: string;
     apiKey: string;
     model: string;
     baseUrl: string;
@@ -195,6 +199,10 @@ export const en: Translations = {
     preferredProviderCloud: 'Cloud (API only)',
     providers: 'AI Providers',
     providersDescription: 'Configure cloud transcription services',
+    transcriptionProviders: 'Transcription Providers',
+    transcriptionProvidersDescription: 'Configure speech-to-text services for audio transcription (OpenAI, Groq, Chinese ASR)',
+    postProcessingProviders: 'Post-Processing Providers',
+    postProcessingProvidersDescription: 'Configure AI providers for text optimization and polishing (DeepSeek, Claude, etc.)',
     apiKey: 'API Key',
     model: 'Model',
     baseUrl: 'Base URL',
@@ -338,6 +346,10 @@ export const zh: Translations = {
     preferredProviderCloud: '云端（仅 API）',
     providers: 'AI 提供商',
     providersDescription: '配置云端转录服务',
+    transcriptionProviders: '语音识别提供商',
+    transcriptionProvidersDescription: '配置语音转文字服务（OpenAI、Groq、国内ASR）',
+    postProcessingProviders: '文本后处理提供商',
+    postProcessingProvidersDescription: '配置 AI 文本优化服务（DeepSeek、Claude 等）',
     apiKey: 'API 密钥',
     model: '模型',
     baseUrl: '基础 URL',
@@ -481,6 +493,10 @@ export const ja: Translations = {
     preferredProviderCloud: 'クラウド（API のみ）',
     providers: 'AI プロバイダー',
     providersDescription: 'クラウド文字起こしサービスを設定',
+    transcriptionProviders: '音声認識プロバイダー',
+    transcriptionProvidersDescription: '音声認識サービスを設定（OpenAI、Groq、中国ASR）',
+    postProcessingProviders: '後処理プロバイダー',
+    postProcessingProvidersDescription: 'テキスト最適化用AIプロバイダーを設定（DeepSeek、Claude等）',
     apiKey: 'API キー',
     model: 'モデル',
     baseUrl: 'ベース URL',
@@ -624,6 +640,10 @@ export const ko: Translations = {
     preferredProviderCloud: '클우드 (API 전용)',
     providers: 'AI 제공자',
     providersDescription: '클우드 전사 서비스 구성',
+    transcriptionProviders: '음성 인식 제공자',
+    transcriptionProvidersDescription: '음성 전사 서비스 구성 (OpenAI, Groq, 중국 ASR)',
+    postProcessingProviders: '후처리 제공자',
+    postProcessingProvidersDescription: '텍스트 최적화 AI 제공자 구성 (DeepSeek, Claude 등)',
     apiKey: 'API 키',
     model: '모델',
     baseUrl: '기본 URL',

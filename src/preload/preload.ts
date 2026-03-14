@@ -52,6 +52,8 @@ export interface ElectronAPI {
 
   // Providers
   providersList: () => Promise<unknown[]>;
+  providersListTranscription: () => Promise<unknown[]>;
+  providersListPostProcessing: () => Promise<unknown[]>;
   providersGetConfig: (id: string) => Promise<unknown>;
   providersSetConfig: (id: string, config: unknown) => Promise<void>;
   providersTest: (id: string) => Promise<{ success: boolean; error?: string }>;
@@ -126,6 +128,8 @@ const api: ElectronAPI = {
 
   // Providers
   providersList: () => ipcRenderer.invoke('providers:list'),
+  providersListTranscription: () => ipcRenderer.invoke('providers:list-transcription'),
+  providersListPostProcessing: () => ipcRenderer.invoke('providers:list-post-processing'),
   providersGetConfig: (id: string) => ipcRenderer.invoke('providers:get-config', id),
   providersSetConfig: (id: string, config: unknown) => ipcRenderer.invoke('providers:set-config', id, config),
   providersTest: (id: string) => ipcRenderer.invoke('providers:test', id),
