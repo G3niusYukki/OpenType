@@ -34,6 +34,8 @@ interface ProviderConfig {
   baseUrl?: string;
   model?: string;
   enabled: boolean;
+  enabledForTranscription?: boolean;
+  enabledForPostProcessing?: boolean;
 }
 
 /**
@@ -111,9 +113,11 @@ export class AiPostProcessor {
    */
   private getActiveAiProvider(): ProviderConfig | null {
     const providers = this.store.get('providers') || [];
-    const aiProvider = providers.find((p: ProviderConfig) => 
-      p.enabled && p.apiKey && ['anthropic', 'openai', 'groq', 'deepseek', 'zhipu', 'minimax', 'moonshot'].includes(p.id)
-    );
+    const aiProvider = providers.find((p: ProviderConfig) => {
+      // Check if enabled for post-processing (new field) or fallback to general enabled (backward compatibility)
+      const isEnabled = p.enabledForPostProcessing ?? p.enabled;
+      return isEnabled && p.apiKey && ['anthropic', 'openai', 'groq', 'deepseek', 'zhipu', 'minimax', 'moonshot'].includes(p.id);
+    });
     return aiProvider || null;
   }
 

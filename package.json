@@ -67,9 +67,9 @@
     "form-data": "^4.0.0",
     "lucide-react": "^0.479.0",
     "node-fetch": "^3.3.2",
-    "node-global-key-listener": "^0.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "uiohook-napi": "^1.5.4",
     "zustand": "^5.0.3"
   },
   "build": {

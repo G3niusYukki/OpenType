@@ -28,6 +28,8 @@ export interface ProviderConfig {
   id: string;
   name: string;
   enabled: boolean;
+  enabledForTranscription?: boolean;
+  enabledForPostProcessing?: boolean;
   apiKey?: string;
   baseUrl?: string;
   model?: string;

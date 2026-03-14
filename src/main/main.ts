@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, clipboard, nativeImage, dialog } from 'electron';
+import { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, clipboard, nativeImage, dialog, Notification } from 'electron';
 import path from 'path';
 import { Store, ProviderConfig } from './store';
 import { AudioCapture } from './audio-capture';
@@ -57,16 +57,18 @@ class OpenTypeApp {
     // DeepSeek, Zhipu, MiniMax, Moonshot are text-only LLMs for post-processing, not audio transcription
     const audioTranscriptionProviders = ['openai', 'groq'];
     return providers
-      .filter((p): p is ProviderConfig & { id: 'openai' | 'groq'; apiKey: string } => 
-        p.enabled && !!p.apiKey && audioTranscriptionProviders.includes(p.id)
-      )
+      .filter((p): p is ProviderConfig & { id: 'openai' | 'groq'; apiKey: string } => {
+        // Check if enabled for transcription (new field) or fallback to general enabled (backward compatibility)
+        const isEnabled = p.enabledForTranscription ?? p.enabled;
+        return isEnabled && !!p.apiKey && audioTranscriptionProviders.includes(p.id);
+      })
       .map(p => ({
         id: p.id,
         name: p.name,
         apiKey: p.apiKey,
         baseUrl: p.baseUrl,
         model: p.model,
-        enabled: p.enabled
+        enabled: p.enabledForTranscription ?? p.enabled
       }));
   }
 
@@ -436,6 +438,13 @@ class OpenTypeApp {
 
     this.isRecording = true;
     this.updateTrayIcon();
+    
+    // Show recording notification
+    new Notification({
+      title: 'OpenType',
+      body: mode === 'handsfree' ? '🎙️ Recording (Hands-free mode)' : '🎙️ Recording... Release key to stop',
+      silent: true,
+    }).show();
 
     this.mainWindow?.webContents.send('recording:started', { mode });
 
@@ -497,12 +506,26 @@ class OpenTypeApp {
     const audioPath = result.audioPath;
     this.currentAudioPath = null;
 
+    // Show processing notification
+    new Notification({
+      title: 'OpenType',
+      body: '⏳ Processing speech...',
+      silent: true,
+    }).show();
+
     // Transcribe the audio
     this.mainWindow?.webContents.send('transcription:started');
 
     try {
       const transcriptionResult = await this.transcribeAudio(audioPath, currentMode);
       await this.handleTranscriptionResult(audioPath, transcriptionResult, currentMode);
+      
+      // Show completion notification
+      new Notification({
+        title: 'OpenType',
+        body: '✓ Text inserted',
+        silent: true,
+      }).show();
     } catch (error: any) {
       console.error('[OpenType] Transcription error:', error);
       await this.handleTranscriptionResult(audioPath, {

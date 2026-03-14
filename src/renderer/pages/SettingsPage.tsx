@@ -104,10 +104,11 @@ export function SettingsPage() {
 
   const checkAiAvailability = async (settings?: typeof aiSettings) => {
     const aiSet = settings || aiSettings;
-    const providers = await window.electronAPI.storeGet('providers') as Array<{ id: string; enabled: boolean; apiKey?: string }>;
-    const hasAiProvider = providers?.some(p =>
-      p.enabled && p.apiKey && ['openai', 'groq', 'anthropic', 'deepseek', 'zhipu', 'minimax', 'moonshot'].includes(p.id)
-    );
+    const providers = await window.electronAPI.storeGet('providers') as Array<{ id: string; enabled?: boolean; enabledForPostProcessing?: boolean; apiKey?: string }>;
+    const hasAiProvider = providers?.some(p => {
+      const isEnabled = p.enabledForPostProcessing ?? p.enabled;
+      return isEnabled && p.apiKey && ['openai', 'groq', 'anthropic', 'deepseek', 'zhipu', 'minimax', 'moonshot'].includes(p.id);
+    });
     setAiAvailable(hasAiProvider);
   };
 
@@ -596,7 +597,7 @@ export function SettingsPage() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  marginBottom: config.enabled ? '16px' : 0,
+                  marginBottom: (config.enabledForTranscription ?? config.enabled) ? '16px' : 0,
                 }}
                 >
                   <div>
@@ -620,23 +621,23 @@ export function SettingsPage() {
                   </div>
 
                   <button
-                    onClick={() => updateProviderConfig(provider.id, { enabled: !config.enabled })}
+                    onClick={() => updateProviderConfig(provider.id, { enabledForTranscription: !(config.enabledForTranscription ?? config.enabled) })}
                     style={{
                       padding: '8px 16px',
                       borderRadius: '6px',
-                      border: config.enabled ? '1px solid #22c55e' : '1px solid #333',
-                      background: config.enabled ? 'rgba(34, 197, 94, 0.1)' : '#222',
-                      color: config.enabled ? '#22c55e' : '#666',
+                      border: (config.enabledForTranscription ?? config.enabled) ? '1px solid #22c55e' : '1px solid #333',
+                      background: (config.enabledForTranscription ?? config.enabled) ? 'rgba(34, 197, 94, 0.1)' : '#222',
+                      color: (config.enabledForTranscription ?? config.enabled) ? '#22c55e' : '#666',
                       fontSize: '13px',
                       fontWeight: 500,
                       cursor: 'pointer',
                     }}
                   >
-                    {config.enabled ? t.settings.enabled : 'Disabled'}
+                    {(config.enabledForTranscription ?? config.enabled) ? t.settings.enabled : 'Disabled'}
                   </button>
                 </div>
 
-                {config.enabled && (
+                {(config.enabledForTranscription ?? config.enabled) && (
                   <div style={{
                     paddingTop: '16px',
                     borderTop: '1px solid #222',
@@ -827,7 +828,7 @@ export function SettingsPage() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  marginBottom: config.enabled ? '16px' : 0,
+                  marginBottom: (config.enabledForPostProcessing ?? config.enabled) ? '16px' : 0,
                 }}
                 >
                   <div>
@@ -851,23 +852,23 @@ export function SettingsPage() {
                   </div>
 
                   <button
-                    onClick={() => updateProviderConfig(provider.id, { enabled: !config.enabled })}
+                    onClick={() => updateProviderConfig(provider.id, { enabledForPostProcessing: !(config.enabledForPostProcessing ?? config.enabled) })}
                     style={{
                       padding: '8px 16px',
                       borderRadius: '6px',
-                      border: config.enabled ? '1px solid #22c55e' : '1px solid #333',
-                      background: config.enabled ? 'rgba(34, 197, 94, 0.1)' : '#222',
-                      color: config.enabled ? '#22c55e' : '#666',
+                      border: (config.enabledForPostProcessing ?? config.enabled) ? '1px solid #22c55e' : '1px solid #333',
+                      background: (config.enabledForPostProcessing ?? config.enabled) ? 'rgba(34, 197, 94, 0.1)' : '#222',
+                      color: (config.enabledForPostProcessing ?? config.enabled) ? '#22c55e' : '#666',
                       fontSize: '13px',
                       fontWeight: 500,
                       cursor: 'pointer',
                     }}
                   >
-                    {config.enabled ? t.settings.enabled : 'Disabled'}
+                    {(config.enabledForPostProcessing ?? config.enabled) ? t.settings.enabled : 'Disabled'}
                   </button>
                 </div>
 
-                {config.enabled && (
+                {(config.enabledForPostProcessing ?? config.enabled) && (
                   <div style={{
                     paddingTop: '16px',
                     borderTop: '1px solid #222',
