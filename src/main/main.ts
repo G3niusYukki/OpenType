@@ -377,7 +377,16 @@ class OpenTypeApp {
     if (!result.success || !result.audioPath) {
       this.isRecording = false;
       this.updateTrayIcon();
-      dialog.showErrorBox('Recording Error', result.error || 'Failed to start audio capture');
+      
+      // Check for microphone permission error
+      if (result.error === 'MICROPHONE_PERMISSION_DENIED') {
+        dialog.showErrorBox(
+          'Microphone Permission Required',
+          'OpenType needs microphone permission to record audio.\n\nPlease go to:\nSystem Settings → Privacy & Security → Microphone\n\nEnable permission for OpenType and try again.'
+        );
+      } else {
+        dialog.showErrorBox('Recording Error', result.error || 'Failed to start audio capture');
+      }
       return;
     }
 

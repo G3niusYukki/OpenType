@@ -208,12 +208,20 @@ export class AudioCapture {
           if (this.recordingProcess?.pid) {
             resolve(void 0);
           }
-        }, 500);
+        }, 800);
         
         this.recordingProcess?.on('exit', (code) => {
           clearTimeout(timeout);
           if (code !== 0 && code !== null) {
-            reject(new Error(`ffmpeg exited with code ${code}: ${errorOutput}`));
+            // Check for permission denied error
+            if (errorOutput.includes('Permission denied') || 
+                errorOutput.includes('not authorized') ||
+                errorOutput.includes('access denied') ||
+                errorOutput.includes('AVFoundation')) {
+              reject(new Error('MICROPHONE_PERMISSION_DENIED'));
+            } else {
+              reject(new Error(`ffmpeg exited with code ${code}: ${errorOutput}`));
+            }
           }
         });
       });
