@@ -59,6 +59,12 @@ export function SettingsPage() {
     showComparison: true,
   });
   const [aiAvailable, setAiAvailable] = useState(false);
+  const [voiceInputModes, setVoiceInputModes] = useState({
+    basicVoiceInput: true,
+    handsFreeMode: true,
+    translateToEnglish: true,
+    editSelectedText: true,
+  });
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   const showSaveIndicator = () => {
@@ -74,12 +80,13 @@ export function SettingsPage() {
   }, []);
 
   const loadSettings = async () => {
-    const [savedHotkey, savedLanguage, savedPunctuation, savedPreferredProvider, savedAiSettings] = await Promise.all([
+    const [savedHotkey, savedLanguage, savedPunctuation, savedPreferredProvider, savedAiSettings, savedVoiceModes] = await Promise.all([
       window.electronAPI.storeGet('hotkey'),
       window.electronAPI.storeGet('language'),
       window.electronAPI.storeGet('autoPunctuation'),
       window.electronAPI.storeGet('preferredProvider'),
       window.electronAPI.aiGetSettings(),
+      window.electronAPI.storeGet('voiceInputModes'),
     ]);
 
     if (savedHotkey) setHotkey(savedHotkey as string);
@@ -89,6 +96,9 @@ export function SettingsPage() {
     if (savedAiSettings) {
       setAiSettingsState(savedAiSettings);
       checkAiAvailability(savedAiSettings);
+    }
+    if (savedVoiceModes) {
+      setVoiceInputModes(savedVoiceModes as typeof voiceInputModes);
     }
   };
 
@@ -105,6 +115,13 @@ export function SettingsPage() {
     const newSettings = { ...aiSettings, ...updates };
     setAiSettingsState(newSettings);
     await window.electronAPI.aiSetSettings(updates);
+  };
+
+  const updateVoiceInputMode = async (mode: keyof typeof voiceInputModes, enabled: boolean) => {
+    const newModes = { ...voiceInputModes, [mode]: enabled };
+    setVoiceInputModes(newModes);
+    showSaveIndicator();
+    await window.electronAPI.storeSet('voiceInputModes', newModes);
   };
 
   const loadProviders = async () => {
@@ -1181,6 +1198,202 @@ export function SettingsPage() {
               </div>
             </>
           )}
+        </div>
+      </section>
+
+      {/* Voice Input Modes Section */}
+      <section style={{ marginTop: '32px' }}>
+        <h2 style={{
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#666',
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          marginBottom: '20px',
+        }}
+        >
+          Voice Input Modes
+        </h2>
+
+        <div style={{
+          background: '#161616',
+          border: '1px solid #222',
+          borderRadius: '12px',
+          padding: '20px',
+        }}
+        >
+          <p style={{
+            fontSize: '13px',
+            color: '#888',
+            marginBottom: '16px',
+          }}
+          >
+            Enable or disable different voice input modes and their keyboard shortcuts
+          </p>
+
+          {/* Basic Voice Input */}
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+            }}
+            >
+              <div>
+                <p style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: '#ccc',
+                  margin: '0 0 4px 0',
+                }}
+                >
+                  Basic Voice Input
+                </p>
+                <p style={{
+                  fontSize: '12px',
+                  color: '#666',
+                  margin: 0,
+                }}
+                >
+                  Hold hotkey to speak, release to send. Auto-removes filler words.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={voiceInputModes.basicVoiceInput}
+                onChange={(e) => updateVoiceInputMode('basicVoiceInput', e.target.checked)}
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  accentColor: '#6366f1',
+                }}
+              />
+            </label>
+          </div>
+
+          {/* Hands-free Mode */}
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+            }}
+            >
+              <div>
+                <p style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: '#ccc',
+                  margin: '0 0 4px 0',
+                }}
+                >
+                  Hands-free Mode
+                </p>
+                <p style={{
+                  fontSize: '12px',
+                  color: '#666',
+                  margin: 0,
+                }}
+                >
+                  Toggle continuous recording mode. Press again to stop.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={voiceInputModes.handsFreeMode}
+                onChange={(e) => updateVoiceInputMode('handsFreeMode', e.target.checked)}
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  accentColor: '#6366f1',
+                }}
+              />
+            </label>
+          </div>
+
+          {/* Translate to English */}
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+            }}
+            >
+              <div>
+                <p style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: '#ccc',
+                  margin: '0 0 4px 0',
+                }}
+                >
+                  Translate to English
+                </p>
+                <p style={{
+                  fontSize: '12px',
+                  color: '#666',
+                  margin: 0,
+                }}
+                >
+                  Speak in Chinese, output structured English text.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={voiceInputModes.translateToEnglish}
+                onChange={(e) => updateVoiceInputMode('translateToEnglish', e.target.checked)}
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  accentColor: '#6366f1',
+                }}
+              />
+            </label>
+          </div>
+
+          {/* Edit Selected Text */}
+          <div>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+            }}
+            >
+              <div>
+                <p style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: '#ccc',
+                  margin: '0 0 4px 0',
+                }}
+                >
+                  Edit Selected Text
+                </p>
+                <p style={{
+                  fontSize: '12px',
+                  color: '#666',
+                  margin: 0,
+                }}
+                >
+                  Select text, then speak commands like "translate to English" or "make it formal".
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={voiceInputModes.editSelectedText}
+                onChange={(e) => updateVoiceInputMode('editSelectedText', e.target.checked)}
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  accentColor: '#6366f1',
+                }}
+              />
+            </label>
+          </div>
         </div>
       </section>
     </div>

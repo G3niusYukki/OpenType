@@ -8,6 +8,8 @@ import { ProviderManager } from './providers';
 import { TranscriptionService, TranscriptionResult, CloudProviderConfig } from './transcription';
 import { AiPostProcessor, AiPostProcessingResult } from './aiPostProcessor';
 
+type RecordingMode = 'default' | 'handsfree' | 'translate' | 'edit';
+
 class OpenTypeApp {
   private mainWindow: BrowserWindow | null = null;
   private tray: Tray | null = null;
@@ -19,6 +21,8 @@ class OpenTypeApp {
   private aiPostProcessor: AiPostProcessor;
   private isRecording = false;
   private currentAudioPath: string | null = null;
+  private recordingMode: RecordingMode = 'default';
+  private selectedTextBeforeRecording: string = '';
 
   constructor() {
     this.store = new Store();
@@ -199,14 +203,55 @@ class OpenTypeApp {
   }
 
   private registerGlobalShortcuts(): void {
-    const hotkey = this.store.get('hotkey') || 'CommandOrControl+Shift+D';
-    
-    const registered = globalShortcut.register(hotkey, () => {
-      this.toggleRecording();
-    });
+    const voiceInputModes = this.store.get('voiceInputModes') || {
+      basicVoiceInput: true,
+      handsFreeMode: true,
+      translateToEnglish: true,
+      editSelectedText: true,
+    };
 
-    if (!registered) {
-      console.error('Failed to register global shortcut');
+    // Basic Voice Input (Default)
+    if (voiceInputModes.basicVoiceInput !== false) {
+      const hotkey = this.store.get('hotkey') || 'CommandOrControl+Shift+D';
+      const registered = globalShortcut.register(hotkey, () => {
+        this.toggleRecording('default');
+      });
+      if (!registered) {
+        console.error('[OpenType] Failed to register basic voice input shortcut');
+      }
+    }
+
+    // Hands-free Mode
+    if (voiceInputModes.handsFreeMode) {
+      const handsFreeHotkey = this.store.get('handsFreeHotkey') || 'CommandOrControl+Space';
+      const registered = globalShortcut.register(handsFreeHotkey, () => {
+        this.toggleRecording('handsfree');
+      });
+      if (!registered) {
+        console.error('[OpenType] Failed to register hands-free shortcut');
+      }
+    }
+
+    // Translate to English Mode
+    if (voiceInputModes.translateToEnglish) {
+      const translateHotkey = this.store.get('translateHotkey') || 'CommandOrControl+Shift+T';
+      const registered = globalShortcut.register(translateHotkey, () => {
+        this.toggleRecording('translate');
+      });
+      if (!registered) {
+        console.error('[OpenType] Failed to register translate shortcut');
+      }
+    }
+
+    // Edit Selected Text Mode
+    if (voiceInputModes.editSelectedText) {
+      const editTextHotkey = this.store.get('editTextHotkey') || 'CommandOrControl+Shift+E';
+      const registered = globalShortcut.register(editTextHotkey, () => {
+        this.toggleRecording('edit');
+      });
+      if (!registered) {
+        console.error('[OpenType] Failed to register edit text shortcut');
+      }
     }
   }
 
@@ -229,6 +274,9 @@ class OpenTypeApp {
         this.transcriptionService.updateConfig({
           preferredProvider: value as 'local' | 'cloud' | 'auto'
         });
+      }
+      if (key === 'voiceInputModes') {
+        this.updateHotkey(this.store.get('hotkey') || 'CommandOrControl+Shift+D');
       }
     });
 
@@ -298,49 +346,62 @@ class OpenTypeApp {
     });
   }
 
-  private async toggleRecording(): Promise<void> {
+  private async toggleRecording(mode: RecordingMode = 'default'): Promise<void> {
     if (this.isRecording) {
       await this.stopRecording();
     } else {
-      await this.startRecording();
+      await this.startRecording(mode);
     }
   }
 
-  private async startRecording(): Promise<void> {
+  private async startRecording(mode: RecordingMode = 'default'): Promise<void> {
     if (this.isRecording) return;
-    
+
+    this.recordingMode = mode;
+
+    if (mode === 'edit') {
+      this.selectedTextBeforeRecording = await this.getSelectedText();
+      if (!this.selectedTextBeforeRecording) {
+        dialog.showErrorBox('Edit Text Mode', 'Please select some text first before using Edit Text mode.');
+        return;
+      }
+    }
+
     this.isRecording = true;
     this.updateTrayIcon();
-    
-    // Notify renderer
-    this.mainWindow?.webContents.send('recording:started');
-    
-    // Start audio capture
+
+    this.mainWindow?.webContents.send('recording:started', { mode });
+
     const result = await this.audioCapture.start();
-    
+
     if (!result.success || !result.audioPath) {
       this.isRecording = false;
       this.updateTrayIcon();
       dialog.showErrorBox('Recording Error', result.error || 'Failed to start audio capture');
       return;
     }
-    
+
     this.currentAudioPath = result.audioPath;
-    
+
     if (result.isPlaceholder) {
       console.warn('[OpenType] Recording in placeholder mode - ffmpeg not available');
+    }
+
+    if (mode === 'handsfree') {
+      console.log('[OpenType] Hands-free mode started - recording continuously');
     }
   }
 
   private async stopRecording(): Promise<void> {
     if (!this.isRecording) return;
 
+    const currentMode = this.recordingMode;
     this.isRecording = false;
     this.updateTrayIcon();
-    
+
     // Notify renderer
     this.mainWindow?.webContents.send('recording:stopped');
-    
+
     // Stop audio capture and get file path
     let result;
     try {
@@ -350,45 +411,66 @@ class OpenTypeApp {
       dialog.showErrorBox('Recording Error', error?.message || 'Failed to stop recording');
       return;
     }
-    
+
     if (!result.success || !result.audioPath) {
       const errorMsg = result.error || 'Failed to stop recording';
       dialog.showErrorBox('Recording Error', errorMsg);
       return;
     }
-    
+
     const audioPath = result.audioPath;
     this.currentAudioPath = null;
-    
+
     // Transcribe the audio
     this.mainWindow?.webContents.send('transcription:started');
-    
+
     try {
-      const transcriptionResult = await this.transcribeAudio(audioPath);
-      await this.handleTranscriptionResult(audioPath, transcriptionResult);
+      const transcriptionResult = await this.transcribeAudio(audioPath, currentMode);
+      await this.handleTranscriptionResult(audioPath, transcriptionResult, currentMode);
     } catch (error: any) {
       console.error('[OpenType] Transcription error:', error);
-      // Ensure we always handle the result gracefully, even on unexpected errors
       await this.handleTranscriptionResult(audioPath, {
         success: false,
         error: error?.message || 'Transcription failed unexpectedly',
         provider: 'none'
-      });
+      }, currentMode);
     }
   }
 
-  private async transcribeAudio(audioPath: string): Promise<TranscriptionResult> {
-    // Update config from store before transcribing
+  private async transcribeAudio(audioPath: string, mode: RecordingMode = 'default'): Promise<TranscriptionResult> {
+    const language = mode === 'translate' ? 'zh' : (this.store.get('language')?.split('-')[0] || 'en');
     this.transcriptionService.updateConfig({
-      language: this.store.get('language')?.split('-')[0] || 'en',
+      language,
       cloudProviders: this.getCloudProviderConfigs(),
       useLocalFirst: true
     });
-    
+
     return this.transcriptionService.transcribe(audioPath);
   }
 
-  private async handleTranscriptionResult(audioPath: string, result: TranscriptionResult): Promise<void> {
+  private async getSelectedText(): Promise<string> {
+    try {
+      const { exec } = await import('child_process');
+      const { promisify } = await import('util');
+      const execAsync = promisify(exec);
+
+      const appleScript = `
+        tell application "System Events"
+          keystroke "c" using command down
+        end tell
+        delay 0.1
+        return the clipboard
+      `;
+
+      const { stdout } = await execAsync(`osascript -e '${appleScript}'`);
+      return stdout.trim();
+    } catch (error) {
+      console.error('[OpenType] Failed to get selected text:', error);
+      return '';
+    }
+  }
+
+  private async handleTranscriptionResult(audioPath: string, result: TranscriptionResult, mode: RecordingMode = 'default'): Promise<void> {
     try {
       const rawText = result.text || '';
       const status = result.success ? 'completed' : 'error';
@@ -397,19 +479,50 @@ class OpenTypeApp {
       let aiResult: AiPostProcessingResult | null = null;
 
       if (result.success && rawText) {
-        const aiSettings = this.store.get('aiPostProcessing');
-        if (aiSettings?.enabled && this.aiPostProcessor.isAvailable()) {
-          try {
-            console.log('[OpenType] Starting AI post-processing...');
-            aiResult = await this.aiPostProcessor.process(rawText, aiSettings.options);
-            if (aiResult.success) {
-              processedText = aiResult.processedText;
-              console.log(`[OpenType] AI processing complete in ${aiResult.latencyMs}ms`);
-            } else {
-              console.warn('[OpenType] AI processing failed:', aiResult.error);
+        if (mode === 'translate') {
+          // CN to EN translation mode
+          if (this.aiPostProcessor.isAvailable()) {
+            try {
+              console.log('[OpenType] Starting CN→EN translation...');
+              aiResult = await this.aiPostProcessor.translate(rawText, 'zh', 'en');
+              if (aiResult.success) {
+                processedText = aiResult.processedText;
+                console.log(`[OpenType] Translation complete in ${aiResult.latencyMs}ms`);
+              }
+            } catch (aiError) {
+              console.error('[OpenType] Translation error:', aiError);
             }
-          } catch (aiError) {
-            console.error('[OpenType] AI post-processing error:', aiError);
+          }
+        } else if (mode === 'edit') {
+          // Edit selected text mode
+          if (this.aiPostProcessor.isAvailable() && this.selectedTextBeforeRecording) {
+            try {
+              console.log('[OpenType] Starting text editing with command:', rawText);
+              aiResult = await this.aiPostProcessor.editText(this.selectedTextBeforeRecording, rawText);
+              if (aiResult.success) {
+                processedText = aiResult.processedText;
+                console.log(`[OpenType] Text editing complete in ${aiResult.latencyMs}ms`);
+              }
+            } catch (aiError) {
+              console.error('[OpenType] Text editing error:', aiError);
+            }
+          }
+        } else {
+          // Default mode with AI post-processing
+          const aiSettings = this.store.get('aiPostProcessing');
+          if (aiSettings?.enabled && this.aiPostProcessor.isAvailable()) {
+            try {
+              console.log('[OpenType] Starting AI post-processing...');
+              aiResult = await this.aiPostProcessor.process(rawText, aiSettings.options);
+              if (aiResult.success) {
+                processedText = aiResult.processedText;
+                console.log(`[OpenType] AI processing complete in ${aiResult.latencyMs}ms`);
+              } else {
+                console.warn('[OpenType] AI processing failed:', aiResult.error);
+              }
+            } catch (aiError) {
+              console.error('[OpenType] AI post-processing error:', aiError);
+            }
           }
         }
       }
@@ -521,12 +634,7 @@ class OpenTypeApp {
 
   private updateHotkey(newHotkey: string): void {
     globalShortcut.unregisterAll();
-    const registered = globalShortcut.register(newHotkey, () => {
-      this.toggleRecording();
-    });
-    if (!registered) {
-      console.error('Failed to register new hotkey');
-    }
+    this.registerGlobalShortcuts();
   }
 
   private updateTrayIcon(): void {

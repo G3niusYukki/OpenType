@@ -194,12 +194,210 @@ export class AiPostProcessor {
   }
 
   /**
+   * Translate text from one language to another
+   */
+  async translate(
+    text: string,
+    sourceLang: string,
+    targetLang: string
+  ): Promise<AiPostProcessingResult> {
+    const startTime = Date.now();
+    const provider = this.getActiveAiProvider();
+
+    if (!provider) {
+      return {
+        success: false,
+        originalText: text,
+        processedText: text,
+        changes: [],
+        provider: 'none',
+        error: 'No AI provider configured',
+        latencyMs: Date.now() - startTime,
+      };
+    }
+
+    const prompt = `You are a professional translator. Translate the following text from ${sourceLang} to ${targetLang}.
+
+Requirements:
+- Maintain the original meaning and tone
+- Use natural, professional language
+- Structure the output clearly (paragraphs, bullet points if appropriate)
+- Return only the translated text, no explanations
+- If the source contains technical terms, keep them accurate`;
+
+    try {
+      const result = await this.callProviderWithPrompt(prompt, text, provider);
+      return {
+        ...result,
+        latencyMs: Date.now() - startTime,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        originalText: text,
+        processedText: text,
+        changes: [],
+        provider: provider.name,
+        error: error?.message || 'Translation failed',
+        latencyMs: Date.now() - startTime,
+      };
+    }
+  }
+
+  /**
+   * Edit selected text based on voice command
+   */
+  async editText(
+    selectedText: string,
+    command: string
+  ): Promise<AiPostProcessingResult> {
+    const startTime = Date.now();
+    const provider = this.getActiveAiProvider();
+
+    if (!provider) {
+      return {
+        success: false,
+        originalText: selectedText,
+        processedText: selectedText,
+        changes: [],
+        provider: 'none',
+        error: 'No AI provider configured',
+        latencyMs: Date.now() - startTime,
+      };
+    }
+
+    const prompt = `You are an AI text editor. The user has selected some text and given you a voice command.
+
+Selected text:
+"""
+${selectedText}
+"""
+
+Voice command: "${command}"
+
+Instructions:
+- Follow the voice command precisely
+- If the command is to translate, translate the text appropriately
+- If the command is to make the tone more formal/casual, adjust accordingly
+- If the command is to add a title/heading, format it appropriately
+- If the command is unclear, do your best to interpret the intent
+- Return only the edited text, no explanations
+- Maintain the original formatting as much as possible`;
+
+    try {
+      const result = await this.callProviderWithPrompt(prompt, command, provider);
+      return {
+        ...result,
+        originalText: selectedText,
+        latencyMs: Date.now() - startTime,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        originalText: selectedText,
+        processedText: selectedText,
+        changes: [],
+        provider: provider.name,
+        error: error?.message || 'Text editing failed',
+        latencyMs: Date.now() - startTime,
+      };
+    }
+  }
+
+  /**
+   * Call AI provider with custom prompt
+   */
+  private async callProviderWithPrompt(
+    prompt: string,
+    text: string,
+    provider: ProviderConfig
+  ): Promise<Omit<AiPostProcessingResult, 'latencyMs'>> {
+    switch (provider.id) {
+      case 'openai':
+        return this.callOpenAIWithPrompt(prompt, text, provider);
+      case 'groq':
+        return this.callGroqWithPrompt(prompt, text, provider);
+      case 'anthropic':
+        return this.callAnthropicWithPrompt(prompt, text, provider);
+      case 'deepseek':
+        return this.callDeepSeekWithPrompt(prompt, text, provider);
+      case 'zhipu':
+        return this.callZhipuWithPrompt(prompt, text, provider);
+      case 'minimax':
+        return this.callMiniMaxWithPrompt(prompt, text, provider);
+      case 'moonshot':
+        return this.callMoonshotWithPrompt(prompt, text, provider);
+      default:
+        throw new Error(`Unsupported AI provider: ${provider.id}`);
+    }
+  }
+
+  /**
    * Detect language (simple heuristic)
    */
   private detectLanguage(text: string): 'zh' | 'en' {
     // Check for Chinese characters
     const chineseCharPattern = /[\u4e00-\u9fa5]/;
     return chineseCharPattern.test(text) ? 'zh' : 'en';
+  }
+
+  /**
+   * Wrapper methods for calling providers with custom prompts
+   */
+  private async callOpenAIWithPrompt(
+    prompt: string,
+    text: string,
+    provider: ProviderConfig
+  ): Promise<Omit<AiPostProcessingResult, 'latencyMs'>> {
+    return this.callOpenAI(prompt, text, provider);
+  }
+
+  private async callGroqWithPrompt(
+    prompt: string,
+    text: string,
+    provider: ProviderConfig
+  ): Promise<Omit<AiPostProcessingResult, 'latencyMs'>> {
+    return this.callGroq(prompt, text, provider);
+  }
+
+  private async callAnthropicWithPrompt(
+    prompt: string,
+    text: string,
+    provider: ProviderConfig
+  ): Promise<Omit<AiPostProcessingResult, 'latencyMs'>> {
+    return this.callAnthropic(prompt, text, provider);
+  }
+
+  private async callDeepSeekWithPrompt(
+    prompt: string,
+    text: string,
+    provider: ProviderConfig
+  ): Promise<Omit<AiPostProcessingResult, 'latencyMs'>> {
+    return this.callDeepSeek(prompt, text, provider);
+  }
+
+  private async callZhipuWithPrompt(
+    prompt: string,
+    text: string,
+    provider: ProviderConfig
+  ): Promise<Omit<AiPostProcessingResult, 'latencyMs'>> {
+    return this.callZhipu(prompt, text, provider);
+  }
+
+  private async callMiniMaxWithPrompt(
+    prompt: string,
+    text: string,
+    provider: ProviderConfig
+  ): Promise<Omit<AiPostProcessingResult, 'latencyMs'>> {
+    return this.callMiniMax(prompt, text, provider);
+  }
+
+  private async callMoonshotWithPrompt(
+    prompt: string,
+    text: string,
+    provider: ProviderConfig
+  ): Promise<Omit<AiPostProcessingResult, 'latencyMs'>> {
+    return this.callMoonshot(prompt, text, provider);
   }
 
   /**

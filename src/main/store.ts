@@ -46,14 +46,25 @@ export interface AiPostProcessingSettings {
   showComparison: boolean;
 }
 
+export interface VoiceInputModeSettings {
+  basicVoiceInput: boolean;
+  handsFreeMode: boolean;
+  translateToEnglish: boolean;
+  editSelectedText: boolean;
+}
+
 export interface AppSettings {
   hotkey: string;
+  handsFreeHotkey: string;
+  translateHotkey: string;
+  editTextHotkey: string;
   outputMode: 'paste' | 'copy' | 'type';
   language: string;
   autoPunctuation: boolean;
   providers: ProviderConfig[];
   preferredProvider: 'local' | 'cloud' | 'auto';
   aiPostProcessing: AiPostProcessingSettings;
+  voiceInputModes: VoiceInputModeSettings;
 }
 
 type ExtraStoreData = {
@@ -63,6 +74,9 @@ type ExtraStoreData = {
 
 const DEFAULT_SETTINGS: AppSettings = {
   hotkey: 'CommandOrControl+Shift+D',
+  handsFreeHotkey: 'CommandOrControl+Space',
+  translateHotkey: 'CommandOrControl+Shift+T',
+  editTextHotkey: 'CommandOrControl+Shift+E',
   outputMode: 'paste',
   language: 'en-US',
   autoPunctuation: true,
@@ -81,6 +95,12 @@ const DEFAULT_SETTINGS: AppSettings = {
       detectSelfCorrection: true,
     },
     showComparison: true,
+  },
+  voiceInputModes: {
+    basicVoiceInput: true,
+    handsFreeMode: true,
+    translateToEnglish: true,
+    editSelectedText: true,
   },
 };
 
