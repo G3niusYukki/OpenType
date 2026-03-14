@@ -1,6 +1,39 @@
 export {};
 
 declare global {
+  interface TextChange {
+    type: 'filler' | 'repetition' | 'correction' | 'improvement';
+    original: string;
+    replacement: string;
+    position: number;
+    explanation?: string;
+  }
+
+  interface TranscriptionResult {
+    rawText?: string;
+    processedText?: string;
+    text: string;
+    success: boolean;
+    provider: string;
+    aiProcessed?: boolean;
+    aiChanges?: TextChange[];
+    aiLatency?: number;
+    aiProvider?: string;
+    error?: string;
+    fallbackToClipboard?: boolean;
+  }
+
+  interface AiPostProcessingSettings {
+    enabled: boolean;
+    providerId?: string;
+    options: {
+      removeFillerWords: boolean;
+      removeRepetition: boolean;
+      detectSelfCorrection: boolean;
+    };
+    showComparison: boolean;
+  }
+
   interface Window {
     electronAPI: {
       // Store
@@ -17,6 +50,18 @@ declare global {
       providersGetConfig: (id: string) => Promise<unknown>;
       providersSetConfig: (id: string, config: unknown) => Promise<void>;
       providersTest: (id: string) => Promise<{ success: boolean; error?: string }>;
+
+      // AI Post-Processing
+      aiGetSettings: () => Promise<AiPostProcessingSettings>;
+      aiSetSettings: (settings: Partial<AiPostProcessingSettings>) => Promise<void>;
+      aiTest: (text: string) => Promise<{
+        success: boolean;
+        processedText?: string;
+        changes?: TextChange[];
+        provider?: string;
+        latencyMs?: number;
+        error?: string;
+      }>;
 
       // History
       historyGet: (limit: number) => Promise<unknown[]>;
@@ -60,13 +105,7 @@ declare global {
       // Events
       onRecordingStarted: (callback: () => void) => () => void;
       onRecordingStopped: (callback: () => void) => () => void;
-      onTranscriptionComplete: (callback: (result: {
-        text: string;
-        success: boolean;
-        provider: string;
-        error?: string;
-        fallbackToClipboard?: boolean;
-      }) => void) => () => void;
+      onTranscriptionComplete: (callback: (result: TranscriptionResult) => void) => () => void;
       onNavigate: (callback: (path: string) => void) => () => void;
     };
   }
