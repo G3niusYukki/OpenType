@@ -20,7 +20,7 @@ class OpenTypeApp {
   private providerManager: ProviderManager;
   private transcriptionService: TranscriptionService;
   private aiPostProcessor: AiPostProcessor;
-  private keyboardMonitor: GlobalKeyboardMonitor;
+  private keyboardMonitors: Map<string, GlobalKeyboardMonitor> = new Map();
   private isRecording = false;
   private currentAudioPath: string | null = null;
   private recordingMode: RecordingMode = 'default';
@@ -33,7 +33,6 @@ class OpenTypeApp {
     this.textInserter = new TextInserter();
     this.providerManager = new ProviderManager(this.store);
     this.aiPostProcessor = new AiPostProcessor(this.store, this.providerManager);
-    this.keyboardMonitor = new GlobalKeyboardMonitor();
 
     // Detect system language for transcription
     const systemLang = process.env.LANG || process.env.LC_ALL || 'en-US';
@@ -96,7 +95,8 @@ class OpenTypeApp {
 
     app.on('will-quit', () => {
       globalShortcut.unregisterAll();
-      this.keyboardMonitor.stopMonitoring();
+      this.keyboardMonitors.forEach((monitor) => monitor.stopMonitoring());
+      this.keyboardMonitors.clear();
     });
   }
 
@@ -166,15 +166,30 @@ class OpenTypeApp {
     });
   }
 
+  private trayIcons: { idle: Electron.NativeImage; recording: Electron.NativeImage } | null = null;
+
+  private createTrayIcons(): { idle: Electron.NativeImage; recording: Electron.NativeImage } {
+    if (this.trayIcons) return this.trayIcons;
+
+    this.trayIcons = {
+      idle: nativeImage.createFromBuffer(Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMC4zjOaXUAAAAF5JREFUOE9j/P///38GMgAx8P///38GMoA0w5AJoGJIMwwZAFPD0A0g2QBkGgCrYegGANkAZBqAasg0ANUwZACuYcgAXMOQAbiGIQNwDUMG4BqGDMA1DBmAaxgyAAB5ZhjxX8s8RAAAAABJRU5ErkJggg==',
+        'base64'
+      )).resize({ width: 16, height: 16 }),
+      recording: nativeImage.createFromBuffer(Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMC4zjOaXUAAAAE5JREFUOE9j/P///38GMgAx8P///38GMoA0w5AJoGJIMwwZAFPD0A0g2QBkGgCrYegGANkAZBqAasg0ANUwZACuYcgAXMOQAbiGIQNwDUMG4BqGDMA1DBmAaxgyAAD5ZhjxX8s8RAAAAABJRU5ErkJggg==',
+        'base64'
+      )).resize({ width: 16, height: 16 }),
+    };
+
+    return this.trayIcons;
+  }
+
   private createTray(): void {
-    // Create a simple tray icon (1x1 transparent for placeholder)
-    const icon = nativeImage.createFromBuffer(Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMC4zjOaXUAAAAF5JREFUOE9j/P///38GMgAx8P///38GMoA0w5AJoGJIMwwZAFPD0A0g2QBkGgCrYegGANkAZBqAasg0ANUwZACuYcgAXMOQAbiGIQNwDUMG4BqGDMA1DBmAaxgyAAB5ZhjxX8s8RAAAAABJRU5ErkJggg==',
-      'base64'
-    ));
-    
-    this.tray = new Tray(icon.resize({ width: 16, height: 16 }));
-    
+    const icons = this.createTrayIcons();
+    this.tray = new Tray(icons.idle);
+    this.tray.setToolTip('OpenType - Click to dictate');
+
     const contextMenu = Menu.buildFromTemplate([
       {
         label: 'Start Dictation',
@@ -197,9 +212,8 @@ class OpenTypeApp {
       },
     ]);
 
-    this.tray.setToolTip('OpenType - Click to dictate');
     this.tray.setContextMenu(contextMenu);
-    
+
     this.tray.on('click', () => {
       this.toggleRecording();
     });
@@ -210,6 +224,10 @@ class OpenTypeApp {
   }
 
   private registerGlobalShortcuts(): void {
+    this.keyboardMonitors.forEach((monitor) => monitor.stopMonitoring());
+    this.keyboardMonitors.clear();
+    globalShortcut.unregisterAll();
+
     const voiceInputModes = this.store.get('voiceInputModes') || {
       basicVoiceInput: true,
       handsFreeMode: true,
@@ -220,27 +238,26 @@ class OpenTypeApp {
     // Basic Voice Input (Default) - HOLD MODE
     if (voiceInputModes.basicVoiceInput !== false) {
       const hotkey = this.store.get('hotkey') || 'CommandOrControl+Shift+D';
-      // Parse hotkey to extract key and modifiers
       const { key, modifiers } = this.parseHotkey(hotkey);
       
-      this.keyboardMonitor.startMonitoring(
+      const monitor = new GlobalKeyboardMonitor('basic');
+      monitor.startMonitoring(
         key,
         modifiers,
         () => {
-          // KeyDown - Start recording
           if (!this.isRecording && !this.holdModeActive) {
             this.holdModeActive = true;
             this.startRecording('default');
           }
         },
         () => {
-          // KeyUp - Stop recording
           if (this.isRecording && this.holdModeActive) {
             this.holdModeActive = false;
             this.stopRecording();
           }
         }
       );
+      this.keyboardMonitors.set('basic', monitor);
       console.log(`[OpenType] Registered hold-to-speak shortcut: ${hotkey}`);
     }
 
@@ -250,7 +267,9 @@ class OpenTypeApp {
       const registered = globalShortcut.register(handsFreeHotkey, () => {
         this.toggleRecording('handsfree');
       });
-      if (!registered) {
+      if (registered) {
+        console.log(`[OpenType] Registered hands-free toggle shortcut: ${handsFreeHotkey}`);
+      } else {
         console.error('[OpenType] Failed to register hands-free shortcut');
       }
     }
@@ -260,7 +279,8 @@ class OpenTypeApp {
       const translateHotkey = this.store.get('translateHotkey') || 'CommandOrControl+Shift+T';
       const { key, modifiers } = this.parseHotkey(translateHotkey);
       
-      this.keyboardMonitor.startMonitoring(
+      const monitor = new GlobalKeyboardMonitor('translate');
+      monitor.startMonitoring(
         key,
         modifiers,
         () => {
@@ -276,6 +296,7 @@ class OpenTypeApp {
           }
         }
       );
+      this.keyboardMonitors.set('translate', monitor);
       console.log(`[OpenType] Registered translate shortcut: ${translateHotkey}`);
     }
 
@@ -284,7 +305,8 @@ class OpenTypeApp {
       const editTextHotkey = this.store.get('editTextHotkey') || 'CommandOrControl+Shift+E';
       const { key, modifiers } = this.parseHotkey(editTextHotkey);
       
-      this.keyboardMonitor.startMonitoring(
+      const monitor = new GlobalKeyboardMonitor('edit');
+      monitor.startMonitoring(
         key,
         modifiers,
         () => {
@@ -300,6 +322,7 @@ class OpenTypeApp {
           }
         }
       );
+      this.keyboardMonitors.set('edit', monitor);
       console.log(`[OpenType] Registered edit text shortcut: ${editTextHotkey}`);
     }
   }
@@ -733,14 +756,15 @@ class OpenTypeApp {
   }
 
   private updateHotkey(_newHotkey: string): void {
-    globalShortcut.unregisterAll();
-    this.keyboardMonitor.stopMonitoring();
     this.registerGlobalShortcuts();
   }
 
   private updateTrayIcon(): void {
-    // Update tray icon based on recording state
-    this.tray?.setToolTip(this.isRecording ? 'OpenType - Recording...' : 'OpenType - Click to dictate');
+    if (!this.tray) return;
+
+    const icons = this.createTrayIcons();
+    this.tray.setImage(this.isRecording ? icons.recording : icons.idle);
+    this.tray.setToolTip(this.isRecording ? 'OpenType - Recording...' : 'OpenType - Click to dictate');
   }
 
   private showWindow(): void {
@@ -763,7 +787,8 @@ class OpenTypeApp {
     const cleanup = () => {
       console.log('[OpenType] Cleaning up before exit...');
       globalShortcut.unregisterAll();
-      this.keyboardMonitor.stopMonitoring();
+      this.keyboardMonitors.forEach((monitor) => monitor.stopMonitoring());
+      this.keyboardMonitors.clear();
       this.tray?.destroy();
       app.quit();
     };
