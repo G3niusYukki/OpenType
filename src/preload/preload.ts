@@ -37,13 +37,41 @@ export interface ElectronAPI {
   windowHide: () => Promise<void>;
   windowShow: () => Promise<void>;
 
-  // Text
-  textInsert: (text: string) => Promise<boolean>;
+  // Text insertion
+  textInsert: (text: string) => Promise<{
+    success: boolean;
+    method: 'paste' | 'clipboard' | 'type' | 'failed';
+    error?: string;
+    text: string;
+    accessibilityRequired?: boolean;
+  }>;
+
+  // System status
+  systemGetStatus: () => Promise<{
+    audio: {
+      ffmpegAvailable: boolean;
+      hasAudioDevices: boolean;
+      deviceCount: number;
+    };
+    transcription: {
+      whisperInstalled: boolean;
+      modelAvailable: boolean;
+      hasCloudProvider: boolean;
+      activeProvider?: string;
+      recommendations: string[];
+    };
+  }>;
 
   // Events
   onRecordingStarted: (callback: () => void) => () => void;
   onRecordingStopped: (callback: () => void) => () => void;
-  onTranscriptionComplete: (callback: (text: string) => void) => () => void;
+  onTranscriptionComplete: (callback: (result: { 
+    text: string; 
+    success: boolean; 
+    provider: string; 
+    error?: string;
+    fallbackToClipboard?: boolean;
+  }) => void) => () => void;
   onNavigate: (callback: (path: string) => void) => () => void;
 }
 
@@ -80,6 +108,15 @@ const api: ElectronAPI = {
   // Text
   textInsert: (text: string) => ipcRenderer.invoke('text:insert', text),
 
+  // System status
+  systemGetStatus: async () => {
+    const [audio, transcription] = await Promise.all([
+      ipcRenderer.invoke('audio:status'),
+      ipcRenderer.invoke('transcription:status')
+    ]);
+    return { audio, transcription };
+  },
+
   // Events
   onRecordingStarted: (callback: () => void) => {
     const handler = () => callback();
@@ -91,8 +128,14 @@ const api: ElectronAPI = {
     ipcRenderer.on('recording:stopped', handler);
     return () => ipcRenderer.off('recording:stopped', handler);
   },
-  onTranscriptionComplete: (callback: (text: string) => void) => {
-    const handler = (_: unknown, text: string) => callback(text);
+  onTranscriptionComplete: (callback: (result: { 
+    text: string; 
+    success: boolean; 
+    provider: string; 
+    error?: string;
+    fallbackToClipboard?: boolean;
+  }) => void) => {
+    const handler = (_: unknown, result: unknown) => callback(result as any);
     ipcRenderer.on('transcription:complete', handler);
     return () => ipcRenderer.off('transcription:complete', handler);
   },

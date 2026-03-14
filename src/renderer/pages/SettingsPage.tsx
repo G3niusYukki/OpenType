@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Keyboard, Globe, Zap, Check, AlertCircle } from 'lucide-react';
+import { Keyboard, Globe, Zap, Check, AlertCircle, Terminal, ExternalLink } from 'lucide-react';
 
 interface Provider {
   id: string;
@@ -18,6 +18,21 @@ interface ProviderConfig {
   model?: string;
 }
 
+interface SystemStatus {
+  audio: {
+    ffmpegAvailable: boolean;
+    hasAudioDevices: boolean;
+    deviceCount: number;
+  };
+  transcription: {
+    whisperInstalled: boolean;
+    modelAvailable: boolean;
+    hasCloudProvider: boolean;
+    activeProvider?: string;
+    recommendations: string[];
+  };
+}
+
 export function SettingsPage() {
   const [hotkey, setHotkey] = useState('CommandOrControl+Shift+D');
   const [language, setLanguage] = useState('en-US');
@@ -26,10 +41,12 @@ export function SettingsPage() {
   const [providerConfigs, setProviderConfigs] = useState<Record<string, ProviderConfig>>({});
   const [testingProvider, setTestingProvider] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ id: string; success: boolean; error?: string } | null>(null);
+  const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
 
   useEffect(() => {
     loadSettings();
     loadProviders();
+    loadSystemStatus();
   }, []);
 
   const loadSettings = async () => {
@@ -59,6 +76,15 @@ export function SettingsPage() {
     setProviderConfigs(configMap);
   };
 
+  const loadSystemStatus = async () => {
+    try {
+      const status = await window.electronAPI.systemGetStatus();
+      setSystemStatus(status);
+    } catch (error) {
+      console.error('Failed to load system status:', error);
+    }
+  };
+
   const saveHotkey = async (value: string) => {
     setHotkey(value);
     await window.electronAPI.storeSet('hotkey', value);
@@ -84,6 +110,11 @@ export function SettingsPage() {
       ...prev,
       [providerId]: updated,
     }));
+    
+    // Refresh system status when provider changes
+    if (updates.enabled !== undefined || updates.apiKey !== undefined) {
+      setTimeout(loadSystemStatus, 100);
+    }
   };
 
   const testProvider = async (providerId: string) => {
@@ -107,6 +138,134 @@ export function SettingsPage() {
         Settings
       </h1>
 
+      {/* System Status Section */}
+      <section style={{ marginBottom: '40px' }}>
+        <h2 style={{
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#666',
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          marginBottom: '20px',
+        }}
+        >
+          System Status
+        </h2>
+
+        <div style={{
+          background: '#161616',
+          border: '1px solid #222',
+          borderRadius: '12px',
+          padding: '24px',
+        }}
+        >
+          {systemStatus ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Dependencies */}
+              <div>
+                <h3 style={{ fontSize: '13px', color: '#888', marginBottom: '12px' }}>Dependencies</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <StatusRow
+                    label="ffmpeg"
+                    status={systemStatus.audio.ffmpegAvailable ? 'ready' : 'missing'}
+                    description={systemStatus.audio.ffmpegAvailable ? 'Installed' : 'Required for recording'}
+                  />
+                  <StatusRow
+                    label="Microphone"
+                    status={systemStatus.audio.hasAudioDevices ? 'ready' : 'missing'}
+                    description={`${systemStatus.audio.deviceCount} device(s) found`}
+                  />
+                  <StatusRow
+                    label="whisper.cpp"
+                    status={systemStatus.transcription.whisperInstalled ? 'ready' : 'missing'}
+                    description={systemStatus.transcription.whisperInstalled ? 'Installed' : 'Not found'}
+                  />
+                  <StatusRow
+                    label="Model file"
+                    status={systemStatus.transcription.modelAvailable ? 'ready' : 'missing'}
+                    description={systemStatus.transcription.modelAvailable ? 'Found' : 'Not found'}
+                  />
+                </div>
+                
+                {!systemStatus.audio.ffmpegAvailable && (
+                  <SetupHint
+                    title="ffmpeg not found"
+                    command="brew install ffmpeg"
+                    description="ffmpeg is required to record audio from your microphone."
+                  />
+                )}
+                
+                {!systemStatus.transcription.whisperInstalled && !systemStatus.transcription.hasCloudProvider && (
+                  <SetupHint
+                    title="whisper.cpp not found"
+                    command="brew install whisper.cpp"
+                    description="Install whisper.cpp for local transcription, or configure a cloud provider below."
+                  />
+                )}
+                
+                {!systemStatus.transcription.modelAvailable && systemStatus.transcription.whisperInstalled && (
+                  <SetupHint
+                    title="Whisper model not found"
+                    command="mkdir -p ~/Library/Application\ Support/OpenType/models && curl -L -o ~/Library/Application\\ Support/OpenType/models/ggml-base.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin"
+                    description="Download a Whisper model to enable local transcription. Base model (~74MB) recommended for most users."
+                  />
+                )}
+              </div>
+
+              {/* Active Provider */}
+              {systemStatus.transcription.activeProvider && (
+                <div style={{
+                  padding: '12px 16px',
+                  background: 'rgba(34, 197, 94, 0.1)',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(34, 197, 94, 0.2)',
+                }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Check size={16} color="#22c55e" />
+                    <span style={{ color: '#22c55e', fontWeight: 500 }}>
+                      Ready to transcribe
+                    </span>
+                    <span style={{ color: '#666', marginLeft: 'auto', fontSize: '13px' }}>
+                      Using {systemStatus.transcription.activeProvider === 'whisper.cpp' ? 'local' : 'cloud'} transcription
+                    </span>
+                  </div>
+                </div>
+              )}
+              
+              {!systemStatus.transcription.activeProvider && (
+                <div style={{
+                  padding: '12px 16px',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(239, 68, 68, 0.2)',
+                }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <AlertCircle size={16} color="#ef4444" />
+                    <span style={{ color: '#ef4444', fontWeight: 500 }}>
+                      No transcription provider configured
+                    </span>
+                  </div>
+                  <p style={{ 
+                    margin: '8px 0 0 0', 
+                    fontSize: '12px', 
+                    color: '#888',
+                    paddingLeft: '24px'
+                  }}>
+                    Install whisper.cpp + model for local transcription, or add an OpenAI API key below.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ color: '#666', textAlign: 'center', padding: '20px' }}>
+              Loading system status...
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* General Section */}
       <section style={{ marginBottom: '40px' }}>
         <h2 style={{
@@ -116,7 +275,8 @@ export function SettingsPage() {
           textTransform: 'uppercase',
           letterSpacing: '0.1em',
           marginBottom: '20px',
-        }}>
+        }}
+        >
           General
         </h2>
 
@@ -136,7 +296,8 @@ export function SettingsPage() {
               fontWeight: 500,
               color: '#ccc',
               marginBottom: '8px',
-            }}>
+            }}
+            >
               <Keyboard size={16} /> Global Hotkey
             </label>
             <input
@@ -157,7 +318,8 @@ export function SettingsPage() {
               fontSize: '12px',
               color: '#555',
               marginTop: '6px',
-            }}>
+            }}
+            >
               Format: CommandOrControl+Shift+D, Option+Space, etc.
             </p>
           </div>
@@ -172,7 +334,8 @@ export function SettingsPage() {
               fontWeight: 500,
               color: '#ccc',
               marginBottom: '8px',
-            }}>
+            }}
+            >
               <Globe size={16} /> Language
             </label>
             <select
@@ -206,7 +369,8 @@ export function SettingsPage() {
               alignItems: 'center',
               gap: '12px',
               cursor: 'pointer',
-            }}>
+            }}
+            >
               <input
                 type="checkbox"
                 checked={autoPunctuation}
@@ -223,14 +387,16 @@ export function SettingsPage() {
                   fontWeight: 500,
                   color: '#ccc',
                   margin: 0,
-                }}>
+                }}
+                >
                   Auto-punctuation
                 </p>
                 <p style={{
                   fontSize: '12px',
                   color: '#555',
                   margin: 0,
-                }}>
+                }}
+                >
                   Automatically add periods and commas
                 </p>
               </div>
@@ -248,7 +414,8 @@ export function SettingsPage() {
           textTransform: 'uppercase',
           letterSpacing: '0.1em',
           marginBottom: '20px',
-        }}>
+        }}
+        >
           AI Providers (BYOK)
         </h2>
 
@@ -273,21 +440,24 @@ export function SettingsPage() {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   marginBottom: config.enabled ? '16px' : 0,
-                }}>
+                }}
+                >
                   <div>
                     <h3 style={{
                       fontSize: '16px',
                       fontWeight: 600,
                       color: '#fff',
                       margin: '0 0 4px 0',
-                    }}>
+                    }}
+                    >
                       {provider.name}
                     </h3>
                     <p style={{
                       fontSize: '13px',
                       color: '#666',
                       margin: 0,
-                    }}>
+                    }}
+                    >
                       {provider.description}
                     </p>
                   </div>
@@ -316,7 +486,8 @@ export function SettingsPage() {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '12px',
-                  }}>
+                  }}
+                  >
                     {provider.requireApiKey && (
                       <div>
                         <label style={{
@@ -324,7 +495,8 @@ export function SettingsPage() {
                           color: '#666',
                           marginBottom: '6px',
                           display: 'block',
-                        }}>
+                        }}
+                        >
                           API Key
                         </label>
                         <input
@@ -352,7 +524,8 @@ export function SettingsPage() {
                           color: '#666',
                           marginBottom: '6px',
                           display: 'block',
-                        }}>
+                        }}
+                        >
                           Base URL
                         </label>
                         <input
@@ -377,7 +550,8 @@ export function SettingsPage() {
                       alignItems: 'center',
                       gap: '12px',
                       marginTop: '4px',
-                    }}>
+                    }}
+                    >
                       <button
                         onClick={() => testProvider(provider.id)}
                         disabled={isTesting}
@@ -406,7 +580,8 @@ export function SettingsPage() {
                           gap: '4px',
                           fontSize: '13px',
                           color: testRes.success ? '#22c55e' : '#ef4444',
-                        }}>
+                        }}
+                        >
                           {testRes.success ? (
                             <><Check size={14} /> Connected</>
                           ) : (
@@ -422,6 +597,120 @@ export function SettingsPage() {
           })}
         </div>
       </section>
+    </div>
+  );
+}
+
+// Helper Components
+
+interface StatusRowProps {
+  label: string;
+  status: 'ready' | 'missing' | 'optional';
+  description: string;
+}
+
+function StatusRow({ label, status, description }: StatusRowProps) {
+  const colors = {
+    ready: '#22c55e',
+    missing: '#ef4444',
+    optional: '#f59e0b',
+  };
+
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      padding: '8px 12px',
+      background: 'rgba(0,0,0,0.2)',
+      borderRadius: '6px',
+      fontSize: '13px',
+    }}
+    >
+      {status === 'ready' ? (
+        <Check size={14} color={colors[status]} />
+      ) : status === 'missing' ? (
+        <AlertCircle size={14} color={colors[status]} />
+      ) : (
+        <Zap size={14} color={colors[status]} />
+      )}
+      <span style={{ fontWeight: 500, color: colors[status] }}>{label}</span>
+      <span style={{ color: '#666', marginLeft: 'auto', fontSize: '12px' }}>{description}</span>
+    </div>
+  );
+}
+
+interface SetupHintProps {
+  title: string;
+  command: string;
+  description: string;
+}
+
+function SetupHint({ title, command, description }: SetupHintProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(command);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div style={{
+      marginTop: '12px',
+      padding: '12px 16px',
+      background: 'rgba(239, 68, 68, 0.05)',
+      borderRadius: '8px',
+      border: '1px solid rgba(239, 68, 68, 0.2)',
+    }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+        <Terminal size={14} color="#ef4444" />
+        <span style={{ fontSize: '13px', fontWeight: 500, color: '#ef4444' }}>{title}</span>
+      </div>
+      
+      <p style={{ fontSize: '12px', color: '#888', margin: '4px 0 8px', lineHeight: 1.4 }}>
+        {description}
+      </p>
+      
+      <div style={{
+        display: 'flex',
+        gap: '8px',
+        alignItems: 'center',
+      }}
+      >
+        <code style={{
+          flex: 1,
+          background: 'rgba(0,0,0,0.3)',
+          padding: '8px 12px',
+          borderRadius: '6px',
+          fontSize: '11px',
+          color: '#aaa',
+          fontFamily: 'monospace',
+          overflow: 'auto',
+        }}
+        >
+          {command}
+        </code>
+        
+        <button
+          onClick={handleCopy}
+          style={{
+            padding: '8px 12px',
+            background: copied ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255,255,255,0.1)',
+            border: 'none',
+            borderRadius: '6px',
+            color: copied ? '#22c55e' : '#888',
+            fontSize: '12px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+          }}
+        >
+          {copied ? <><Check size={12} /> Copied</> : <><ExternalLink size={12} /> Copy</>}
+        </button>
+      </div>
     </div>
   );
 }

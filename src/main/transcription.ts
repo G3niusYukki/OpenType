@@ -7,12 +7,23 @@ import { execFile } from 'child_process';
 
 const execFileAsync = promisify(execFile);
 
+export interface TranscriptionStatus {
+  whisperInstalled: boolean;
+  modelAvailable: boolean;
+  whisperPath?: string;
+  modelPath?: string;
+  recommendations: string[];
+  hasCloudProvider: boolean;
+  activeProvider?: string;
+}
+
 export interface TranscriptionResult {
   success: boolean;
   text?: string;
   error?: string;
   provider: 'whisper.cpp' | 'openai' | 'local' | 'none';
   duration?: number;
+  fallbackToClipboard?: boolean;
 }
 
 export interface TranscriptionConfig {
@@ -46,13 +57,7 @@ export class TranscriptionService {
   /**
    * Check system capabilities and return status
    */
-  async getStatus(): Promise<{
-    whisperInstalled: boolean;
-    modelAvailable: boolean;
-    whisperPath?: string;
-    modelPath?: string;
-    recommendations: string[];
-  }> {
+  async getStatus(openaiKey?: string): Promise<TranscriptionStatus> {
     const recommendations: string[] = [];
     
     // Check whisper.cpp
@@ -63,19 +68,33 @@ export class TranscriptionService {
     const modelPath = this.findModelPath();
     const hasModel = modelPath ? fs.existsSync(modelPath) : false;
     
+    // Check cloud provider
+    const hasCloudProvider = !!openaiKey;
+    let activeProvider: string | undefined;
+    
+    if (whisperInstalled && hasModel) {
+      activeProvider = 'whisper.cpp';
+    } else if (hasCloudProvider) {
+      activeProvider = 'openai';
+    }
+
     if (!whisperInstalled) {
       recommendations.push(
         'Install whisper.cpp for local transcription:',
-        '  brew install whisper.cpp',
-        '  OR build from source: https://github.com/ggerganov/whisper.cpp'
+        '  brew install whisper.cpp'
       );
     }
     
     if (!hasModel) {
       recommendations.push(
-        'Download a Whisper model (~100MB for base, ~500MB for small):',
-        '  curl -L -o models/ggml-base.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin',
-        'Available models: tiny (39MB), base (74MB), small (466MB), medium (1.5GB), large (3.1GB)'
+        'Download a Whisper model (~74MB for base):',
+        '  curl -L -o ~/Library/Application\ Support/OpenType/models/ggml-base.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin'
+      );
+    }
+    
+    if (!whisperInstalled && !hasCloudProvider) {
+      recommendations.push(
+        'Or add an OpenAI API key in Settings for cloud transcription'
       );
     }
 
@@ -84,7 +103,9 @@ export class TranscriptionService {
       modelAvailable: hasModel,
       whisperPath: whisperPath || undefined,
       modelPath: hasModel ? (modelPath || undefined) : undefined,
-      recommendations
+      recommendations,
+      hasCloudProvider,
+      activeProvider
     };
   }
 

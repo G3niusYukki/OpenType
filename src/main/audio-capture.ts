@@ -12,6 +12,15 @@ export interface AudioCaptureResult {
   audioPath?: string;
   error?: string;
   isPlaceholder?: boolean;
+  errorCode?: 'ffmpeg-missing' | 'mic-permission' | 'unknown';
+}
+
+export interface AudioDeviceStatus {
+  available: boolean;
+  deviceCount: number;
+  devices: Array<{ index: string; name: string }>;
+  hasFfmpeg: boolean;
+  permissionStatus?: 'granted' | 'denied' | 'unknown';
 }
 
 /**
@@ -39,6 +48,36 @@ export class AudioCapture {
     } catch {
       this.ffmpegAvailable = false;
       return false;
+    }
+  }
+
+  /**
+   * Get comprehensive audio capture status including ffmpeg and devices
+   */
+  async getStatus(): Promise<{
+    ffmpegAvailable: boolean;
+    hasAudioDevices: boolean;
+    deviceCount: number;
+    devices: Array<{ index: string; name: string }>;
+  }> {
+    try {
+      const hasFfmpeg = await this.checkFfmpeg();
+      const devices = hasFfmpeg ? await this.getAudioDevices() : [];
+      
+      return {
+        ffmpegAvailable: hasFfmpeg,
+        hasAudioDevices: devices.length > 0,
+        deviceCount: devices.length,
+        devices
+      };
+    } catch (error) {
+      console.error('[AudioCapture] Failed to get status:', error);
+      return {
+        ffmpegAvailable: false,
+        hasAudioDevices: false,
+        deviceCount: 0,
+        devices: []
+      };
     }
   }
 

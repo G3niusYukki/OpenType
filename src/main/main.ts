@@ -215,11 +215,20 @@ class OpenTypeApp {
     ipcMain.handle('window:show', () => this.showWindow());
     
     // Text insertion
-    ipcMain.handle('text:insert', (_, text: string) => this.textInserter.insert(text));
+    ipcMain.handle('text:insert', async (_, text: string) => {
+      return await this.textInserter.insert(text);
+    });
     
     // Transcription status
     ipcMain.handle('transcription:status', async () => {
-      return this.transcriptionService.getStatus();
+      const providers = this.store.get('providers');
+      const openaiProvider = providers.find(p => p.id === 'openai');
+      return this.transcriptionService.getStatus(openaiProvider?.apiKey);
+    });
+    
+    // Audio status
+    ipcMain.handle('audio:status', async () => {
+      return this.audioCapture.getStatus();
     });
     
     // Audio devices
@@ -312,7 +321,7 @@ class OpenTypeApp {
     return this.transcriptionService.transcribe(audioPath);
   }
 
-  private handleTranscriptionResult(audioPath: string, result: TranscriptionResult): void {
+  private async handleTranscriptionResult(audioPath: string, result: TranscriptionResult): Promise<void> {
     const text = result.text || '';
     const status = result.success ? 'completed' : 'error';
     
@@ -328,17 +337,33 @@ class OpenTypeApp {
       status,
     });
 
-    // Insert text if successful
+    // Insert text if successful and track fallback state
+    let fallbackToClipboard = false;
     if (result.success && finalText) {
-      this.textInserter.insert(finalText);
+      const insertResult = await this.textInserter.insert(finalText);
+      fallbackToClipboard = insertResult.method === 'clipboard';
+      
+      // Show accessibility warning if needed
+      if (insertResult.accessibilityRequired) {
+        this.mainWindow?.webContents.send('notification', {
+          type: 'warning',
+          title: 'Accessibility Permission Required',
+          message: 'OpenType needs Accessibility permission to paste text. Text has been copied to clipboard.',
+          action: {
+            label: 'Open Settings',
+            command: 'open:x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility'
+          }
+        });
+      }
     }
     
-    // Notify renderer
+    // Notify renderer with full result
     this.mainWindow?.webContents.send('transcription:complete', {
       text: finalText,
       success: result.success,
       provider: result.provider,
-      error: result.error
+      error: result.error,
+      fallbackToClipboard
     });
   }
 

@@ -32,13 +32,41 @@ declare global {
       windowHide: () => Promise<void>;
       windowShow: () => Promise<void>;
 
-      // Text
-      textInsert: (text: string) => Promise<boolean>;
+      // Text insertion with detailed result
+      textInsert: (text: string) => Promise<{
+        success: boolean;
+        method: 'paste' | 'clipboard' | 'type' | 'failed';
+        error?: string;
+        text: string;
+        accessibilityRequired?: boolean;
+      }>;
+
+      // System status
+      systemGetStatus: () => Promise<{
+        audio: {
+          ffmpegAvailable: boolean;
+          hasAudioDevices: boolean;
+          deviceCount: number;
+        };
+        transcription: {
+          whisperInstalled: boolean;
+          modelAvailable: boolean;
+          hasCloudProvider: boolean;
+          activeProvider?: string;
+          recommendations: string[];
+        };
+      }>;
 
       // Events
       onRecordingStarted: (callback: () => void) => () => void;
       onRecordingStopped: (callback: () => void) => () => void;
-      onTranscriptionComplete: (callback: (text: string) => void) => () => void;
+      onTranscriptionComplete: (callback: (result: {
+        text: string;
+        success: boolean;
+        provider: string;
+        error?: string;
+        fallbackToClipboard?: boolean;
+      }) => void) => () => void;
       onNavigate: (callback: (path: string) => void) => () => void;
     };
   }
