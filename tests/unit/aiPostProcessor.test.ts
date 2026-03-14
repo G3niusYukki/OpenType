@@ -77,7 +77,7 @@ describe('AiPostProcessor', () => {
       expect(prompt).toContain('删除填充词');
       expect(prompt).toContain('删除重复词语');
       expect(prompt).toContain('检测自我修正');
-      expect(prompt).toContain('中文');
+      expect(prompt).toContain('优化规则');
     });
 
     it('should build English prompt with all options enabled', () => {
