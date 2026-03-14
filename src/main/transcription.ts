@@ -44,6 +44,7 @@ export interface TranscriptionConfig {
   language?: string;
   useLocalFirst: boolean;
   cloudProviders?: CloudProviderConfig[];
+  preferredProvider?: 'local' | 'cloud' | 'auto';
   // Legacy OpenAI key support for backward compatibility
   openaiApiKey?: string;
 }
@@ -116,18 +117,37 @@ export class TranscriptionService {
     const activeCloudProvider = providersToCheck.find(p => p.enabled && p.apiKey);
     const hasCloudProvider = !!activeCloudProvider || !!this.config.openaiApiKey;
     
-    // Determine active provider
+    // Determine active provider based on preference
     let activeProvider: string | undefined;
     let cloudProviderType: CloudProviderType | undefined;
     
-    if (whisperInstalled && hasModel) {
+    const preferred = this.config.preferredProvider || 'auto';
+    
+    if (preferred === 'local' && whisperInstalled && hasModel) {
+      activeProvider = 'whisper.cpp';
+    } else if (preferred === 'cloud' && activeCloudProvider) {
+      activeProvider = activeCloudProvider.name;
+      cloudProviderType = activeCloudProvider.id;
+    } else if (preferred === 'cloud' && this.config.openaiApiKey) {
+      activeProvider = 'OpenAI';
+      cloudProviderType = 'openai';
+    } else if (preferred === 'auto') {
+      // Auto mode: prefer local if available, fallback to cloud
+      if (whisperInstalled && hasModel) {
+        activeProvider = 'whisper.cpp';
+      } else if (activeCloudProvider) {
+        activeProvider = activeCloudProvider.name;
+        cloudProviderType = activeCloudProvider.id;
+      } else if (this.config.openaiApiKey) {
+        activeProvider = 'OpenAI';
+        cloudProviderType = 'openai';
+      }
+    } else if (whisperInstalled && hasModel) {
+      // Fallback for invalid preference
       activeProvider = 'whisper.cpp';
     } else if (activeCloudProvider) {
       activeProvider = activeCloudProvider.name;
       cloudProviderType = activeCloudProvider.id;
-    } else if (this.config.openaiApiKey) {
-      activeProvider = 'OpenAI';
-      cloudProviderType = 'openai';
     }
 
     if (!whisperInstalled) {

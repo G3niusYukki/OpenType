@@ -43,13 +43,13 @@ export function MainLayout({ children, currentPage, onNavigate }: MainLayoutProp
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          padding: '16px 0',
+          padding: '28px 0 16px 0',
           ...dragRegion,
         }}
       >
         <div
           style={{
-            marginBottom: '32px',
+            marginBottom: '24px',
             ...noDragRegion,
           }}
         >

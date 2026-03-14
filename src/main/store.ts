@@ -28,6 +28,7 @@ export interface AppSettings {
   language: string;
   autoPunctuation: boolean;
   providers: ProviderConfig[];
+  preferredProvider: 'local' | 'cloud' | 'auto';
 }
 
 type ExtraStoreData = {
@@ -40,6 +41,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   outputMode: 'paste',
   language: 'en-US',
   autoPunctuation: true,
+  preferredProvider: 'auto',
   providers: [
     { id: 'openai', name: 'OpenAI', enabled: false },
     { id: 'anthropic', name: 'Anthropic', enabled: false },

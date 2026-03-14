@@ -26,6 +26,7 @@ class OpenTypeApp {
     this.transcriptionService = new TranscriptionService({
       language: this.store.get('language')?.split('-')[0] || 'en',
       useLocalFirst: true,
+      preferredProvider: this.store.get('preferredProvider') || 'auto',
       cloudProviders: this.getCloudProviderConfigs()
     });
   }
@@ -204,6 +205,11 @@ class OpenTypeApp {
       if (key === 'language' && typeof value === 'string') {
         this.transcriptionService.updateConfig({
           language: value.split('-')[0]
+        });
+      }
+      if (key === 'preferredProvider' && typeof value === 'string') {
+        this.transcriptionService.updateConfig({
+          preferredProvider: value as 'local' | 'cloud' | 'auto'
         });
       }
     });

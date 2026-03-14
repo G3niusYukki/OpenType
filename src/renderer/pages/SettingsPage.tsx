@@ -39,6 +39,7 @@ export function SettingsPage() {
   const [hotkey, setHotkey] = useState('CommandOrControl+Shift+D');
   const [language, setLanguage] = useState('en-US');
   const [autoPunctuation, setAutoPunctuation] = useState(true);
+  const [preferredProvider, setPreferredProvider] = useState<'local' | 'cloud' | 'auto'>('auto');
   const [providers, setProviders] = useState<Provider[]>([]);
   const [providerConfigs, setProviderConfigs] = useState<Record<string, ProviderConfig>>({});
   const [testingProvider, setTestingProvider] = useState<string | null>(null);
@@ -52,15 +53,17 @@ export function SettingsPage() {
   }, []);
 
   const loadSettings = async () => {
-    const [savedHotkey, savedLanguage, savedPunctuation] = await Promise.all([
+    const [savedHotkey, savedLanguage, savedPunctuation, savedPreferredProvider] = await Promise.all([
       window.electronAPI.storeGet('hotkey'),
       window.electronAPI.storeGet('language'),
       window.electronAPI.storeGet('autoPunctuation'),
+      window.electronAPI.storeGet('preferredProvider'),
     ]);
     
     if (savedHotkey) setHotkey(savedHotkey as string);
     if (savedLanguage) setLanguage(savedLanguage as string);
     if (savedPunctuation !== undefined) setAutoPunctuation(savedPunctuation as boolean);
+    if (savedPreferredProvider) setPreferredProvider(savedPreferredProvider as 'local' | 'cloud' | 'auto');
   };
 
   const loadProviders = async () => {
@@ -100,6 +103,13 @@ export function SettingsPage() {
   const saveAutoPunctuation = async (value: boolean) => {
     setAutoPunctuation(value);
     await window.electronAPI.storeSet('autoPunctuation', value);
+  };
+
+  const savePreferredProvider = async (value: 'local' | 'cloud' | 'auto') => {
+    setPreferredProvider(value);
+    await window.electronAPI.storeSet('preferredProvider', value);
+    // Refresh system status to update active provider display
+    setTimeout(loadSystemStatus, 100);
   };
 
   const updateProviderConfig = async (providerId: string, updates: Partial<ProviderConfig>) => {
@@ -365,7 +375,7 @@ export function SettingsPage() {
           </div>
 
           {/* Auto Punctuation */}
-          <div>
+          <div style={{ marginBottom: '24px' }}>
             <label style={{
               display: 'flex',
               alignItems: 'center',
@@ -403,6 +413,47 @@ export function SettingsPage() {
                 </p>
               </div>
             </label>
+          </div>
+
+          {/* Preferred Provider */}
+          <div>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: '#ccc',
+              marginBottom: '8px',
+            }}
+            >
+              <Zap size={16} /> Preferred Provider
+            </label>
+            <select
+              value={preferredProvider}
+              onChange={(e) => savePreferredProvider(e.target.value as 'local' | 'cloud' | 'auto')}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                background: '#0f0f0f',
+                border: '1px solid #2a2a2a',
+                borderRadius: '8px',
+                color: '#fff',
+                fontSize: '14px',
+              }}
+            >
+              <option value="auto">Auto (Local first, fallback to Cloud)</option>
+              <option value="local">Local (whisper.cpp only)</option>
+              <option value="cloud">Cloud (API only)</option>
+            </select>
+            <p style={{
+              fontSize: '12px',
+              color: '#555',
+              marginTop: '6px',
+            }}
+            >
+              Choose which transcription provider to use
+            </p>
           </div>
         </div>
       </section>

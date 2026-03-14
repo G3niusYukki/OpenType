@@ -38,6 +38,11 @@ export interface Translations {
     outputModeType: string;
     autoPunctuation: string;
     autoPunctuationDescription: string;
+    preferredProvider: string;
+    preferredProviderDescription: string;
+    preferredProviderAuto: string;
+    preferredProviderLocal: string;
+    preferredProviderCloud: string;
     providers: string;
     providersDescription: string;
     audio: string;
@@ -156,6 +161,11 @@ export const en: Translations = {
     outputModeType: 'Type text',
     autoPunctuation: 'Auto Punctuation',
     autoPunctuationDescription: 'Automatically add punctuation to transcriptions',
+    preferredProvider: 'Preferred Provider',
+    preferredProviderDescription: 'Choose which transcription provider to use',
+    preferredProviderAuto: 'Auto (Local first, fallback to Cloud)',
+    preferredProviderLocal: 'Local (whisper.cpp only)',
+    preferredProviderCloud: 'Cloud (API only)',
     providers: 'AI Providers',
     providersDescription: 'Configure cloud transcription services',
     audio: 'Audio Settings',
@@ -269,6 +279,11 @@ export const zh: Translations = {
     outputModeType: '输入文本',
     autoPunctuation: '自动标点',
     autoPunctuationDescription: '自动为转录添加标点符号',
+    preferredProvider: '首选提供商',
+    preferredProviderDescription: '选择要使用的转录提供商',
+    preferredProviderAuto: '自动（本地优先，云端备用）',
+    preferredProviderLocal: '本地（仅 whisper.cpp）',
+    preferredProviderCloud: '云端（仅 API）',
     providers: 'AI 提供商',
     providersDescription: '配置云端转录服务',
     audio: '音频设置',
@@ -382,9 +397,14 @@ export const ja: Translations = {
     outputModeType: 'テキストを入力',
     autoPunctuation: '自動句読点',
     autoPunctuationDescription: '文字起こしに自動的に句読点を追加',
+    preferredProvider: '優先プロバイダー',
+    preferredProviderDescription: '使用する文字起こしプロバイダーを選択',
+    preferredProviderAuto: '自動（ローカル優先、クラウドフォールバック）',
+    preferredProviderLocal: 'ローカル（whisper.cpp のみ）',
+    preferredProviderCloud: 'クラウド（API のみ）',
     providers: 'AI プロバイダー',
     providersDescription: 'クラウド文字起こしサービスを設定',
-    audio: '音声設定',
+    audio: '音声設定', 
     audioDescription: '音声入力と録音設定を構成',
     about: 'について',
     version: 'バージョン',
@@ -495,6 +515,11 @@ export const ko: Translations = {
     outputModeType: '텍스트 입력',
     autoPunctuation: '자동 구두점',
     autoPunctuationDescription: '전사에 자동으로 구두점 추가',
+    preferredProvider: '선호 제공자',
+    preferredProviderDescription: '사용할 전사 제공자 선택',
+    preferredProviderAuto: '자동 (로컬 우선, 클라우드 폴스백)',
+    preferredProviderLocal: '로컬 (whisper.cpp 전용)',
+    preferredProviderCloud: '클우드 (API 전용)',
     providers: 'AI 제공자',
     providersDescription: '클우드 전사 서비스 구성',
     audio: '오디오 설정',
