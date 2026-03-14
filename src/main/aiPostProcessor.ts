@@ -85,7 +85,9 @@ export class AiPostProcessor {
     }
 
     try {
+      console.log(`[AiPostProcessor] Calling provider: ${provider.name} (${provider.id})`);
       const result = await this.callAiProvider(text, opts, provider);
+      console.log(`[AiPostProcessor] Result: success=${result.success}, text changed=${result.originalText !== result.processedText}`);
       return {
         ...result,
         latencyMs: Date.now() - startTime,
@@ -119,7 +121,11 @@ export class AiPostProcessor {
    * Check if AI post-processing is available (has configured provider)
    */
   isAvailable(): boolean {
-    return this.getActiveAiProvider() !== null;
+    const providers = this.store.get('providers') || [];
+    console.log('[AiPostProcessor] Checking availability. Providers:', providers.map((p: ProviderConfig) => ({ id: p.id, enabled: p.enabled, hasKey: !!p.apiKey })));
+    const available = this.getActiveAiProvider() !== null;
+    console.log('[AiPostProcessor] isAvailable:', available);
+    return available;
   }
 
   /**
@@ -455,6 +461,7 @@ Instructions:
     originalText: string,
     provider: ProviderConfig
   ): Promise<Omit<AiPostProcessingResult, 'latencyMs'>> {
+    console.log('[AiPostProcessor] Calling Groq API...');
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -462,7 +469,7 @@ Instructions:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: provider.model || 'llama-3.1-70b-versatile',
+        model: provider.model || 'llama-3.3-70b-versatile',
         messages: [
           { role: 'system', content: prompt },
           { role: 'user', content: originalText },
@@ -474,6 +481,7 @@ Instructions:
 
     if (!response.ok) {
       const error = await response.text();
+      console.error('[AiPostProcessor] Groq API error:', error);
       throw new Error(`Groq API error: ${error}`);
     }
 
@@ -482,7 +490,10 @@ Instructions:
       model: string;
     };
 
-    const processedText = data.choices[0]?.message?.content?.trim() || originalText;
+    const content = data.choices[0]?.message?.content?.trim();
+    console.log('[AiPostProcessor] Groq response:', content?.substring(0, 100));
+    
+    const processedText = content || originalText;
     
     return {
       success: true,

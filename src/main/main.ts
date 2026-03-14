@@ -586,6 +586,7 @@ class OpenTypeApp {
         } else {
           // Default mode with AI post-processing
           const aiSettings = this.store.get('aiPostProcessing');
+          console.log('[OpenType] AI Settings:', { enabled: aiSettings?.enabled, available: this.aiPostProcessor.isAvailable() });
           if (aiSettings?.enabled && this.aiPostProcessor.isAvailable()) {
             try {
               console.log('[OpenType] Starting AI post-processing...');

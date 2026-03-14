@@ -148,7 +148,8 @@ const POST_PROCESSING_PROVIDERS: Provider[] = [
     name: 'Groq',
     description: 'Use Groq LLM for post-processing',
     requireApiKey: true,
-    supportedModels: ['llama-3.1-70b', 'mixtral-8x7b'],
+    defaultModel: 'llama-3.3-70b-versatile',
+    supportedModels: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b'],
     category: 'post-processing',
   },
   {
