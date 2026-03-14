@@ -11,7 +11,7 @@ import { GlobalKeyboardMonitor } from './keyboard-monitor';
 
 type RecordingMode = 'default' | 'handsfree' | 'translate' | 'edit';
 
-class OpenTypeApp {
+export class OpenTypeApp {
   private mainWindow: BrowserWindow | null = null;
   private tray: Tray | null = null;
   private store: Store;
