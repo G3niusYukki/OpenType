@@ -45,10 +45,12 @@ class OpenTypeApp {
 
   private getCloudProviderConfigs(): CloudProviderConfig[] {
     const providers = this.store.get('providers');
-    const supportedProviders = ['openai', 'groq', 'anthropic', 'deepseek', 'zhipu', 'minimax', 'moonshot'];
+    // Only include providers that support audio transcription
+    // DeepSeek, Zhipu, MiniMax, Moonshot are text-only LLMs for post-processing, not audio transcription
+    const audioTranscriptionProviders = ['openai', 'groq'];
     return providers
-      .filter((p): p is ProviderConfig & { id: 'openai' | 'groq' | 'anthropic' | 'deepseek' | 'zhipu' | 'minimax' | 'moonshot'; apiKey: string } => 
-        p.enabled && !!p.apiKey && supportedProviders.includes(p.id)
+      .filter((p): p is ProviderConfig & { id: 'openai' | 'groq'; apiKey: string } => 
+        p.enabled && !!p.apiKey && audioTranscriptionProviders.includes(p.id)
       )
       .map(p => ({
         id: p.id,
