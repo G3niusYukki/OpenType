@@ -7,6 +7,17 @@ import { execFile } from 'child_process';
 
 const execFileAsync = promisify(execFile);
 
+export type CloudProviderType = 'openai' | 'groq' | 'anthropic';
+
+export interface CloudProviderConfig {
+  id: CloudProviderType;
+  name: string;
+  apiKey?: string;
+  baseUrl?: string;
+  model?: string;
+  enabled: boolean;
+}
+
 export interface TranscriptionStatus {
   whisperInstalled: boolean;
   modelAvailable: boolean;
@@ -15,13 +26,14 @@ export interface TranscriptionStatus {
   recommendations: string[];
   hasCloudProvider: boolean;
   activeProvider?: string;
+  cloudProviderType?: CloudProviderType;
 }
 
 export interface TranscriptionResult {
   success: boolean;
   text?: string;
   error?: string;
-  provider: 'whisper.cpp' | 'openai' | 'local' | 'none';
+  provider: 'whisper.cpp' | 'openai' | 'groq' | 'anthropic' | 'local' | 'none';
   duration?: number;
   fallbackToClipboard?: boolean;
 }
@@ -29,9 +41,11 @@ export interface TranscriptionResult {
 export interface TranscriptionConfig {
   whisperCppPath?: string;
   whisperModelPath?: string;
-  openaiApiKey?: string;
   language?: string;
   useLocalFirst: boolean;
+  cloudProviders?: CloudProviderConfig[];
+  // Legacy OpenAI key support for backward compatibility
+  openaiApiKey?: string;
 }
 
 /**
@@ -40,6 +54,8 @@ export interface TranscriptionConfig {
  * Supports:
  * - whisper.cpp (local, preferred)
  * - OpenAI Whisper API (cloud fallback)
+ * - Groq Whisper API (cloud fallback)
+ * - Other OpenAI-compatible providers
  * - Structured placeholder for missing dependencies
  */
 export class TranscriptionService {
@@ -50,14 +66,41 @@ export class TranscriptionService {
   constructor(config: TranscriptionConfig) {
     this.config = {
       language: 'en',
+      cloudProviders: [],
       ...config
     };
   }
 
   /**
+   * Get the active cloud provider (first enabled one in priority order)
+   */
+  private getActiveCloudProvider(): CloudProviderConfig | null {
+    const providers = this.config.cloudProviders || [];
+    
+    // Filter enabled providers with API keys
+    const enabledProviders = providers.filter(p => p.enabled && p.apiKey);
+    
+    if (enabledProviders.length === 0) {
+      // Legacy fallback: check for openaiApiKey directly
+      if (this.config.openaiApiKey) {
+        return {
+          id: 'openai',
+          name: 'OpenAI',
+          apiKey: this.config.openaiApiKey,
+          enabled: true
+        };
+      }
+      return null;
+    }
+    
+    // Return first enabled provider (priority order)
+    return enabledProviders[0];
+  }
+
+  /**
    * Check system capabilities and return status
    */
-  async getStatus(openaiKey?: string): Promise<TranscriptionStatus> {
+  async getStatus(cloudProviders?: CloudProviderConfig[]): Promise<TranscriptionStatus> {
     const recommendations: string[] = [];
     
     // Check whisper.cpp
@@ -68,14 +111,23 @@ export class TranscriptionService {
     const modelPath = this.findModelPath();
     const hasModel = modelPath ? fs.existsSync(modelPath) : false;
     
-    // Check cloud provider
-    const hasCloudProvider = !!openaiKey;
+    // Check cloud providers
+    const providersToCheck = cloudProviders || this.config.cloudProviders || [];
+    const activeCloudProvider = providersToCheck.find(p => p.enabled && p.apiKey);
+    const hasCloudProvider = !!activeCloudProvider || !!this.config.openaiApiKey;
+    
+    // Determine active provider
     let activeProvider: string | undefined;
+    let cloudProviderType: CloudProviderType | undefined;
     
     if (whisperInstalled && hasModel) {
       activeProvider = 'whisper.cpp';
-    } else if (hasCloudProvider) {
-      activeProvider = 'openai';
+    } else if (activeCloudProvider) {
+      activeProvider = activeCloudProvider.name;
+      cloudProviderType = activeCloudProvider.id;
+    } else if (this.config.openaiApiKey) {
+      activeProvider = 'OpenAI';
+      cloudProviderType = 'openai';
     }
 
     if (!whisperInstalled) {
@@ -94,7 +146,7 @@ export class TranscriptionService {
     
     if (!whisperInstalled && !hasCloudProvider) {
       recommendations.push(
-        'Or add an OpenAI API key in Settings for cloud transcription'
+        'Or configure a cloud provider (OpenAI, Groq, etc.) in Settings for cloud transcription'
       );
     }
 
@@ -105,7 +157,8 @@ export class TranscriptionService {
       modelPath: hasModel ? (modelPath || undefined) : undefined,
       recommendations,
       hasCloudProvider,
-      activeProvider
+      activeProvider,
+      cloudProviderType
     };
   }
 
@@ -133,31 +186,49 @@ export class TranscriptionService {
       };
     }
 
+    // Track errors for debugging
+    const errors: string[] = [];
+
     // Try whisper.cpp first if configured
     if (this.config.useLocalFirst) {
-      const localResult = await this.transcribeWithWhisperCpp(audioPath);
-      if (localResult.success) {
-        return {
-          ...localResult,
-          duration: Date.now() - startTime
-        };
+      try {
+        const localResult = await this.transcribeWithWhisperCpp(audioPath);
+        if (localResult.success) {
+          return {
+            ...localResult,
+            duration: Date.now() - startTime
+          };
+        }
+        errors.push(`whisper.cpp: ${localResult.error}`);
+        console.log('[Transcription] Local whisper.cpp failed, falling back:', localResult.error);
+      } catch (error: any) {
+        const errorMsg = error?.message || 'Unknown whisper.cpp error';
+        errors.push(`whisper.cpp exception: ${errorMsg}`);
+        console.error('[Transcription] whisper.cpp threw exception:', errorMsg);
       }
-      console.log('[Transcription] Local whisper.cpp failed, falling back:', localResult.error);
     }
 
-    // Try OpenAI API if configured
-    if (this.config.openaiApiKey) {
-      const openaiResult = await this.transcribeWithOpenAI(audioPath);
-      if (openaiResult.success) {
-        return {
-          ...openaiResult,
-          duration: Date.now() - startTime
-        };
+    // Try cloud providers in priority order
+    const cloudProvider = this.getActiveCloudProvider();
+    if (cloudProvider) {
+      try {
+        const cloudResult = await this.transcribeWithCloudProvider(audioPath, cloudProvider);
+        if (cloudResult.success) {
+          return {
+            ...cloudResult,
+            duration: Date.now() - startTime
+          };
+        }
+        errors.push(`${cloudProvider.name}: ${cloudResult.error}`);
+      } catch (error: any) {
+        const errorMsg = error?.message || `Unknown ${cloudProvider.name} error`;
+        errors.push(`${cloudProvider.name} exception: ${errorMsg}`);
+        console.error(`[Transcription] ${cloudProvider.name} threw exception:`, errorMsg);
       }
     }
 
     // Return structured failure with guidance
-    return this.createPlaceholderResult(audioPath);
+    return this.createPlaceholderResult(audioPath, errors);
   }
 
   /**
@@ -171,7 +242,7 @@ export class TranscriptionService {
       return {
         success: false,
         error: 'whisper.cpp not found. Install with: brew install whisper.cpp',
-        provider: 'whisper.cpp'
+        provider: 'local'
       };
     }
 
@@ -179,7 +250,7 @@ export class TranscriptionService {
       return {
         success: false,
         error: 'Whisper model not found. Download with instructions in README.',
-        provider: 'whisper.cpp'
+        provider: 'local'
       };
     }
 
@@ -209,8 +280,9 @@ export class TranscriptionService {
       ];
 
       const { stdout, stderr } = await execFileAsync(whisperPath, args, {
-        timeout: 60000, // 60 second timeout
-        encoding: 'utf8'
+        timeout: 120000, // 120 second timeout for larger files
+        encoding: 'utf8',
+        maxBuffer: 10 * 1024 * 1024 // 10MB buffer
       });
 
       // Read the output file
@@ -260,14 +332,17 @@ export class TranscriptionService {
   }
 
   /**
-   * Transcribe using OpenAI API
+   * Transcribe using a cloud provider (OpenAI, Groq, etc.)
    */
-  private async transcribeWithOpenAI(audioPath: string): Promise<TranscriptionResult> {
-    if (!this.config.openaiApiKey) {
+  private async transcribeWithCloudProvider(
+    audioPath: string, 
+    provider: CloudProviderConfig
+  ): Promise<TranscriptionResult> {
+    if (!provider.apiKey) {
       return {
         success: false,
-        error: 'OpenAI API key not configured',
-        provider: 'openai'
+        error: `${provider.name} API key not configured`,
+        provider: provider.id
       };
     }
 
@@ -278,65 +353,132 @@ export class TranscriptionService {
       
       const formData = new FormData();
       formData.append('file', fs.createReadStream(audioPath));
-      formData.append('model', 'whisper-1');
+      
+      // Determine model and endpoint based on provider
+      let endpoint: string;
+      let model: string;
+      
+      switch (provider.id) {
+        case 'groq':
+          endpoint = provider.baseUrl || 'https://api.groq.com/openai/v1/audio/transcriptions';
+          model = provider.model || 'whisper-large-v3';
+          break;
+        case 'openai':
+        default:
+          endpoint = provider.baseUrl || 'https://api.openai.com/v1/audio/transcriptions';
+          model = provider.model || 'whisper-1';
+          break;
+      }
+      
+      formData.append('model', model);
       formData.append('language', this.config.language || 'en');
+      
+      // Groq doesn't support response_format parameter, so we keep it minimal
 
-      const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      console.log(`[Transcription] Using ${provider.name} API at ${endpoint}`);
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.config.openaiApiKey}`,
+          'Authorization': `Bearer ${provider.apiKey}`,
           ...formData.getHeaders()
         },
         body: formData
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`OpenAI API error: ${error}`);
+        const errorText = await response.text();
+        let errorMessage: string;
+        
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error?.message || errorJson.message || errorText;
+        } catch {
+          errorMessage = errorText || `HTTP ${response.status}`;
+        }
+        
+        throw new Error(`${provider.name} API error: ${errorMessage}`);
       }
 
       const data = await response.json() as { text: string };
       
+      if (!data.text) {
+        return {
+          success: false,
+          error: `${provider.name} returned empty transcription`,
+          provider: provider.id
+        };
+      }
+      
       return {
         success: true,
         text: data.text,
-        provider: 'openai'
+        provider: provider.id
       };
     } catch (error: any) {
+      const errorMsg = error?.message || `${provider.name} transcription failed`;
+      console.error(`[Transcription] ${provider.name} failed:`, errorMsg);
+      
       return {
         success: false,
-        error: error?.message || 'OpenAI transcription failed',
-        provider: 'openai'
+        error: errorMsg,
+        provider: provider.id
       };
     }
   }
 
   /**
+   * Legacy: Transcribe using OpenAI API (maintained for backward compatibility)
+   */
+  private async transcribeWithOpenAI(audioPath: string): Promise<TranscriptionResult> {
+    if (!this.config.openaiApiKey) {
+      return {
+        success: false,
+        error: 'OpenAI API key not configured',
+        provider: 'openai'
+      };
+    }
+
+    const provider: CloudProviderConfig = {
+      id: 'openai',
+      name: 'OpenAI',
+      apiKey: this.config.openaiApiKey,
+      enabled: true
+    };
+
+    return this.transcribeWithCloudProvider(audioPath, provider);
+  }
+
+  /**
    * Create a placeholder result with setup instructions
    */
-  private createPlaceholderResult(audioPath: string): TranscriptionResult {
+  private createPlaceholderResult(audioPath: string, errors?: string[]): TranscriptionResult {
     const status = this.getQuickStatus();
+    const hasCloudConfig = this.getActiveCloudProvider() !== null;
     
     let text = '[Transcription unavailable - ';
     
-    if (!status.whisperInstalled && !this.config.openaiApiKey) {
+    if (!status.whisperInstalled && !hasCloudConfig && !this.config.openaiApiKey) {
       text += 'No transcription provider configured]\n\n';
       text += 'To enable dictation:\n';
       text += '1. Install whisper.cpp: brew install whisper.cpp\n';
       text += '2. Download a model (see README)\n';
-      text += '3. Or configure OpenAI API key in settings';
-    } else if (!status.modelAvailable) {
+      text += '3. Or configure a cloud provider (OpenAI, Groq, etc.) in settings';
+    } else if (!status.modelAvailable && status.whisperInstalled) {
       text += 'Whisper model not found]\n\n';
       text += 'Download a model to enable transcription:\n';
       text += 'curl -L -o models/ggml-base.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin';
     } else {
-      text += 'Transcription failed - check logs for details]';
+      text += 'All transcription providers failed]';
+      if (errors && errors.length > 0) {
+        text += '\n\nErrors:\n' + errors.map(e => `- ${e}`).join('\n');
+      }
     }
 
     return {
       success: false,
       text,
-      error: 'Transcription provider not available',
+      error: errors?.join('; ') || 'Transcription provider not available',
       provider: 'none'
     };
   }

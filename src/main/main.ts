@@ -1,10 +1,11 @@
 import { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, clipboard, nativeImage, dialog } from 'electron';
 import path from 'path';
-import { Store } from './store';
+import { Store, ProviderConfig } from './store';
 import { AudioCapture } from './audio-capture';
 import { TextInserter } from './text-inserter';
+import type { InsertionResult } from './text-inserter';
 import { ProviderManager } from './providers';
-import { TranscriptionService, TranscriptionResult } from './transcription';
+import { TranscriptionService, TranscriptionResult, CloudProviderConfig } from './transcription';
 
 class OpenTypeApp {
   private mainWindow: BrowserWindow | null = null;
@@ -25,14 +26,24 @@ class OpenTypeApp {
     this.transcriptionService = new TranscriptionService({
       language: this.store.get('language')?.split('-')[0] || 'en',
       useLocalFirst: true,
-      openaiApiKey: this.getOpenAIKey()
+      cloudProviders: this.getCloudProviderConfigs()
     });
   }
 
-  private getOpenAIKey(): string | undefined {
+  private getCloudProviderConfigs(): CloudProviderConfig[] {
     const providers = this.store.get('providers');
-    const openai = providers.find(p => p.id === 'openai');
-    return openai?.apiKey;
+    return providers
+      .filter((p): p is ProviderConfig & { id: 'openai' | 'groq' | 'anthropic'; apiKey: string } => 
+        p.enabled && !!p.apiKey && ['openai', 'groq', 'anthropic'].includes(p.id)
+      )
+      .map(p => ({
+        id: p.id,
+        name: p.name,
+        apiKey: p.apiKey,
+        baseUrl: p.baseUrl,
+        model: p.model,
+        enabled: p.enabled
+      }));
   }
 
   async initialize(): Promise<void> {
@@ -83,7 +94,7 @@ class OpenTypeApp {
       height: 700,
       minWidth: 700,
       minHeight: 500,
-      show: false, // Start hidden, show via tray
+      show: true, // Show automatically for local testing
       titleBarStyle: 'hiddenInset',
       webPreferences: {
         preload: path.join(__dirname, '../preload/preload.js'),
@@ -92,13 +103,32 @@ class OpenTypeApp {
       },
     });
 
+    this.mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+      console.error('[OpenType] Renderer failed to load:', { errorCode, errorDescription, validatedURL });
+      dialog.showErrorBox('Renderer Load Failed', `${errorDescription} (${errorCode})\n${validatedURL}`);
+    });
+
+    this.mainWindow.webContents.on('render-process-gone', (_event, details) => {
+      console.error('[OpenType] Renderer process gone:', details);
+      dialog.showErrorBox('Renderer Crashed', JSON.stringify(details));
+    });
+
+    this.mainWindow.webContents.on('console-message', (_event, level, message) => {
+      if (level >= 2) {
+        console.error('[Renderer console]', message);
+      }
+    });
+
     // Load renderer
     if (process.env.NODE_ENV === 'development') {
-      this.mainWindow.loadURL('http://localhost:5173');
-      this.mainWindow.webContents.openDevTools({ mode: 'detach' });
+      this.mainWindow.loadURL('http://localhost:5187');
     } else {
       this.mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
     }
+
+    this.mainWindow.on('unresponsive', () => {
+      console.error('[OpenType] Main window became unresponsive');
+    });
 
     this.mainWindow.on('close', (event) => {
       if (process.platform === 'darwin') {
@@ -188,12 +218,10 @@ class OpenTypeApp {
     ipcMain.handle('providers:get-config', (_, id: string) => this.providerManager.getConfig(id));
     ipcMain.handle('providers:set-config', (_, id: string, config: unknown) => {
       const result = this.providerManager.setConfig(id, (config || {}) as any);
-      // Update transcription service if OpenAI key changed
-      if (id === 'openai') {
-        this.transcriptionService.updateConfig({
-          openaiApiKey: (config as any)?.apiKey
-        });
-      }
+      // Update transcription service when any provider config changes
+      this.transcriptionService.updateConfig({
+        cloudProviders: this.getCloudProviderConfigs()
+      });
       return result;
     });
     ipcMain.handle('providers:test', (_, id: string) => this.providerManager.testConnection(id));
@@ -221,9 +249,7 @@ class OpenTypeApp {
     
     // Transcription status
     ipcMain.handle('transcription:status', async () => {
-      const providers = this.store.get('providers');
-      const openaiProvider = providers.find(p => p.id === 'openai');
-      return this.transcriptionService.getStatus(openaiProvider?.apiKey);
+      return this.transcriptionService.getStatus();
     });
     
     // Audio status
@@ -281,10 +307,18 @@ class OpenTypeApp {
     this.mainWindow?.webContents.send('recording:stopped');
     
     // Stop audio capture and get file path
-    const result = await this.audioCapture.stop();
+    let result;
+    try {
+      result = await this.audioCapture.stop();
+    } catch (error: any) {
+      console.error('[OpenType] Audio capture stop failed:', error);
+      dialog.showErrorBox('Recording Error', error?.message || 'Failed to stop recording');
+      return;
+    }
     
     if (!result.success || !result.audioPath) {
-      dialog.showErrorBox('Recording Error', result.error || 'Failed to stop recording');
+      const errorMsg = result.error || 'Failed to stop recording';
+      dialog.showErrorBox('Recording Error', errorMsg);
       return;
     }
     
@@ -296,12 +330,13 @@ class OpenTypeApp {
     
     try {
       const transcriptionResult = await this.transcribeAudio(audioPath);
-      this.handleTranscriptionResult(audioPath, transcriptionResult);
+      await this.handleTranscriptionResult(audioPath, transcriptionResult);
     } catch (error: any) {
       console.error('[OpenType] Transcription error:', error);
-      this.handleTranscriptionResult(audioPath, {
+      // Ensure we always handle the result gracefully, even on unexpected errors
+      await this.handleTranscriptionResult(audioPath, {
         success: false,
-        error: error?.message || 'Transcription failed',
+        error: error?.message || 'Transcription failed unexpectedly',
         provider: 'none'
       });
     }
@@ -309,12 +344,9 @@ class OpenTypeApp {
 
   private async transcribeAudio(audioPath: string): Promise<TranscriptionResult> {
     // Update config from store before transcribing
-    const providers = this.store.get('providers');
-    const openaiProvider = providers.find(p => p.id === 'openai');
-    
     this.transcriptionService.updateConfig({
       language: this.store.get('language')?.split('-')[0] || 'en',
-      openaiApiKey: openaiProvider?.apiKey,
+      cloudProviders: this.getCloudProviderConfigs(),
       useLocalFirst: true
     });
     
@@ -322,49 +354,90 @@ class OpenTypeApp {
   }
 
   private async handleTranscriptionResult(audioPath: string, result: TranscriptionResult): Promise<void> {
-    const text = result.text || '';
-    const status = result.success ? 'completed' : 'error';
-    
-    // Apply dictionary replacements
-    const finalText = this.store.applyDictionary(text);
-    
-    // Add to history
-    this.store.addHistoryItem({
-      id: Date.now().toString(),
-      timestamp: Date.now(),
-      audioPath,
-      text: finalText,
-      status,
-    });
-
-    // Insert text if successful and track fallback state
-    let fallbackToClipboard = false;
-    if (result.success && finalText) {
-      const insertResult = await this.textInserter.insert(finalText);
-      fallbackToClipboard = insertResult.method === 'clipboard';
+    try {
+      const text = result.text || '';
+      const status = result.success ? 'completed' : 'error';
       
-      // Show accessibility warning if needed
-      if (insertResult.accessibilityRequired) {
-        this.mainWindow?.webContents.send('notification', {
-          type: 'warning',
-          title: 'Accessibility Permission Required',
-          message: 'OpenType needs Accessibility permission to paste text. Text has been copied to clipboard.',
-          action: {
-            label: 'Open Settings',
-            command: 'open:x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility'
-          }
+      // Apply dictionary replacements
+      let finalText: string;
+      try {
+        finalText = this.store.applyDictionary(text);
+      } catch (dictError) {
+        console.error('[OpenType] Dictionary application failed:', dictError);
+        finalText = text; // Use original text if dictionary fails
+      }
+      
+      // Add to history
+      try {
+        this.store.addHistoryItem({
+          id: Date.now().toString(),
+          timestamp: Date.now(),
+          audioPath,
+          text: finalText,
+          status,
         });
+      } catch (historyError) {
+        console.error('[OpenType] Failed to add history item:', historyError);
+      }
+
+      // Insert text if successful and track fallback state
+      let fallbackToClipboard = false;
+      let insertResult: InsertionResult = { success: false, method: 'failed', text: finalText, accessibilityRequired: false };
+      
+      if (result.success && finalText) {
+        try {
+          insertResult = await this.textInserter.insert(finalText);
+          fallbackToClipboard = insertResult.method === 'clipboard';
+        } catch (insertError) {
+          console.error('[OpenType] Text insertion failed:', insertError);
+          fallbackToClipboard = true;
+        }
+        
+        // Show accessibility warning if needed
+        if (insertResult.accessibilityRequired) {
+          try {
+            this.mainWindow?.webContents.send('notification', {
+              type: 'warning',
+              title: 'Accessibility Permission Required',
+              message: 'OpenType needs Accessibility permission to paste text. Text has been copied to clipboard.',
+              action: {
+                label: 'Open Settings',
+                command: 'open:x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility'
+              }
+            });
+          } catch (notifError) {
+            console.error('[OpenType] Failed to send notification:', notifError);
+          }
+        }
+      }
+      
+      // Notify renderer with full result
+      try {
+        this.mainWindow?.webContents.send('transcription:complete', {
+          text: finalText,
+          success: result.success,
+          provider: result.provider,
+          error: result.error,
+          fallbackToClipboard
+        });
+      } catch (sendError) {
+        console.error('[OpenType] Failed to send transcription:complete:', sendError);
+      }
+    } catch (error) {
+      console.error('[OpenType] Unexpected error in handleTranscriptionResult:', error);
+      // Last resort error handling - ensure we don't crash the app
+      try {
+        this.mainWindow?.webContents.send('transcription:complete', {
+          text: '',
+          success: false,
+          provider: 'none',
+          error: 'Internal error processing transcription',
+          fallbackToClipboard: false
+        });
+      } catch {
+        // Ignore errors in error handling
       }
     }
-    
-    // Notify renderer with full result
-    this.mainWindow?.webContents.send('transcription:complete', {
-      text: finalText,
-      success: result.success,
-      provider: result.provider,
-      error: result.error,
-      fallbackToClipboard
-    });
   }
 
   private updateHotkey(newHotkey: string): void {
@@ -397,6 +470,14 @@ class OpenTypeApp {
     app.quit();
   }
 }
+
+process.on('uncaughtException', (error) => {
+  console.error('[OpenType] Uncaught exception:', error);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[OpenType] Unhandled rejection:', reason);
+});
 
 const openType = new OpenTypeApp();
 openType.initialize().catch(console.error);

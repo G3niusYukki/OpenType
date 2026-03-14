@@ -6,6 +6,10 @@ export default defineConfig({
   plugins: [react()],
   root: '.',
   base: './',
+  server: {
+    port: 5187,
+    strictPort: true,
+  },
   build: {
     outDir: 'dist/renderer',
     emptyOutDir: true,

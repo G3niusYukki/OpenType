@@ -58,6 +58,7 @@ export interface ElectronAPI {
       modelAvailable: boolean;
       hasCloudProvider: boolean;
       activeProvider?: string;
+      cloudProviderType?: 'openai' | 'groq' | 'anthropic';
       recommendations: string[];
     };
   }>;
@@ -147,5 +148,3 @@ const api: ElectronAPI = {
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);
-
-export type { ElectronAPI };

@@ -7,6 +7,7 @@ interface Provider {
   description: string;
   requireApiKey: boolean;
   defaultBaseUrl?: string;
+  defaultModel?: string;
   supportedModels: string[];
 }
 
@@ -29,6 +30,7 @@ interface SystemStatus {
     modelAvailable: boolean;
     hasCloudProvider: boolean;
     activeProvider?: string;
+    cloudProviderType?: 'openai' | 'groq' | 'anthropic';
     recommendations: string[];
   };
 }
@@ -227,7 +229,7 @@ export function SettingsPage() {
                       Ready to transcribe
                     </span>
                     <span style={{ color: '#666', marginLeft: 'auto', fontSize: '13px' }}>
-                      Using {systemStatus.transcription.activeProvider === 'whisper.cpp' ? 'local' : 'cloud'} transcription
+                      Using {systemStatus.transcription.activeProvider}
                     </span>
                   </div>
                 </div>
@@ -253,7 +255,7 @@ export function SettingsPage() {
                     color: '#888',
                     paddingLeft: '24px'
                   }}>
-                    Install whisper.cpp + model for local transcription, or add an OpenAI API key below.
+                    Install whisper.cpp + model for local transcription, or configure a cloud provider (OpenAI, Groq, etc.) below.
                   </p>
                 </div>
               )}
@@ -514,6 +516,37 @@ export function SettingsPage() {
                             fontSize: '13px',
                           }}
                         />
+                      </div>
+                    )}
+
+                    {provider.supportedModels.length > 1 && (
+                      <div>
+                        <label style={{
+                          fontSize: '12px',
+                          color: '#666',
+                          marginBottom: '6px',
+                          display: 'block',
+                        }}
+                        >
+                          Model
+                        </label>
+                        <select
+                          value={config.model || provider.defaultModel || provider.supportedModels[0]}
+                          onChange={(e) => updateProviderConfig(provider.id, { model: e.target.value })}
+                          style={{
+                            width: '100%',
+                            padding: '10px 14px',
+                            background: '#0f0f0f',
+                            border: '1px solid #2a2a2a',
+                            borderRadius: '6px',
+                            color: '#fff',
+                            fontSize: '13px',
+                          }}
+                        >
+                          {provider.supportedModels.map((model) => (
+                            <option key={model} value={model}>{model}</option>
+                          ))}
+                        </select>
                       </div>
                     )}
 

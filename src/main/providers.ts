@@ -6,6 +6,7 @@ interface Provider {
   description: string;
   requireApiKey: boolean;
   defaultBaseUrl?: string;
+  defaultModel?: string;
   supportedModels: string[];
 }
 
@@ -15,6 +16,7 @@ const AVAILABLE_PROVIDERS: Provider[] = [
     name: 'OpenAI',
     description: 'Use OpenAI Whisper API for transcription',
     requireApiKey: true,
+    defaultModel: 'whisper-1',
     supportedModels: ['whisper-1'],
   },
   {
@@ -29,7 +31,9 @@ const AVAILABLE_PROVIDERS: Provider[] = [
     name: 'Groq',
     description: 'Fast Whisper inference on Groq',
     requireApiKey: true,
-    supportedModels: ['whisper-large-v3'],
+    defaultBaseUrl: 'https://api.groq.com/openai/v1/audio/transcriptions',
+    defaultModel: 'whisper-large-v3',
+    supportedModels: ['whisper-large-v3', 'whisper-large-v3-turbo', 'distil-whisper-large-v3-en'],
   },
   {
     id: 'local',
@@ -106,6 +110,45 @@ export class ProviderManager {
       return { success: false, error: 'API key required' };
     }
 
+    // For cloud transcription providers (OpenAI, Groq), try a lightweight API call
+    if (providerId === 'openai' || providerId === 'groq') {
+      try {
+        const fetch = (await import('node-fetch')).default;
+        
+        let testUrl: string;
+        if (providerId === 'groq') {
+          testUrl = 'https://api.groq.com/openai/v1/models';
+        } else {
+          testUrl = 'https://api.openai.com/v1/models';
+        }
+        
+        const response = await fetch(testUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${cfg.apiKey}`,
+          },
+          timeout: 10000
+        } as any);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          let errorMessage: string;
+          try {
+            const errorJson = JSON.parse(errorText);
+            errorMessage = errorJson.error?.message || errorJson.message || errorText;
+          } catch {
+            errorMessage = errorText || `HTTP ${response.status}`;
+          }
+          return { success: false, error: errorMessage };
+        }
+
+        return { success: true };
+      } catch (error: any) {
+        return { success: false, error: error?.message || 'Connection test failed' };
+      }
+    }
+
+    // For other providers, just verify config is present
     return { success: true };
   }
 

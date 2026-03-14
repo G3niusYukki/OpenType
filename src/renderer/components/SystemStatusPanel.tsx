@@ -12,6 +12,7 @@ interface SystemStatus {
     modelAvailable: boolean;
     hasCloudProvider: boolean;
     activeProvider?: string;
+    cloudProviderType?: 'openai' | 'groq' | 'anthropic';
     recommendations: string[];
   };
 }
@@ -131,6 +132,7 @@ export function SystemStatusPanel() {
 
   if (!expanded && isFullyReady) {
     // Compact view when everything is ready
+    const providerLabel = transcription.activeProvider || 'Unknown';
     return (
       <div 
         onClick={() => setExpanded(true)}
@@ -148,7 +150,7 @@ export function SystemStatusPanel() {
         }}
       >
         <CheckCircle size={14} />
-        <span>System ready — {transcription.activeProvider === 'whisper.cpp' ? 'Local' : 'Cloud'} transcription active</span>
+        <span>System ready — {providerLabel} active</span>
       </div>
     );
   }
@@ -310,7 +312,7 @@ export function SystemStatusPanel() {
             }}
             >
               <CheckCircle size={14} />
-              <span><strong>Active:</strong> {transcription.activeProvider === 'whisper.cpp' ? 'Local transcription (whisper.cpp)' : 'Cloud transcription (OpenAI)'}</span>
+              <span><strong>Active:</strong> {transcription.activeProvider}</span>
             </div>
           )}
         </div>
