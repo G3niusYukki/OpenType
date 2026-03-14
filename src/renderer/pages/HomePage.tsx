@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Mic, Square, Copy, Type, AlertCircle, CheckCircle } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Mic, Square, Copy, Type, AlertCircle, CheckCircle, Activity } from 'lucide-react';
 import { SystemStatusPanel } from '../components/SystemStatusPanel';
 
 interface TranscriptionResult {
@@ -8,6 +8,116 @@ interface TranscriptionResult {
   provider: string;
   error?: string;
   fallbackToClipboard?: boolean;
+}
+
+// Audio waveform visualization component
+function AudioWaveform({ isRecording }: { isRecording: boolean }) {
+  const bars = 12;
+  
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '4px',
+      height: '60px',
+      opacity: isRecording ? 1 : 0.3,
+      transition: 'opacity 0.3s ease',
+    }}>
+      {Array.from({ length: bars }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            width: '4px',
+            background: isRecording 
+              ? 'linear-gradient(180deg, #ef4444 0%, #f87171 100%)' 
+              : 'linear-gradient(180deg, #6366f1 0%, #818cf8 100%)',
+            borderRadius: '2px',
+            animation: isRecording ? `waveform 0.5s ease-in-out ${i * 0.05}s infinite alternate` : 'none',
+            height: isRecording ? '20px' : '8px',
+            transition: 'height 0.3s ease',
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes waveform {
+          0% { height: 8px; opacity: 0.5; }
+          100% { height: ${Math.random() * 40 + 20}px; opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// Recording timer component
+function RecordingTimer({ isRecording }: { isRecording: boolean }) {
+  const [seconds, setSeconds] = useState(0);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (isRecording) {
+      setSeconds(0);
+      intervalRef.current = setInterval(() => {
+        setSeconds(s => s + 1);
+      }, 1000);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setSeconds(0);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isRecording]);
+
+  const formatTime = (totalSeconds: number) => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  if (!isRecording) return null;
+
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      padding: '8px 16px',
+      background: 'rgba(239, 68, 68, 0.1)',
+      border: '1px solid rgba(239, 68, 68, 0.3)',
+      borderRadius: '20px',
+      marginTop: '16px',
+    }}>
+      <div style={{
+        width: '8px',
+        height: '8px',
+        background: '#ef4444',
+        borderRadius: '50%',
+        animation: 'pulse 1s ease-in-out infinite',
+      }} />
+      <span style={{
+        color: '#ef4444',
+        fontSize: '14px',
+        fontWeight: 600,
+        fontFamily: 'monospace',
+      }}>
+        {formatTime(seconds)}
+      </span>
+      <Activity size={14} color="#ef4444" />
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(0.8); }
+        }
+      `}</style>
+    </div>
+  );
 }
 
 export function HomePage() {
@@ -108,7 +218,7 @@ export function HomePage() {
         <SystemStatusPanel />
       </div>
 
-      {/* Main Content - Recording Button */}
+      {/* Main Content - Recording Section */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -117,6 +227,9 @@ export function HomePage() {
         justifyContent: 'center',
         minHeight: '300px',
       }}>
+        {/* Audio Waveform Visualization */}
+        <AudioWaveform isRecording={isRecording} />
+
         {/* Recording Button */}
         <button
           onClick={toggleRecording}
@@ -137,6 +250,7 @@ export function HomePage() {
               : '0 0 40px rgba(99, 102, 241, 0.3)',
             transition: 'all 0.3s ease',
             transform: isRecording ? 'scale(0.95)' : 'scale(1)',
+            marginTop: '20px',
           }}
           onMouseEnter={(e) => {
             if (!isRecording) {
@@ -164,8 +278,11 @@ export function HomePage() {
           color: isRecording ? '#ef4444' : '#818cf8',
           fontWeight: 500,
         }}>
-          {isRecording ? 'Recording...' : `Press ${hotkey} to start`}
+          {isRecording ? '正在录音...' : `按 ${hotkey} 开始录音`}
         </p>
+
+        {/* Recording Timer */}
+        <RecordingTimer isRecording={isRecording} />
 
         {/* Permission/Error Messages */}
         {insertionStatus?.accessibilityRequired && (
@@ -187,7 +304,7 @@ export function HomePage() {
               marginBottom: '8px',
             }}>
               <AlertCircle size={16} />
-              <strong>Accessibility Permission Required</strong>
+              <strong>需要辅助功能权限</strong>
             </div>
             <p style={{
               fontSize: '12px',
@@ -195,8 +312,8 @@ export function HomePage() {
               margin: 0,
               lineHeight: 1.5,
             }}>
-              OpenType needs Accessibility permission to paste text at your cursor.
-              Text has been copied to clipboard instead.
+              OpenType 需要辅助功能权限才能在光标处粘贴文本。
+              文本已复制到剪贴板。
             </p>
             <button
               onClick={() => window.electronAPI.windowShow()}
@@ -211,46 +328,67 @@ export function HomePage() {
                 cursor: 'pointer',
               }}
             >
-              Open Settings → Privacy & Security → Accessibility
+              打开设置 → 隐私与安全性 → 辅助功能
             </button>
           </div>
         )}
       </div>
 
-      {/* Transcription Result */}
+      {/* Transcription Result - Enhanced Display */}
       {lastTranscription && (
         <div style={{
           width: '100%',
-          maxWidth: '600px',
+          maxWidth: '700px',
           margin: '0 auto 32px',
         }}>
-          <p style={{
-            fontSize: '12px',
-            color: '#666',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
             marginBottom: '12px',
           }}>
-            Last Transcription
-            {lastResult?.provider && lastResult.provider !== 'none' && (
-              <span style={{ color: '#444', marginLeft: '8px' }}>
-                via {lastResult.provider}
+            <p style={{
+              fontSize: '12px',
+              color: '#666',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              margin: 0,
+            }}>
+              转录结果
+              {lastResult?.provider && lastResult.provider !== 'none' && (
+                <span style={{ color: '#444', marginLeft: '8px' }}>
+                  via {lastResult.provider}
+                </span>
+              )}
+            </p>
+            {lastResult?.success && (
+              <span style={{
+                fontSize: '11px',
+                color: '#22c55e',
+                background: 'rgba(34, 197, 94, 0.1)',
+                padding: '2px 8px',
+                borderRadius: '4px',
+              }}>
+                ✓ 成功
               </span>
             )}
-          </p>
+          </div>
           
           <div style={{
-            background: '#1a1a1a',
+            background: 'linear-gradient(135deg, #1a1a1a 0%, #1e1e2e 100%)',
             border: `1px solid ${hasError ? 'rgba(239, 68, 68, 0.3)' : '#2a2a2a'}`,
-            borderRadius: '12px',
-            padding: '20px',
+            borderRadius: '16px',
+            padding: '24px',
+            boxShadow: '0 4px 24px rgba(0, 0, 0, 0.3)',
           }}>
             <p style={{
-              fontSize: '16px',
-              lineHeight: 1.6,
+              fontSize: '18px',
+              lineHeight: 1.8,
               color: hasError ? '#ef4444' : '#e5e5e5',
               margin: 0,
-              minHeight: '24px',
+              minHeight: '60px',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
             }}>
               {lastTranscription}
             </p>
@@ -258,27 +396,27 @@ export function HomePage() {
             {/* Fallback Warning */}
             {showFallbackWarning && !hasError && (
               <div style={{
-                marginTop: '12px',
-                padding: '8px 12px',
+                marginTop: '16px',
+                padding: '10px 14px',
                 background: 'rgba(245, 158, 11, 0.1)',
-                borderRadius: '6px',
+                borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                fontSize: '12px',
+                fontSize: '13px',
                 color: '#f59e0b',
               }}
               >
-                <AlertCircle size={14} />
-                <span>Text copied to clipboard (auto-insert unavailable)</span>
+                <AlertCircle size={16} />
+                <span>文本已复制到剪贴板（自动插入不可用）</span>
               </div>
             )}
 
             <div style={{
               display: 'flex',
-              gap: '8px',
-              marginTop: '16px',
-              paddingTop: '16px',
+              gap: '10px',
+              marginTop: '20px',
+              paddingTop: '20px',
               borderTop: '1px solid #2a2a2a',
             }}>
               <button
@@ -287,13 +425,14 @@ export function HomePage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  padding: '8px 14px',
-                  borderRadius: '6px',
+                  padding: '10px 16px',
+                  borderRadius: '8px',
                   border: '1px solid #333',
                   background: '#222',
                   color: '#999',
-                  fontSize: '13px',
+                  fontSize: '14px',
                   cursor: 'pointer',
+                  transition: 'all 0.2s',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = '#2a2a2a';
@@ -305,9 +444,9 @@ export function HomePage() {
                 }}
               >
                 {insertionStatus?.method === 'clipboard' ? (
-                  <><CheckCircle size={14} /> Copied!</>
+                  <><CheckCircle size={16} /> 已复制!</>
                 ) : (
-                  <><Copy size={14} /> Copy</>
+                  <><Copy size={16} /> 复制</>
                 )}
               </button>
 
@@ -318,16 +457,17 @@ export function HomePage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  padding: '8px 14px',
-                  borderRadius: '6px',
+                  padding: '10px 16px',
+                  borderRadius: '8px',
                   border: '1px solid #6366f1',
                   background: insertionStatus?.method === 'paste' 
                     ? 'rgba(34, 197, 94, 0.2)' 
                     : 'rgba(99, 102, 241, 0.1)',
                   color: insertionStatus?.method === 'paste' ? '#22c55e' : '#818cf8',
-                  fontSize: '13px',
+                  fontSize: '14px',
                   cursor: insertionStatus?.accessibilityRequired ? 'not-allowed' : 'pointer',
                   opacity: insertionStatus?.accessibilityRequired ? 0.5 : 1,
+                  transition: 'all 0.2s',
                 }}
                 onMouseEnter={(e) => {
                   if (!insertionStatus?.accessibilityRequired) {
@@ -343,9 +483,9 @@ export function HomePage() {
                 }}
               >
                 {insertionStatus?.method === 'paste' ? (
-                  <><CheckCircle size={14} /> Inserted!</>
+                  <><CheckCircle size={16} /> 已插入!</>
                 ) : (
-                  <><Type size={14} /> Insert at Cursor</>
+                  <><Type size={16} /> 插入到光标</>
                 )}
               </button>
             </div>
@@ -361,10 +501,10 @@ export function HomePage() {
           marginBottom: '48px',
         }}>
           <p style={{ fontSize: '14px', marginBottom: '8px' }}>
-            Your transcriptions will appear here
+            您的转录将显示在这里
           </p>
           <p style={{ fontSize: '12px', color: '#333' }}>
-            Click the mic or press {hotkey} to start dictating
+            点击麦克风或按 {hotkey} 开始听写
           </p>
         </div>
       )}
