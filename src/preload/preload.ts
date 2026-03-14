@@ -7,6 +7,39 @@ import { contextBridge, ipcRenderer } from 'electron';
  * All API calls go through here for security isolation
  */
 
+export interface TextChange {
+  type: 'filler' | 'repetition' | 'correction' | 'improvement';
+  original: string;
+  replacement: string;
+  position: number;
+  explanation?: string;
+}
+
+export interface TranscriptionResult {
+  rawText?: string;
+  processedText?: string;
+  text: string;
+  success: boolean;
+  provider: string;
+  aiProcessed?: boolean;
+  aiChanges?: TextChange[];
+  aiLatency?: number;
+  aiProvider?: string;
+  error?: string;
+  fallbackToClipboard?: boolean;
+}
+
+export interface AiPostProcessingSettings {
+  enabled: boolean;
+  providerId?: string;
+  options: {
+    removeFillerWords: boolean;
+    removeRepetition: boolean;
+    detectSelfCorrection: boolean;
+  };
+  showComparison: boolean;
+}
+
 export interface ElectronAPI {
   // Store
   storeGet: (key: string) => Promise<unknown>;
@@ -22,6 +55,17 @@ export interface ElectronAPI {
   providersGetConfig: (id: string) => Promise<unknown>;
   providersSetConfig: (id: string, config: unknown) => Promise<void>;
   providersTest: (id: string) => Promise<{ success: boolean; error?: string }>;
+
+  aiGetSettings: () => Promise<AiPostProcessingSettings>;
+  aiSetSettings: (settings: Partial<AiPostProcessingSettings>) => Promise<void>;
+  aiTest: (text: string) => Promise<{
+    success: boolean;
+    processedText?: string;
+    changes?: TextChange[];
+    provider?: string;
+    latencyMs?: number;
+    error?: string;
+  }>;
 
   // History
   historyGet: (limit: number) => Promise<unknown[]>;
@@ -66,13 +110,7 @@ export interface ElectronAPI {
   // Events
   onRecordingStarted: (callback: () => void) => () => void;
   onRecordingStopped: (callback: () => void) => () => void;
-  onTranscriptionComplete: (callback: (result: { 
-    text: string; 
-    success: boolean; 
-    provider: string; 
-    error?: string;
-    fallbackToClipboard?: boolean;
-  }) => void) => () => void;
+  onTranscriptionComplete: (callback: (result: TranscriptionResult) => void) => () => void;
   onNavigate: (callback: (path: string) => void) => () => void;
 }
 
@@ -91,6 +129,10 @@ const api: ElectronAPI = {
   providersGetConfig: (id: string) => ipcRenderer.invoke('providers:get-config', id),
   providersSetConfig: (id: string, config: unknown) => ipcRenderer.invoke('providers:set-config', id, config),
   providersTest: (id: string) => ipcRenderer.invoke('providers:test', id),
+
+  aiGetSettings: () => ipcRenderer.invoke('ai:get-settings'),
+  aiSetSettings: (settings: Partial<AiPostProcessingSettings>) => ipcRenderer.invoke('ai:set-settings', settings),
+  aiTest: (text: string) => ipcRenderer.invoke('ai:test', text),
 
   // History
   historyGet: (limit: number) => ipcRenderer.invoke('history:get', limit),
@@ -129,14 +171,8 @@ const api: ElectronAPI = {
     ipcRenderer.on('recording:stopped', handler);
     return () => ipcRenderer.off('recording:stopped', handler);
   },
-  onTranscriptionComplete: (callback: (result: { 
-    text: string; 
-    success: boolean; 
-    provider: string; 
-    error?: string;
-    fallbackToClipboard?: boolean;
-  }) => void) => {
-    const handler = (_: unknown, result: unknown) => callback(result as any);
+  onTranscriptionComplete: (callback: (result: TranscriptionResult) => void) => {
+    const handler = (_: unknown, result: TranscriptionResult) => callback(result);
     ipcRenderer.on('transcription:complete', handler);
     return () => ipcRenderer.off('transcription:complete', handler);
   },

@@ -282,6 +282,15 @@ class OpenTypeApp {
     ipcMain.handle('audio:devices', async () => {
       return this.audioCapture.getAudioDevices();
     });
+
+    // AI Post-Processing
+    ipcMain.handle('ai:get-settings', () => this.store.get('aiPostProcessing'));
+    ipcMain.handle('ai:set-settings', (_, settings) => {
+      this.store.set('aiPostProcessing', { ...this.store.get('aiPostProcessing'), ...settings });
+    });
+    ipcMain.handle('ai:test', async (_, text: string) => {
+      return await this.aiPostProcessor.process(text);
+    });
   }
 
   private async toggleRecording(): Promise<void> {
