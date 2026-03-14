@@ -6,6 +6,7 @@ import { TextInserter } from './text-inserter';
 import type { InsertionResult } from './text-inserter';
 import { ProviderManager } from './providers';
 import { TranscriptionService, TranscriptionResult, CloudProviderConfig } from './transcription';
+import { AiPostProcessor, AiPostProcessingResult } from './aiPostProcessor';
 
 class OpenTypeApp {
   private mainWindow: BrowserWindow | null = null;
@@ -15,6 +16,7 @@ class OpenTypeApp {
   private textInserter: TextInserter;
   private providerManager: ProviderManager;
   private transcriptionService: TranscriptionService;
+  private aiPostProcessor: AiPostProcessor;
   private isRecording = false;
   private currentAudioPath: string | null = null;
 
@@ -23,15 +25,16 @@ class OpenTypeApp {
     this.audioCapture = new AudioCapture();
     this.textInserter = new TextInserter();
     this.providerManager = new ProviderManager(this.store);
-    
+    this.aiPostProcessor = new AiPostProcessor(this.store, this.providerManager);
+
     // Detect system language for transcription
     const systemLang = process.env.LANG || process.env.LC_ALL || 'en-US';
     const defaultLang = systemLang.split('_')[0].split('.')[0];
     const savedLang = this.store.get('language');
     const transcriptionLang = savedLang ? savedLang.split('-')[0] : defaultLang;
-    
+
     console.log(`[OpenType] System language: ${defaultLang}, Transcription language: ${transcriptionLang}`);
-    
+
     this.transcriptionService = new TranscriptionService({
       language: transcriptionLang,
       useLocalFirst: true,
@@ -373,26 +376,51 @@ class OpenTypeApp {
 
   private async handleTranscriptionResult(audioPath: string, result: TranscriptionResult): Promise<void> {
     try {
-      const text = result.text || '';
+      const rawText = result.text || '';
       const status = result.success ? 'completed' : 'error';
-      
+
+      let processedText = rawText;
+      let aiResult: AiPostProcessingResult | null = null;
+
+      if (result.success && rawText) {
+        const aiSettings = this.store.get('aiPostProcessing');
+        if (aiSettings?.enabled && this.aiPostProcessor.isAvailable()) {
+          try {
+            console.log('[OpenType] Starting AI post-processing...');
+            aiResult = await this.aiPostProcessor.process(rawText, aiSettings.options);
+            if (aiResult.success) {
+              processedText = aiResult.processedText;
+              console.log(`[OpenType] AI processing complete in ${aiResult.latencyMs}ms`);
+            } else {
+              console.warn('[OpenType] AI processing failed:', aiResult.error);
+            }
+          } catch (aiError) {
+            console.error('[OpenType] AI post-processing error:', aiError);
+          }
+        }
+      }
+
       // Apply dictionary replacements
       let finalText: string;
       try {
-        finalText = this.store.applyDictionary(text);
+        finalText = this.store.applyDictionary(processedText);
       } catch (dictError) {
         console.error('[OpenType] Dictionary application failed:', dictError);
-        finalText = text; // Use original text if dictionary fails
+        finalText = processedText;
       }
-      
-      // Add to history
+
       try {
         this.store.addHistoryItem({
           id: Date.now().toString(),
           timestamp: Date.now(),
           audioPath,
+          rawText,
           text: finalText,
+          processedText: aiResult?.processedText,
+          aiChanges: aiResult?.changes,
           status,
+          provider: result.provider,
+          aiProvider: aiResult?.provider,
         });
       } catch (historyError) {
         console.error('[OpenType] Failed to add history item:', historyError);
@@ -401,7 +429,7 @@ class OpenTypeApp {
       // Insert text if successful and track fallback state
       let fallbackToClipboard = false;
       let insertResult: InsertionResult = { success: false, method: 'failed', text: finalText, accessibilityRequired: false };
-      
+
       if (result.success && finalText) {
         try {
           insertResult = await this.textInserter.insert(finalText);
@@ -410,7 +438,7 @@ class OpenTypeApp {
           console.error('[OpenType] Text insertion failed:', insertError);
           fallbackToClipboard = true;
         }
-        
+
         // Show accessibility warning if needed
         if (insertResult.accessibilityRequired) {
           try {
@@ -428,11 +456,16 @@ class OpenTypeApp {
           }
         }
       }
-      
-      // Notify renderer with full result
+
       try {
         this.mainWindow?.webContents.send('transcription:complete', {
+          rawText,
+          processedText: finalText,
           text: finalText,
+          aiProcessed: aiResult?.success || false,
+          aiChanges: aiResult?.changes,
+          aiLatency: aiResult?.latencyMs,
+          aiProvider: aiResult?.provider,
           success: result.success,
           provider: result.provider,
           error: result.error,

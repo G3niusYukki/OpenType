@@ -5,7 +5,18 @@ export interface HistoryItem {
   timestamp: number;
   audioPath: string;
   text: string;
+  rawText?: string;
+  processedText?: string;
+  aiChanges?: Array<{
+    type: 'filler' | 'repetition' | 'correction' | 'improvement';
+    original: string;
+    replacement: string;
+    position: number;
+    explanation?: string;
+  }>;
   status: 'pending' | 'completed' | 'error';
+  provider?: string;
+  aiProvider?: string;
 }
 
 export interface DictionaryEntry {
@@ -22,6 +33,19 @@ export interface ProviderConfig {
   model?: string;
 }
 
+export interface AiPostProcessingOptions {
+  removeFillerWords: boolean;
+  removeRepetition: boolean;
+  detectSelfCorrection: boolean;
+}
+
+export interface AiPostProcessingSettings {
+  enabled: boolean;
+  providerId?: string;
+  options: AiPostProcessingOptions;
+  showComparison: boolean;
+}
+
 export interface AppSettings {
   hotkey: string;
   outputMode: 'paste' | 'copy' | 'type';
@@ -29,6 +53,7 @@ export interface AppSettings {
   autoPunctuation: boolean;
   providers: ProviderConfig[];
   preferredProvider: 'local' | 'cloud' | 'auto';
+  aiPostProcessing: AiPostProcessingSettings;
 }
 
 type ExtraStoreData = {
@@ -48,6 +73,15 @@ const DEFAULT_SETTINGS: AppSettings = {
     { id: 'groq', name: 'Groq', enabled: false },
     { id: 'local', name: 'Local Model', enabled: false, baseUrl: 'http://localhost:11434' },
   ],
+  aiPostProcessing: {
+    enabled: false,
+    options: {
+      removeFillerWords: true,
+      removeRepetition: true,
+      detectSelfCorrection: true,
+    },
+    showComparison: true,
+  },
 };
 
 export class Store {
