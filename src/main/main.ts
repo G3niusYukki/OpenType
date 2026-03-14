@@ -7,6 +7,7 @@ import type { InsertionResult } from './text-inserter';
 import { ProviderManager } from './providers';
 import { TranscriptionService, TranscriptionResult, CloudProviderConfig } from './transcription';
 import { AiPostProcessor, AiPostProcessingResult } from './aiPostProcessor';
+import { GlobalKeyboardMonitor } from './keyboard-monitor';
 
 type RecordingMode = 'default' | 'handsfree' | 'translate' | 'edit';
 
@@ -19,10 +20,12 @@ class OpenTypeApp {
   private providerManager: ProviderManager;
   private transcriptionService: TranscriptionService;
   private aiPostProcessor: AiPostProcessor;
+  private keyboardMonitor: GlobalKeyboardMonitor;
   private isRecording = false;
   private currentAudioPath: string | null = null;
   private recordingMode: RecordingMode = 'default';
   private selectedTextBeforeRecording: string = '';
+  private holdModeActive: boolean = false;
 
   constructor() {
     this.store = new Store();
@@ -30,6 +33,7 @@ class OpenTypeApp {
     this.textInserter = new TextInserter();
     this.providerManager = new ProviderManager(this.store);
     this.aiPostProcessor = new AiPostProcessor(this.store, this.providerManager);
+    this.keyboardMonitor = new GlobalKeyboardMonitor();
 
     // Detect system language for transcription
     const systemLang = process.env.LANG || process.env.LC_ALL || 'en-US';
@@ -90,6 +94,7 @@ class OpenTypeApp {
 
     app.on('will-quit', () => {
       globalShortcut.unregisterAll();
+      this.keyboardMonitor.stopMonitoring();
     });
   }
 
@@ -210,18 +215,34 @@ class OpenTypeApp {
       editSelectedText: true,
     };
 
-    // Basic Voice Input (Default)
+    // Basic Voice Input (Default) - HOLD MODE
     if (voiceInputModes.basicVoiceInput !== false) {
       const hotkey = this.store.get('hotkey') || 'CommandOrControl+Shift+D';
-      const registered = globalShortcut.register(hotkey, () => {
-        this.toggleRecording('default');
-      });
-      if (!registered) {
-        console.error('[OpenType] Failed to register basic voice input shortcut');
-      }
+      // Parse hotkey to extract key and modifiers
+      const { key, modifiers } = this.parseHotkey(hotkey);
+      
+      this.keyboardMonitor.startMonitoring(
+        key,
+        modifiers,
+        () => {
+          // KeyDown - Start recording
+          if (!this.isRecording && !this.holdModeActive) {
+            this.holdModeActive = true;
+            this.startRecording('default');
+          }
+        },
+        () => {
+          // KeyUp - Stop recording
+          if (this.isRecording && this.holdModeActive) {
+            this.holdModeActive = false;
+            this.stopRecording();
+          }
+        }
+      );
+      console.log(`[OpenType] Registered hold-to-speak shortcut: ${hotkey}`);
     }
 
-    // Hands-free Mode
+    // Hands-free Mode - TOGGLE MODE
     if (voiceInputModes.handsFreeMode) {
       const handsFreeHotkey = this.store.get('handsFreeHotkey') || 'CommandOrControl+Space';
       const registered = globalShortcut.register(handsFreeHotkey, () => {
@@ -232,27 +253,73 @@ class OpenTypeApp {
       }
     }
 
-    // Translate to English Mode
+    // Translate to English Mode - HOLD MODE
     if (voiceInputModes.translateToEnglish) {
       const translateHotkey = this.store.get('translateHotkey') || 'CommandOrControl+Shift+T';
-      const registered = globalShortcut.register(translateHotkey, () => {
-        this.toggleRecording('translate');
-      });
-      if (!registered) {
-        console.error('[OpenType] Failed to register translate shortcut');
-      }
+      const { key, modifiers } = this.parseHotkey(translateHotkey);
+      
+      this.keyboardMonitor.startMonitoring(
+        key,
+        modifiers,
+        () => {
+          if (!this.isRecording && !this.holdModeActive) {
+            this.holdModeActive = true;
+            this.startRecording('translate');
+          }
+        },
+        () => {
+          if (this.isRecording && this.holdModeActive) {
+            this.holdModeActive = false;
+            this.stopRecording();
+          }
+        }
+      );
+      console.log(`[OpenType] Registered translate shortcut: ${translateHotkey}`);
     }
 
-    // Edit Selected Text Mode
+    // Edit Selected Text Mode - HOLD MODE
     if (voiceInputModes.editSelectedText) {
       const editTextHotkey = this.store.get('editTextHotkey') || 'CommandOrControl+Shift+E';
-      const registered = globalShortcut.register(editTextHotkey, () => {
-        this.toggleRecording('edit');
-      });
-      if (!registered) {
-        console.error('[OpenType] Failed to register edit text shortcut');
+      const { key, modifiers } = this.parseHotkey(editTextHotkey);
+      
+      this.keyboardMonitor.startMonitoring(
+        key,
+        modifiers,
+        () => {
+          if (!this.isRecording && !this.holdModeActive) {
+            this.holdModeActive = true;
+            this.startRecording('edit');
+          }
+        },
+        () => {
+          if (this.isRecording && this.holdModeActive) {
+            this.holdModeActive = false;
+            this.stopRecording();
+          }
+        }
+      );
+      console.log(`[OpenType] Registered edit text shortcut: ${editTextHotkey}`);
+    }
+  }
+
+  private parseHotkey(hotkey: string): { key: string; modifiers: string[] } {
+    const parts = hotkey.split('+').map(p => p.trim().toUpperCase());
+    const key = parts[parts.length - 1];
+    const modifiers: string[] = [];
+    
+    for (const part of parts.slice(0, -1)) {
+      if (part === 'COMMANDORCONTROL' || part === 'COMMAND') {
+        modifiers.push('LEFT META');
+      } else if (part === 'CONTROL') {
+        modifiers.push('LEFT CTRL');
+      } else if (part === 'SHIFT') {
+        modifiers.push('LEFT SHIFT');
+      } else if (part === 'ALT' || part === 'OPTION') {
+        modifiers.push('LEFT ALT');
       }
     }
+    
+    return { key, modifiers };
   }
 
   private setupIpcHandlers(): void {
@@ -641,8 +708,9 @@ class OpenTypeApp {
     }
   }
 
-  private updateHotkey(newHotkey: string): void {
+  private updateHotkey(_newHotkey: string): void {
     globalShortcut.unregisterAll();
+    this.keyboardMonitor.stopMonitoring();
     this.registerGlobalShortcuts();
   }
 
@@ -671,6 +739,7 @@ class OpenTypeApp {
     const cleanup = () => {
       console.log('[OpenType] Cleaning up before exit...');
       globalShortcut.unregisterAll();
+      this.keyboardMonitor.stopMonitoring();
       this.tray?.destroy();
       app.quit();
     };

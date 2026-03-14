@@ -67,6 +67,7 @@
     "form-data": "^4.0.0",
     "lucide-react": "^0.479.0",
     "node-fetch": "^3.3.2",
+    "node-global-key-listener": "^0.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zustand": "^5.0.3"
@@ -88,7 +89,10 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["arm64", "x64"]
+          "arch": [
+            "arm64",
+            "x64"
+          ]
         }
       ],
       "hardenedRuntime": true,
