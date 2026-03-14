@@ -38,6 +38,8 @@ export interface Translations {
     outputModeType: string;
     autoPunctuation: string;
     autoPunctuationDescription: string;
+    transcriptionLanguage: string;
+    transcriptionLanguageDescription: string;
     preferredProvider: string;
     preferredProviderDescription: string;
     preferredProviderAuto: string;
@@ -161,6 +163,8 @@ export const en: Translations = {
     outputModeType: 'Type text',
     autoPunctuation: 'Auto Punctuation',
     autoPunctuationDescription: 'Automatically add punctuation to transcriptions',
+    transcriptionLanguage: 'Transcription Language',
+    transcriptionLanguageDescription: 'Language used for speech recognition',
     preferredProvider: 'Preferred Provider',
     preferredProviderDescription: 'Choose which transcription provider to use',
     preferredProviderAuto: 'Auto (Local first, fallback to Cloud)',
@@ -279,6 +283,8 @@ export const zh: Translations = {
     outputModeType: '输入文本',
     autoPunctuation: '自动标点',
     autoPunctuationDescription: '自动为转录添加标点符号',
+    transcriptionLanguage: '转录语言',
+    transcriptionLanguageDescription: '用于语音识别的语言',
     preferredProvider: '首选提供商',
     preferredProviderDescription: '选择要使用的转录提供商',
     preferredProviderAuto: '自动（本地优先，云端备用）',
@@ -397,6 +403,8 @@ export const ja: Translations = {
     outputModeType: 'テキストを入力',
     autoPunctuation: '自動句読点',
     autoPunctuationDescription: '文字起こしに自動的に句読点を追加',
+    transcriptionLanguage: '文字起こし言語',
+    transcriptionLanguageDescription: '音声認識に使用する言語',
     preferredProvider: '優先プロバイダー',
     preferredProviderDescription: '使用する文字起こしプロバイダーを選択',
     preferredProviderAuto: '自動（ローカル優先、クラウドフォールバック）',
@@ -515,6 +523,8 @@ export const ko: Translations = {
     outputModeType: '텍스트 입력',
     autoPunctuation: '자동 구두점',
     autoPunctuationDescription: '전사에 자동으로 구두점 추가',
+    transcriptionLanguage: '전사 언어',
+    transcriptionLanguageDescription: '음성 인식에 사용할 언어',
     preferredProvider: '선호 제공자',
     preferredProviderDescription: '사용할 전사 제공자 선택',
     preferredProviderAuto: '자동 (로컬 우선, 클라우드 폴스백)',

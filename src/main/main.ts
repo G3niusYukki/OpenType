@@ -23,8 +23,17 @@ class OpenTypeApp {
     this.audioCapture = new AudioCapture();
     this.textInserter = new TextInserter();
     this.providerManager = new ProviderManager(this.store);
+    
+    // Detect system language for transcription
+    const systemLang = process.env.LANG || process.env.LC_ALL || 'en-US';
+    const defaultLang = systemLang.split('_')[0].split('.')[0];
+    const savedLang = this.store.get('language');
+    const transcriptionLang = savedLang ? savedLang.split('-')[0] : defaultLang;
+    
+    console.log(`[OpenType] System language: ${defaultLang}, Transcription language: ${transcriptionLang}`);
+    
     this.transcriptionService = new TranscriptionService({
-      language: this.store.get('language')?.split('-')[0] || 'en',
+      language: transcriptionLang,
       useLocalFirst: true,
       preferredProvider: this.store.get('preferredProvider') || 'auto',
       cloudProviders: this.getCloudProviderConfigs()
@@ -204,9 +213,11 @@ class OpenTypeApp {
         this.updateHotkey(value);
       }
       if (key === 'language' && typeof value === 'string') {
+        const langCode = value.split('-')[0];
         this.transcriptionService.updateConfig({
-          language: value.split('-')[0]
+          language: langCode
         });
+        console.log(`[OpenType] Language updated to: ${langCode}`);
       }
       if (key === 'preferredProvider' && typeof value === 'string') {
         this.transcriptionService.updateConfig({

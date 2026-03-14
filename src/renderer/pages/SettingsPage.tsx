@@ -98,6 +98,9 @@ export function SettingsPage() {
   const saveLanguage = async (value: string) => {
     setLanguage(value);
     await window.electronAPI.storeSet('language', value);
+    // Also update transcription language to match UI language
+    const langCode = value.split('-')[0];
+    await window.electronAPI.storeSet('transcriptionLanguage', langCode);
   };
 
   const saveAutoPunctuation = async (value: boolean) => {
@@ -336,7 +339,7 @@ export function SettingsPage() {
             </p>
           </div>
 
-          {/* Language Setting */}
+          {/* Transcription Language Setting */}
           <div style={{ marginBottom: '24px' }}>
             <label style={{
               display: 'flex',
@@ -348,7 +351,7 @@ export function SettingsPage() {
               marginBottom: '8px',
             }}
             >
-              <Globe size={16} /> Language
+              <Globe size={16} /> Transcription Language
             </label>
             <select
               value={language}
@@ -365,13 +368,22 @@ export function SettingsPage() {
             >
               <option value="en-US">English (US)</option>
               <option value="en-GB">English (UK)</option>
-              <option value="zh-CN">中文 (简体)</option>
-              <option value="zh-TW">中文 (繁體)</option>
-              <option value="ja-JP">日本語</option>
-              <option value="es-ES">Español</option>
-              <option value="fr-FR">Français</option>
-              <option value="de-DE">Deutsch</option>
+              <option value="zh-CN">中文 (简体) - Chinese</option>
+              <option value="zh-TW">中文 (繁體) - Chinese (Traditional)</option>
+              <option value="ja-JP">日本語 - Japanese</option>
+              <option value="ko-KR">한국어 - Korean</option>
+              <option value="es-ES">Español - Spanish</option>
+              <option value="fr-FR">Français - French</option>
+              <option value="de-DE">Deutsch - German</option>
             </select>
+            <p style={{
+              fontSize: '12px',
+              color: '#555',
+              marginTop: '6px',
+            }}
+            >
+              Language used for speech recognition. Currently using: {language.split('-')[0]}
+            </p>
           </div>
 
           {/* Auto Punctuation */}
