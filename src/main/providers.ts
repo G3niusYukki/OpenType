@@ -36,6 +36,42 @@ const AVAILABLE_PROVIDERS: Provider[] = [
     supportedModels: ['whisper-large-v3', 'whisper-large-v3-turbo', 'distil-whisper-large-v3-en'],
   },
   {
+    id: 'deepseek',
+    name: 'DeepSeek',
+    description: 'DeepSeek AI for transcription and post-processing',
+    requireApiKey: true,
+    defaultBaseUrl: 'https://api.deepseek.com',
+    defaultModel: 'deepseek-chat',
+    supportedModels: ['deepseek-chat', 'deepseek-coder'],
+  },
+  {
+    id: 'zhipu',
+    name: '智谱 GLM',
+    description: '智谱 AI GLM 模型，优秀的文本处理能力',
+    requireApiKey: true,
+    defaultBaseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+    defaultModel: 'glm-4',
+    supportedModels: ['glm-4', 'glm-4-flash', 'glm-4-long'],
+  },
+  {
+    id: 'minimax',
+    name: 'MiniMax',
+    description: 'MiniMax 海螺 AI，支持语音识别和文本处理',
+    requireApiKey: true,
+    defaultBaseUrl: 'https://api.minimax.chat/v1',
+    defaultModel: 'abab6.5s-chat',
+    supportedModels: ['abab6.5s-chat', 'abab6.5-chat'],
+  },
+  {
+    id: 'moonshot',
+    name: 'Kimi (Moonshot)',
+    description: 'Moonshot Kimi AI，支持长文本处理和语音识别',
+    requireApiKey: true,
+    defaultBaseUrl: 'https://api.moonshot.cn/v1',
+    defaultModel: 'moonshot-v1-8k',
+    supportedModels: ['moonshot-v1-8k', 'moonshot-v1-32k', 'moonshot-v1-128k'],
+  },
+  {
     id: 'local',
     name: 'Local Model',
     description: 'Use local whisper.cpp or similar',
@@ -120,6 +156,55 @@ export class ProviderManager {
           testUrl = 'https://api.groq.com/openai/v1/models';
         } else {
           testUrl = 'https://api.openai.com/v1/models';
+        }
+        
+        const response = await fetch(testUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${cfg.apiKey}`,
+          },
+          timeout: 10000
+        } as any);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          let errorMessage: string;
+          try {
+            const errorJson = JSON.parse(errorText);
+            errorMessage = errorJson.error?.message || errorJson.message || errorText;
+          } catch {
+            errorMessage = errorText || `HTTP ${response.status}`;
+          }
+          return { success: false, error: errorMessage };
+        }
+
+        return { success: true };
+      } catch (error: any) {
+        return { success: false, error: error?.message || 'Connection test failed' };
+      }
+    }
+
+    // For Chinese AI providers (DeepSeek, Zhipu, MiniMax, Moonshot)
+    if (['deepseek', 'zhipu', 'minimax', 'moonshot'].includes(providerId)) {
+      try {
+        const fetch = (await import('node-fetch')).default;
+        
+        let testUrl: string;
+        switch (providerId) {
+          case 'deepseek':
+            testUrl = 'https://api.deepseek.com/v1/models';
+            break;
+          case 'zhipu':
+            testUrl = 'https://open.bigmodel.cn/api/paas/v4/models';
+            break;
+          case 'minimax':
+            testUrl = 'https://api.minimax.chat/v1/models';
+            break;
+          case 'moonshot':
+            testUrl = 'https://api.moonshot.cn/v1/models';
+            break;
+          default:
+            return { success: false, error: 'Unknown provider' };
         }
         
         const response = await fetch(testUrl, {

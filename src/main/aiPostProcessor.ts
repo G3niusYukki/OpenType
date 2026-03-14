@@ -142,6 +142,14 @@ export class AiPostProcessor {
         return this.callGroq(prompt, text, provider);
       case 'anthropic':
         return this.callAnthropic(prompt, text, provider);
+      case 'deepseek':
+        return this.callDeepSeek(prompt, text, provider);
+      case 'zhipu':
+        return this.callZhipu(prompt, text, provider);
+      case 'minimax':
+        return this.callMiniMax(prompt, text, provider);
+      case 'moonshot':
+        return this.callMoonshot(prompt, text, provider);
       default:
         throw new Error(`Unsupported AI provider: ${provider.id}`);
     }
@@ -334,6 +342,194 @@ export class AiPostProcessor {
       processedText,
       changes: this.computeChanges(originalText, processedText),
       provider: 'Anthropic',
+      model: data.model,
+    };
+  }
+
+  /**
+   * Call DeepSeek API
+   */
+  private async callDeepSeek(
+    prompt: string,
+    originalText: string,
+    provider: ProviderConfig
+  ): Promise<Omit<AiPostProcessingResult, 'latencyMs'>> {
+    const response = await fetch(provider.baseUrl || 'https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${provider.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: provider.model || 'deepseek-chat',
+        messages: [
+          { role: 'system', content: prompt },
+          { role: 'user', content: originalText },
+        ],
+        temperature: 0.3,
+        max_tokens: 2000,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`DeepSeek API error: ${error}`);
+    }
+
+    const data = await response.json() as {
+      choices: Array<{ message: { content: string } }>;
+      model: string;
+    };
+
+    const processedText = data.choices[0]?.message?.content?.trim() || originalText;
+
+    return {
+      success: true,
+      originalText,
+      processedText,
+      changes: this.computeChanges(originalText, processedText),
+      provider: 'DeepSeek',
+      model: data.model,
+    };
+  }
+
+  /**
+   * Call Zhipu GLM API
+   */
+  private async callZhipu(
+    prompt: string,
+    originalText: string,
+    provider: ProviderConfig
+  ): Promise<Omit<AiPostProcessingResult, 'latencyMs'>> {
+    const response = await fetch(provider.baseUrl || 'https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${provider.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: provider.model || 'glm-4',
+        messages: [
+          { role: 'system', content: prompt },
+          { role: 'user', content: originalText },
+        ],
+        temperature: 0.3,
+        max_tokens: 2000,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Zhipu API error: ${error}`);
+    }
+
+    const data = await response.json() as {
+      choices: Array<{ message: { content: string } }>;
+      model: string;
+    };
+
+    const processedText = data.choices[0]?.message?.content?.trim() || originalText;
+
+    return {
+      success: true,
+      originalText,
+      processedText,
+      changes: this.computeChanges(originalText, processedText),
+      provider: '智谱 GLM',
+      model: data.model,
+    };
+  }
+
+  /**
+   * Call MiniMax API
+   */
+  private async callMiniMax(
+    prompt: string,
+    originalText: string,
+    provider: ProviderConfig
+  ): Promise<Omit<AiPostProcessingResult, 'latencyMs'>> {
+    const response = await fetch(provider.baseUrl || 'https://api.minimax.chat/v1/text/chatcompletion_v2', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${provider.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: provider.model || 'abab6.5s-chat',
+        messages: [
+          { role: 'system', content: prompt },
+          { role: 'user', content: originalText },
+        ],
+        temperature: 0.3,
+        max_tokens: 2000,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`MiniMax API error: ${error}`);
+    }
+
+    const data = await response.json() as {
+      choices: Array<{ message: { content: string } }>;
+      model: string;
+    };
+
+    const processedText = data.choices[0]?.message?.content?.trim() || originalText;
+
+    return {
+      success: true,
+      originalText,
+      processedText,
+      changes: this.computeChanges(originalText, processedText),
+      provider: 'MiniMax',
+      model: data.model,
+    };
+  }
+
+  /**
+   * Call Moonshot (Kimi) API
+   */
+  private async callMoonshot(
+    prompt: string,
+    originalText: string,
+    provider: ProviderConfig
+  ): Promise<Omit<AiPostProcessingResult, 'latencyMs'>> {
+    const response = await fetch(provider.baseUrl || 'https://api.moonshot.cn/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${provider.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: provider.model || 'moonshot-v1-8k',
+        messages: [
+          { role: 'system', content: prompt },
+          { role: 'user', content: originalText },
+        ],
+        temperature: 0.3,
+        max_tokens: 2000,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Moonshot API error: ${error}`);
+    }
+
+    const data = await response.json() as {
+      choices: Array<{ message: { content: string } }>;
+      model: string;
+    };
+
+    const processedText = data.choices[0]?.message?.content?.trim() || originalText;
+
+    return {
+      success: true,
+      originalText,
+      processedText,
+      changes: this.computeChanges(originalText, processedText),
+      provider: 'Kimi',
       model: data.model,
     };
   }
