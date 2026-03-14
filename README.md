@@ -2,6 +2,8 @@
 
 A macOS-first dictation assistant built with Electron + React + TypeScript. OpenType provides seamless voice-to-text transcription with BYOK (Bring Your Own Key) AI provider support.
 
+> Current status: early MVP scaffold. The app shell, tray flow, settings, history, dictionary, and text insertion path are implemented; real ASR/LLM integration is the next step.
+
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey.svg)
 
