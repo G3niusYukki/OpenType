@@ -13,7 +13,7 @@ interface SystemStatus {
     modelAvailable: boolean;
     hasCloudProvider: boolean;
     activeProvider?: string;
-    cloudProviderType?: 'openai' | 'groq' | 'anthropic';
+    cloudProviderType?: 'openai' | 'groq' | 'anthropic' | 'deepseek' | 'zhipu' | 'minimax' | 'moonshot';
     recommendations: string[];
   };
 }

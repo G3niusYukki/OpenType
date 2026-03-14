@@ -7,7 +7,7 @@ import { execFile } from 'child_process';
 
 const execFileAsync = promisify(execFile);
 
-export type CloudProviderType = 'openai' | 'groq' | 'anthropic';
+export type CloudProviderType = 'openai' | 'groq' | 'anthropic' | 'deepseek' | 'zhipu' | 'minimax' | 'moonshot';
 
 export interface CloudProviderConfig {
   id: CloudProviderType;
@@ -33,7 +33,7 @@ export interface TranscriptionResult {
   success: boolean;
   text?: string;
   error?: string;
-  provider: 'whisper.cpp' | 'openai' | 'groq' | 'anthropic' | 'local' | 'none';
+  provider: 'whisper.cpp' | 'openai' | 'groq' | 'anthropic' | 'deepseek' | 'zhipu' | 'minimax' | 'moonshot' | 'local' | 'none';
   duration?: number;
   fallbackToClipboard?: boolean;
 }
