@@ -1,12 +1,26 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Mic, Square, Copy, Type, AlertCircle, CheckCircle, Activity } from 'lucide-react';
+import { Mic, Square, Copy, Type, AlertCircle, CheckCircle, Activity, Sparkles, FileText } from 'lucide-react';
 import { SystemStatusPanel } from '../components/SystemStatusPanel';
 import { useI18n } from '../i18n';
 
+interface TextChange {
+  type: 'filler' | 'repetition' | 'correction' | 'improvement';
+  original: string;
+  replacement: string;
+  position: number;
+  explanation?: string;
+}
+
 interface TranscriptionResult {
   text: string;
+  rawText?: string;
+  processedText?: string;
   success: boolean;
   provider: string;
+  aiProcessed?: boolean;
+  aiChanges?: TextChange[];
+  aiLatency?: number;
+  aiProvider?: string;
   error?: string;
   fallbackToClipboard?: boolean;
 }
@@ -131,6 +145,14 @@ export function HomePage() {
     method: 'paste' | 'clipboard' | 'type' | 'failed';
     accessibilityRequired?: boolean;
   } | null>(null);
+  const [showRawText, setShowRawText] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(false);
+
+  useEffect(() => {
+    window.electronAPI.aiGetSettings().then((settings) => {
+      setAiEnabled(settings.enabled);
+    });
+  }, []);
 
   useEffect(() => {
     // Load hotkey on mount
@@ -361,20 +383,84 @@ export function HomePage() {
                   via {lastResult.provider}
                 </span>
               )}
+              {lastResult?.aiProcessed && (
+                <span style={{ color: '#818cf8', marginLeft: '8px' }}>
+                  + AI polish
+                </span>
+              )}
             </p>
-            {lastResult?.success && (
-              <span style={{
-                fontSize: '11px',
-                color: '#22c55e',
-                background: 'rgba(34, 197, 94, 0.1)',
-                padding: '2px 8px',
-                borderRadius: '4px',
-              }}>
-                ✓ {t.home.success}
-              </span>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {lastResult?.aiProcessed && (
+                <span style={{
+                  fontSize: '11px',
+                  color: '#818cf8',
+                  background: 'rgba(99, 102, 241, 0.1)',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                }}>
+                  <Sparkles size={10} style={{ marginRight: '4px', display: 'inline' }} />
+                  {lastResult.aiLatency}ms
+                </span>
+              )}
+              {lastResult?.success && (
+                <span style={{
+                  fontSize: '11px',
+                  color: '#22c55e',
+                  background: 'rgba(34, 197, 94, 0.1)',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                }}>
+                  ✓ {t.home.success}
+                </span>
+              )}
+            </div>
           </div>
-          
+
+          {lastResult?.aiProcessed && aiEnabled && (
+            <div style={{
+              display: 'flex',
+              gap: '8px',
+              marginBottom: '12px',
+            }}>
+              <button
+                onClick={() => setShowRawText(false)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: !showRawText ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
+                  color: !showRawText ? '#818cf8' : '#666',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                }}
+              >
+                <Sparkles size={12} />
+                Polished
+              </button>
+              <button
+                onClick={() => setShowRawText(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: showRawText ? 'rgba(100, 100, 100, 0.2)' : 'transparent',
+                  color: showRawText ? '#999' : '#666',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                }}
+              >
+                <FileText size={12} />
+                Original
+              </button>
+            </div>
+          )}
+
           <div style={{
             background: 'linear-gradient(135deg, #1a1a1a 0%, #1e1e2e 100%)',
             border: `1px solid ${hasError ? 'rgba(239, 68, 68, 0.3)' : '#2a2a2a'}`,
@@ -391,7 +477,7 @@ export function HomePage() {
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
             }}>
-              {lastTranscription}
+              {showRawText && lastResult?.rawText ? lastResult.rawText : lastTranscription}
             </p>
 
             {/* Fallback Warning */}
