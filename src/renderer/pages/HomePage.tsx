@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Mic, Square, Copy, Type, AlertCircle, CheckCircle, Activity, Sparkles, FileText } from 'lucide-react';
+import { Mic, Square, Copy, Type, AlertCircle, CheckCircle, Activity, Sparkles, FileText, ChevronDown, Server, Cloud, Cpu } from 'lucide-react';
 import { SystemStatusPanel } from '../components/SystemStatusPanel';
 import { useI18n } from '../i18n';
 
@@ -147,10 +147,15 @@ export function HomePage() {
   } | null>(null);
   const [showRawText, setShowRawText] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
+  const [preferredProvider, setPreferredProvider] = useState<'local' | 'cloud' | 'auto'>('auto');
+  const [showProviderDropdown, setShowProviderDropdown] = useState(false);
 
   useEffect(() => {
     window.electronAPI.aiGetSettings().then((settings) => {
       setAiEnabled(settings.enabled);
+    });
+    window.electronAPI.storeGet('preferredProvider').then((provider) => {
+      if (provider) setPreferredProvider(provider as 'local' | 'cloud' | 'auto');
     });
   }, []);
 
@@ -206,6 +211,34 @@ export function HomePage() {
     }
   }, [isRecording]);
 
+  const handleProviderChange = async (provider: 'local' | 'cloud' | 'auto') => {
+    setPreferredProvider(provider);
+    await window.electronAPI.storeSet('preferredProvider', provider);
+    setShowProviderDropdown(false);
+  };
+
+  const getProviderIcon = () => {
+    switch (preferredProvider) {
+      case 'local':
+        return <Cpu size={14} />;
+      case 'cloud':
+        return <Cloud size={14} />;
+      default:
+        return <Server size={14} />;
+    }
+  };
+
+  const getProviderLabel = () => {
+    switch (preferredProvider) {
+      case 'local':
+        return 'Local (whisper.cpp)';
+      case 'cloud':
+        return 'Cloud (API)';
+      default:
+        return 'Auto (Local first)';
+    }
+  };
+
   const handleCopy = async () => {
     await navigator.clipboard.writeText(lastTranscription);
     setInsertionStatus({ method: 'clipboard' });
@@ -238,8 +271,103 @@ export function HomePage() {
       overflow: 'auto',
     }}>
       {/* System Status Panel */}
-      <div style={{ marginBottom: '24px' }}>
+      <div style={{ marginBottom: '16px' }}>
         <SystemStatusPanel />
+      </div>
+
+      <div style={{
+        marginBottom: '24px',
+        display: 'flex',
+        justifyContent: 'center',
+        position: 'relative'
+      }}>
+        <button
+          onClick={() => setShowProviderDropdown(!showProviderDropdown)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            background: '#1a1a1a',
+            border: '1px solid #2a2a2a',
+            borderRadius: '8px',
+            color: '#999',
+            fontSize: '13px',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = '#3a3a3a';
+            e.currentTarget.style.color = '#ccc';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = '#2a2a2a';
+            e.currentTarget.style.color = '#999';
+          }}
+        >
+          {getProviderIcon()}
+          <span>{getProviderLabel()}</span>
+          <ChevronDown size={14} style={{ 
+            transform: showProviderDropdown ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s'
+          }} />
+        </button>
+
+        {showProviderDropdown && (
+          <div style={{
+            position: 'absolute',
+            top: '100%',
+            marginTop: '8px',
+            background: '#1a1a1a',
+            border: '1px solid #2a2a2a',
+            borderRadius: '8px',
+            padding: '4px',
+            minWidth: '180px',
+            zIndex: 100,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+          }}>
+            {[
+              { id: 'auto', label: 'Auto (Local first)', icon: Server },
+              { id: 'local', label: 'Local (whisper.cpp)', icon: Cpu },
+              { id: 'cloud', label: 'Cloud (API)', icon: Cloud },
+            ].map((option) => (
+              <button
+                key={option.id}
+                onClick={() => handleProviderChange(option.id as 'local' | 'cloud' | 'auto')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  width: '100%',
+                  padding: '8px 12px',
+                  background: preferredProvider === option.id ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
+                  border: 'none',
+                  borderRadius: '4px',
+                  color: preferredProvider === option.id ? '#818cf8' : '#ccc',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+                onMouseEnter={(e) => {
+                  if (preferredProvider !== option.id) {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (preferredProvider !== option.id) {
+                    e.currentTarget.style.background = 'transparent';
+                  }
+                }}
+              >
+                <option.icon size={14} />
+                <span>{option.label}</span>
+                {preferredProvider === option.id && (
+                  <CheckCircle size={14} style={{ marginLeft: 'auto' }} />
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Main Content - Recording Section */}
