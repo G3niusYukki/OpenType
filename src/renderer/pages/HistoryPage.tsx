@@ -115,8 +115,7 @@ export function HistoryPage() {
               textAlign: 'center',
               color: '#444',
             }}>
-              <FileAudio size={32} style={{ marginBottom: '12px', opacity: 0.5 }}
-3e
+              <FileAudio size={32} style={{ marginBottom: '12px', opacity: 0.5 }} />
               <p style={{ fontSize: '13px' }}>No transcriptions yet</p>
             </div>
           ) : (
@@ -292,7 +291,7 @@ export function HistoryPage() {
             justifyContent: 'center',
             color: '#444',
           }}>
-            <Clock size={48} style={{ marginBottom: '16px', opacity: 0.3 }}>/>
+            <Clock size={48} style={{ marginBottom: '16px', opacity: 0.3 }} />
             <p>Select an item to view details</p>
           </div>
         )}

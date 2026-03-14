@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Mic, Settings, History, BookOpen, Minus, X } from 'lucide-react';
+import { Mic, Settings, History, BookOpen, Minus } from 'lucide-react';
 
 type Page = 'home' | 'settings' | 'history' | 'dictionary';
 
@@ -16,58 +16,70 @@ const navItems: { id: Page; label: string; icon: typeof Mic }[] = [
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
+const dragRegion = { WebkitAppRegion: 'drag' } as any;
+const noDragRegion = { WebkitAppRegion: 'no-drag' } as any;
+
 export function MainLayout({ children, currentPage, onNavigate }: MainLayoutProps) {
   const handleMinimize = () => {
     window.electronAPI.windowHide();
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      height: '100vh',
-      background: '#0f0f0f',
-    }}>
-      {/* Sidebar */}
-      <nav style={{
-        width: '64px',
-        background: '#161616',
-        borderRight: '1px solid #222',
+    <div
+      style={{
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '16px 0',
-        WebkitAppRegion: 'drag',
-      }}>
-        <div style={{ 
-          marginBottom: '32px',
-          WebkitAppRegion: 'no-drag',
-        }}>
-          <div style={{
-            width: '36px',
-            height: '36px',
-            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-            borderRadius: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '18px',
-            fontWeight: 'bold',
-          }}>
+        height: '100vh',
+        background: '#0f0f0f',
+      }}
+    >
+      <nav
+        style={{
+          width: '64px',
+          background: '#161616',
+          borderRight: '1px solid #222',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: '16px 0',
+          ...dragRegion,
+        }}
+      >
+        <div
+          style={{
+            marginBottom: '32px',
+            ...noDragRegion,
+          }}
+        >
+          <div
+            style={{
+              width: '36px',
+              height: '36px',
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '18px',
+              fontWeight: 'bold',
+            }}
+          >
             O
           </div>
         </div>
 
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px',
-          flex: 1,
-          WebkitAppRegion: 'no-drag',
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            flex: 1,
+            ...noDragRegion,
+          }}
+        >
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPage === item.id;
-            
+
             return (
               <button
                 key={item.id}
@@ -105,16 +117,17 @@ export function MainLayout({ children, currentPage, onNavigate }: MainLayoutProp
           })}
         </div>
 
-        {/* Window controls */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '4px',
-          marginTop: 'auto',
-          paddingTop: '16px',
-          borderTop: '1px solid #222',
-          WebkitAppRegion: 'no-drag',
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+            marginTop: 'auto',
+            paddingTop: '16px',
+            borderTop: '1px solid #222',
+            ...noDragRegion,
+          }}
+        >
           <button
             onClick={handleMinimize}
             style={{
@@ -143,13 +156,14 @@ export function MainLayout({ children, currentPage, onNavigate }: MainLayoutProp
         </div>
       </nav>
 
-      {/* Main content */}
-      <main style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-      }}>
+      <main
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
         {children}
       </main>
     </div>

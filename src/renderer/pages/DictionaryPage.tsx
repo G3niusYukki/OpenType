@@ -194,7 +194,7 @@ export function DictionaryPage() {
             textAlign: 'center',
             color: '#444',
           }}>
-            <BookOpen size={48} style={{ marginBottom: '16px', opacity: 0.3 }}>/>
+            <BookOpen size={48} style={{ marginBottom: '16px', opacity: 0.3 }} />
             <p style={{ margin: '0 0 8px 0', fontSize: '15px' }}>No dictionary entries yet</p>
             <p style={{ margin: 0, fontSize: '13px' }}>Add your first custom replacement above</p>
           </div>

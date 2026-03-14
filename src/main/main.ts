@@ -132,11 +132,11 @@ class OpenTypeApp {
 
   private setupIpcHandlers(): void {
     // Settings
-    ipcMain.handle('store:get', (_, key: string) => this.store.get(key));
+    ipcMain.handle('store:get', (_, key: string) => this.store.getAny(key));
     ipcMain.handle('store:set', (_, key: string, value: unknown) => {
-      this.store.set(key, value);
-      if (key === 'hotkey') {
-        this.updateHotkey(value as string);
+      this.store.setAny(key, value);
+      if (key === 'hotkey' && typeof value === 'string') {
+        this.updateHotkey(value);
       }
     });
 
@@ -149,7 +149,7 @@ class OpenTypeApp {
     ipcMain.handle('providers:list', () => this.providerManager.listProviders());
     ipcMain.handle('providers:get-config', (_, id: string) => this.providerManager.getConfig(id));
     ipcMain.handle('providers:set-config', (_, id: string, config: unknown) => 
-      this.providerManager.setConfig(id, config));
+      this.providerManager.setConfig(id, (config || {}) as any));
     ipcMain.handle('providers:test', (_, id: string) => this.providerManager.testConnection(id));
 
     // History

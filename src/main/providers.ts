@@ -1,4 +1,4 @@
-import { Store } from './store';
+import { ProviderConfig, Store } from './store';
 
 interface Provider {
   id: string;
@@ -52,30 +52,36 @@ export class ProviderManager {
     return AVAILABLE_PROVIDERS;
   }
 
-  getConfig(providerId: string): { provider: Provider; config: unknown } | null {
+  getConfig(providerId: string): { provider: Provider; config: ProviderConfig } | null {
     const provider = AVAILABLE_PROVIDERS.find(p => p.id === providerId);
     if (!provider) return null;
 
     const providers = this.store.get('providers');
     const config = providers.find(p => p.id === providerId);
-    
+
     return {
       provider,
-      config: config || { id: providerId, enabled: false },
+      config: config || { id: providerId, name: provider.name, enabled: false },
     };
   }
 
-  setConfig(providerId: string, config: unknown): boolean {
+  setConfig(providerId: string, config: Partial<ProviderConfig>): boolean {
     try {
-      const providers = this.store.get('providers');
+      const provider = AVAILABLE_PROVIDERS.find(p => p.id === providerId);
+      const providers = [...this.store.get('providers')];
       const index = providers.findIndex(p => p.id === providerId);
-      
+
       if (index >= 0) {
         providers[index] = { ...providers[index], ...config };
       } else {
-        providers.push({ id: providerId, ...config } as { id: string; name: string; enabled: boolean; apiKey?: string; baseUrl?: string; model?: string });
+        providers.push({
+          id: providerId,
+          name: provider?.name || providerId,
+          enabled: false,
+          ...config,
+        });
       }
-      
+
       this.store.set('providers', providers);
       return true;
     } catch (error) {
@@ -90,8 +96,8 @@ export class ProviderManager {
       return { success: false, error: 'Provider not found' };
     }
 
-    const cfg = config.config as { enabled?: boolean; apiKey?: string; baseUrl?: string };
-    
+    const cfg = config.config;
+
     if (!cfg.enabled) {
       return { success: false, error: 'Provider not enabled' };
     }
@@ -100,24 +106,18 @@ export class ProviderManager {
       return { success: false, error: 'API key required' };
     }
 
-    // v1: Just validate config exists
-    // Future: Actually test the connection with a ping request
-    
     return { success: true };
   }
 
-  /**
-   * Get the active transcription provider
-   */
-  getActiveProvider(): { provider: Provider; config: unknown } | null {
+  getActiveProvider(): { provider: Provider; config: ProviderConfig } | null {
     const providers = this.store.get('providers');
     const active = providers.find(p => p.enabled);
-    
+
     if (!active) return null;
-    
+
     const provider = AVAILABLE_PROVIDERS.find(p => p.id === active.id);
     if (!provider) return null;
-    
+
     return { provider, config: active };
   }
 }
