@@ -45,6 +45,16 @@ export function SettingsPage() {
   const [testingProvider, setTestingProvider] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ id: string; success: boolean; error?: string } | null>(null);
   const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
+  const [aiSettings, setAiSettingsState] = useState({
+    enabled: false,
+    options: {
+      removeFillerWords: true,
+      removeRepetition: true,
+      detectSelfCorrection: true,
+    },
+    showComparison: true,
+  });
+  const [aiAvailable, setAiAvailable] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -53,17 +63,37 @@ export function SettingsPage() {
   }, []);
 
   const loadSettings = async () => {
-    const [savedHotkey, savedLanguage, savedPunctuation, savedPreferredProvider] = await Promise.all([
+    const [savedHotkey, savedLanguage, savedPunctuation, savedPreferredProvider, savedAiSettings] = await Promise.all([
       window.electronAPI.storeGet('hotkey'),
       window.electronAPI.storeGet('language'),
       window.electronAPI.storeGet('autoPunctuation'),
       window.electronAPI.storeGet('preferredProvider'),
+      window.electronAPI.aiGetSettings(),
     ]);
-    
+
     if (savedHotkey) setHotkey(savedHotkey as string);
     if (savedLanguage) setLanguage(savedLanguage as string);
     if (savedPunctuation !== undefined) setAutoPunctuation(savedPunctuation as boolean);
     if (savedPreferredProvider) setPreferredProvider(savedPreferredProvider as 'local' | 'cloud' | 'auto');
+    if (savedAiSettings) {
+      setAiSettingsState(savedAiSettings);
+      checkAiAvailability(savedAiSettings);
+    }
+  };
+
+  const checkAiAvailability = async (settings?: typeof aiSettings) => {
+    const aiSet = settings || aiSettings;
+    const providers = await window.electronAPI.storeGet('providers') as Array<{ id: string; enabled: boolean; apiKey?: string }>;
+    const hasAiProvider = providers?.some(p =>
+      p.enabled && p.apiKey && ['openai', 'groq', 'anthropic'].includes(p.id)
+    );
+    setAiAvailable(hasAiProvider);
+  };
+
+  const updateAiSettings = async (updates: Partial<typeof aiSettings>) => {
+    const newSettings = { ...aiSettings, ...updates };
+    setAiSettingsState(newSettings);
+    await window.electronAPI.aiSetSettings(updates);
   };
 
   const loadProviders = async () => {
@@ -691,6 +721,190 @@ export function SettingsPage() {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      <section style={{ marginTop: '32px' }}>
+        <h2 style={{
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#666',
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          marginBottom: '20px',
+        }}>
+          AI Post-Processing
+        </h2>
+
+        <div style={{
+          background: '#161616',
+          border: '1px solid #222',
+          borderRadius: '12px',
+          padding: '20px',
+        }}>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              cursor: 'pointer',
+            }}
+            >
+              <input
+                type="checkbox"
+                checked={aiSettings.enabled}
+                onChange={(e) => updateAiSettings({ enabled: e.target.checked })}
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  accentColor: '#6366f1',
+                }}
+              />
+              <div>
+                <p style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: '#ccc',
+                  margin: 0,
+                }}
+                >
+                  Enable AI Post-Processing
+                </p>
+                <p style={{
+                  fontSize: '12px',
+                  color: '#555',
+                  margin: 0,
+                }}
+                >
+                  Automatically polish transcribed text using AI
+                </p>
+              </div>
+            </label>
+          </div>
+
+          {aiSettings.enabled && (
+            <>
+              {/* Processing Options */}
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  color: '#999',
+                  marginBottom: '12px',
+                }}
+                >
+                  Processing Options
+                </p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    color: '#aaa',
+                  }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={aiSettings.options.removeFillerWords}
+                      onChange={(e) => updateAiSettings({
+                        options: { ...aiSettings.options, removeFillerWords: e.target.checked }
+                      })}
+                      style={{ accentColor: '#6366f1' }}
+                    />
+                    Remove filler words (um, uh, 嗯, 啊)
+                  </label>
+
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    color: '#aaa',
+                  }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={aiSettings.options.removeRepetition}
+                      onChange={(e) => updateAiSettings({
+                        options: { ...aiSettings.options, removeRepetition: e.target.checked }
+                      })}
+                      style={{ accentColor: '#6366f1' }}
+                    />
+                    Remove repeated words
+                  </label>
+
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    color: '#aaa',
+                  }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={aiSettings.options.detectSelfCorrection}
+                      onChange={(e) => updateAiSettings({
+                        options: { ...aiSettings.options, detectSelfCorrection: e.target.checked }
+                      })}
+                      style={{ accentColor: '#6366f1' }}
+                    />
+                    Detect and apply self-corrections
+                  </label>
+                </div>
+              </div>
+
+              {/* Show Comparison Toggle */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  color: '#aaa',
+                }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={aiSettings.showComparison}
+                    onChange={(e) => updateAiSettings({ showComparison: e.target.checked })}
+                    style={{ accentColor: '#6366f1' }}
+                  />
+                  Show before/after comparison in results
+                </label>
+              </div>
+
+              {/* AI Provider Status */}
+              <div style={{
+                padding: '12px',
+                background: aiAvailable ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                borderRadius: '8px',
+                border: `1px solid ${aiAvailable ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+              }}
+              >
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '13px',
+                  color: aiAvailable ? '#22c55e' : '#ef4444',
+                }}
+                >
+                  {aiAvailable ? (
+                    <><Check size={14} /> AI provider available</>
+                  ) : (
+                    <><AlertCircle size={14} /> No AI provider configured. Enable OpenAI, Groq, or Anthropic above.</>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </section>
     </div>
