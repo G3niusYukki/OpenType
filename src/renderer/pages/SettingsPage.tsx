@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Keyboard, Globe, Zap, Check, AlertCircle, Terminal, ExternalLink } from 'lucide-react';
+import { Keyboard, Globe, Zap, Check, CheckCircle, AlertCircle, Terminal, ExternalLink } from 'lucide-react';
 
 interface Provider {
   id: string;
@@ -55,6 +55,13 @@ export function SettingsPage() {
     showComparison: true,
   });
   const [aiAvailable, setAiAvailable] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+
+  const showSaveIndicator = () => {
+    setSaveStatus('saving');
+    setTimeout(() => setSaveStatus('saved'), 300);
+    setTimeout(() => setSaveStatus('idle'), 1500);
+  };
 
   useEffect(() => {
     loadSettings();
@@ -85,7 +92,7 @@ export function SettingsPage() {
     const aiSet = settings || aiSettings;
     const providers = await window.electronAPI.storeGet('providers') as Array<{ id: string; enabled: boolean; apiKey?: string }>;
     const hasAiProvider = providers?.some(p =>
-      p.enabled && p.apiKey && ['openai', 'groq', 'anthropic'].includes(p.id)
+      p.enabled && p.apiKey && ['openai', 'groq', 'anthropic', 'deepseek', 'zhipu', 'minimax', 'moonshot'].includes(p.id)
     );
     setAiAvailable(hasAiProvider);
   };
@@ -122,43 +129,48 @@ export function SettingsPage() {
 
   const saveHotkey = async (value: string) => {
     setHotkey(value);
+    showSaveIndicator();
     await window.electronAPI.storeSet('hotkey', value);
   };
 
   const saveLanguage = async (value: string) => {
     setLanguage(value);
+    showSaveIndicator();
     await window.electronAPI.storeSet('language', value);
-    // Also update transcription language to match UI language
     const langCode = value.split('-')[0];
     await window.electronAPI.storeSet('transcriptionLanguage', langCode);
   };
 
   const saveAutoPunctuation = async (value: boolean) => {
     setAutoPunctuation(value);
+    showSaveIndicator();
     await window.electronAPI.storeSet('autoPunctuation', value);
   };
 
   const savePreferredProvider = async (value: 'local' | 'cloud' | 'auto') => {
     setPreferredProvider(value);
+    showSaveIndicator();
     await window.electronAPI.storeSet('preferredProvider', value);
-    // Refresh system status to update active provider display
     setTimeout(loadSystemStatus, 100);
   };
 
   const updateProviderConfig = async (providerId: string, updates: Partial<ProviderConfig>) => {
     const current = providerConfigs[providerId] || { id: providerId, enabled: false };
     const updated = { ...current, ...updates };
-    
+
+    showSaveIndicator();
     await window.electronAPI.providersSetConfig(providerId, updated);
-    
+
     setProviderConfigs(prev => ({
       ...prev,
       [providerId]: updated,
     }));
-    
-    // Refresh system status when provider changes
+
     if (updates.enabled !== undefined || updates.apiKey !== undefined) {
-      setTimeout(loadSystemStatus, 100);
+      setTimeout(() => {
+        loadSystemStatus();
+        checkAiAvailability();
+      }, 100);
     }
   };
 
@@ -174,14 +186,36 @@ export function SettingsPage() {
 
   return (
     <div style={{ flex: 1, overflow: 'auto', padding: '32px' }}>
-      <h1 style={{
-        fontSize: '24px',
-        fontWeight: 600,
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         marginBottom: '32px',
-        color: '#fff',
       }}>
-        Settings
-      </h1>
+        <h1 style={{
+          fontSize: '24px',
+          fontWeight: 600,
+          color: '#fff',
+          margin: 0,
+        }}>
+          Settings
+        </h1>
+        {saveStatus !== 'idle' && (
+          <span style={{
+            fontSize: '12px',
+            color: saveStatus === 'saving' ? '#818cf8' : '#22c55e',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+          }}>
+            {saveStatus === 'saving' ? (
+              <>Saving...</>
+            ) : (
+              <><CheckCircle size={12} /> Saved</>
+            )}
+          </span>
+        )}
+      </div>
 
       {/* System Status Section */}
       <section style={{ marginBottom: '40px' }}>

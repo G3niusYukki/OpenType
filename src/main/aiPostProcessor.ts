@@ -109,12 +109,9 @@ export class AiPostProcessor {
    */
   private getActiveAiProvider(): ProviderConfig | null {
     const providers = this.store.get('providers') || [];
-    
-    // Prefer providers specifically marked for AI, or any enabled provider with API key
     const aiProvider = providers.find((p: ProviderConfig) => 
-      p.enabled && p.apiKey && (p.id === 'anthropic' || p.id === 'openai' || p.id === 'groq')
+      p.enabled && p.apiKey && ['anthropic', 'openai', 'groq', 'deepseek', 'zhipu', 'minimax', 'moonshot'].includes(p.id)
     );
-    
     return aiProvider || null;
   }
 
