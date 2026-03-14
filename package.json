@@ -22,6 +22,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "echo 'E2E tests not implemented yet. Install Playwright and add tests to tests/e2e/'",
     "ci": "npm run typecheck && npm run build && npm run test"
   },
   "keywords": [

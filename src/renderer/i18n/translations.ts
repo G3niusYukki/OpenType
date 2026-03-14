@@ -76,6 +76,7 @@ export interface Translations {
     reset: string;
     resetDescription: string;
     resetButton: string;
+    using: string;
   };
   // History Page
   history: {
@@ -228,6 +229,7 @@ export const en: Translations = {
     reset: 'Reset Settings',
     resetDescription: 'Reset all settings to default values',
     resetButton: 'Reset All',
+    using: 'Using',
   },
   history: {
     title: 'History',
@@ -375,6 +377,7 @@ export const zh: Translations = {
     reset: '重置设置',
     resetDescription: '将所有设置重置为默认值',
     resetButton: '重置全部',
+    using: '使用',
   },
   history: {
     title: '历史记录',
@@ -522,6 +525,7 @@ export const ja: Translations = {
     reset: '設定をリセット',
     resetDescription: 'すべての設定をデフォルト値にリセット',
     resetButton: 'すべてリセット',
+    using: '使用中',
   },
   history: {
     title: '履歴',
@@ -669,6 +673,7 @@ export const ko: Translations = {
     reset: '설정 초기화',
     resetDescription: '모든 설정을 기본값으로 초기화',
     resetButton: '모두 초기화',
+    using: '사용 중',
   },
   history: {
     title: '기록',

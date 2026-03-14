@@ -16,6 +16,8 @@ interface Provider {
 interface ProviderConfig {
   id: string;
   enabled: boolean;
+  enabledForTranscription?: boolean;
+  enabledForPostProcessing?: boolean;
   apiKey?: string;
   baseUrl?: string;
   model?: string;
