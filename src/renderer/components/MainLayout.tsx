@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Mic, Settings, History, BookOpen, Minus } from 'lucide-react';
+import { useI18n } from '../i18n';
 
 type Page = 'home' | 'settings' | 'history' | 'dictionary';
 
@@ -9,20 +10,22 @@ interface MainLayoutProps {
   onNavigate: (page: Page) => void;
 }
 
-const navItems: { id: Page; label: string; icon: typeof Mic }[] = [
-  { id: 'home', label: 'Dictate', icon: Mic },
-  { id: 'history', label: 'History', icon: History },
-  { id: 'dictionary', label: 'Dictionary', icon: BookOpen },
-  { id: 'settings', label: 'Settings', icon: Settings },
-];
-
 const dragRegion = { WebkitAppRegion: 'drag' } as any;
 const noDragRegion = { WebkitAppRegion: 'no-drag' } as any;
 
 export function MainLayout({ children, currentPage, onNavigate }: MainLayoutProps) {
+  const { t } = useI18n();
+  
   const handleMinimize = () => {
     window.electronAPI.windowHide();
   };
+
+  const navItems: { id: Page; label: string; icon: typeof Mic }[] = [
+    { id: 'home', label: t.nav.dictate, icon: Mic },
+    { id: 'history', label: t.nav.history, icon: History },
+    { id: 'dictionary', label: t.nav.dictionary, icon: BookOpen },
+    { id: 'settings', label: t.nav.settings, icon: Settings },
+  ];
 
   return (
     <div

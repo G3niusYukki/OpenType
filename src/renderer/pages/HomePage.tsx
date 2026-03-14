@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Mic, Square, Copy, Type, AlertCircle, CheckCircle, Activity } from 'lucide-react';
 import { SystemStatusPanel } from '../components/SystemStatusPanel';
+import { useI18n } from '../i18n';
 
 interface TranscriptionResult {
   text: string;
@@ -121,6 +122,7 @@ function RecordingTimer({ isRecording }: { isRecording: boolean }) {
 }
 
 export function HomePage() {
+  const { t } = useI18n();
   const [isRecording, setIsRecording] = useState(false);
   const [lastTranscription, setLastTranscription] = useState('');
   const [lastResult, setLastResult] = useState<TranscriptionResult | null>(null);
@@ -278,7 +280,7 @@ export function HomePage() {
           color: isRecording ? '#ef4444' : '#818cf8',
           fontWeight: 500,
         }}>
-          {isRecording ? '正在录音...' : `按 ${hotkey} 开始录音`}
+          {isRecording ? t.home.recording : t.home.pressToStart.replace('{hotkey}', hotkey)}
         </p>
 
         {/* Recording Timer */}
@@ -304,7 +306,7 @@ export function HomePage() {
               marginBottom: '8px',
             }}>
               <AlertCircle size={16} />
-              <strong>需要辅助功能权限</strong>
+              <strong>{t.home.accessibilityRequired}</strong>
             </div>
             <p style={{
               fontSize: '12px',
@@ -312,8 +314,7 @@ export function HomePage() {
               margin: 0,
               lineHeight: 1.5,
             }}>
-              OpenType 需要辅助功能权限才能在光标处粘贴文本。
-              文本已复制到剪贴板。
+              {t.home.accessibilityMessage}
             </p>
             <button
               onClick={() => window.electronAPI.windowShow()}
@@ -328,7 +329,7 @@ export function HomePage() {
                 cursor: 'pointer',
               }}
             >
-              打开设置 → 隐私与安全性 → 辅助功能
+              {t.home.openSettings}
             </button>
           </div>
         )}
@@ -354,7 +355,7 @@ export function HomePage() {
               letterSpacing: '0.1em',
               margin: 0,
             }}>
-              转录结果
+              {t.home.transcriptionResult}
               {lastResult?.provider && lastResult.provider !== 'none' && (
                 <span style={{ color: '#444', marginLeft: '8px' }}>
                   via {lastResult.provider}
@@ -369,7 +370,7 @@ export function HomePage() {
                 padding: '2px 8px',
                 borderRadius: '4px',
               }}>
-                ✓ 成功
+                ✓ {t.home.success}
               </span>
             )}
           </div>
@@ -408,7 +409,7 @@ export function HomePage() {
               }}
               >
                 <AlertCircle size={16} />
-                <span>文本已复制到剪贴板（自动插入不可用）</span>
+                <span>{t.home.textCopiedToClipboard}</span>
               </div>
             )}
 
@@ -444,9 +445,9 @@ export function HomePage() {
                 }}
               >
                 {insertionStatus?.method === 'clipboard' ? (
-                  <><CheckCircle size={16} /> 已复制!</>
+                  <><CheckCircle size={16} /> {t.home.copied}</>
                 ) : (
-                  <><Copy size={16} /> 复制</>
+                  <><Copy size={16} /> {t.home.copy}</>
                 )}
               </button>
 
@@ -483,9 +484,9 @@ export function HomePage() {
                 }}
               >
                 {insertionStatus?.method === 'paste' ? (
-                  <><CheckCircle size={16} /> 已插入!</>
+                  <><CheckCircle size={16} /> {t.home.inserted}</>
                 ) : (
-                  <><Type size={16} /> 插入到光标</>
+                  <><Type size={16} /> {t.home.insertAtCursor}</>
                 )}
               </button>
             </div>
@@ -501,10 +502,10 @@ export function HomePage() {
           marginBottom: '48px',
         }}>
           <p style={{ fontSize: '14px', marginBottom: '8px' }}>
-            您的转录将显示在这里
+            {t.home.emptyStateTitle}
           </p>
           <p style={{ fontSize: '12px', color: '#333' }}>
-            点击麦克风或按 {hotkey} 开始听写
+            {t.home.emptyStateSubtitle.replace('{hotkey}', hotkey)}
           </p>
         </div>
       )}
