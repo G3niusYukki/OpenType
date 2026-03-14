@@ -1,8 +1,4 @@
-# OpenType
-
-<p align="center">
-  <img src="resources/icon.png" alt="OpenType Logo" width="120" height="120">
-</p>
+# OpenType 🎙️
 
 <p align="center">
   <strong>AI-Powered Voice-to-Text for macOS</strong><br>
@@ -85,17 +81,11 @@ OpenType provides four distinct ways to interact with voice input:
 
 ## 📸 Screenshots
 
-<p align="center">
-  <img src="resources/screenshot-home.png" alt="Home Screen" width="600">
-  <br>
-  <em>Main transcription interface with before/after comparison</em>
-</p>
-
-<p align="center">
-  <img src="resources/screenshot-settings.png" alt="Settings" width="600">
-  <br>
-  <em>Provider configuration and voice input mode settings</em>
-</p>
+> 🖼️ Screenshots coming soon! 
+>
+> *Main transcription interface with before/after comparison*
+>
+> *Provider configuration and voice input mode settings*
 
 ---
 
