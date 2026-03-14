@@ -14,7 +14,8 @@
     "build:preload": "tsc -p src/preload/tsconfig.json",
     "build:renderer": "vite build",
     "start": "electron .",
-    "restart": "pkill -f 'Electron.*opentype' 2>/dev/null; sleep 1; npm start",
+    "kill": "pkill -9 -f 'Electron.*opentype' 2>/dev/null; pkill -9 -f 'electron.*OpenType' 2>/dev/null; sleep 1; echo 'OpenType killed'",
+    "restart": "npm run kill && npm run build && npm start",
     "dist": "npm run build && electron-builder",
     "dist:mac": "npm run build && electron-builder --mac",
     "typecheck": "tsc --noEmit -p src/main/tsconfig.json && tsc --noEmit -p src/renderer/tsconfig.json"

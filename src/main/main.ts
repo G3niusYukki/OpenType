@@ -54,6 +54,7 @@ class OpenTypeApp {
     this.createTray();
     this.registerGlobalShortcuts();
     this.setupIpcHandlers();
+    this.setupSignalHandlers();
     
     // Log system status on startup
     this.logSystemStatus();
@@ -473,7 +474,20 @@ class OpenTypeApp {
 
   private quit(): void {
     globalShortcut.unregisterAll();
+    this.tray?.destroy();
     app.quit();
+  }
+
+  private setupSignalHandlers(): void {
+    const cleanup = () => {
+      console.log('[OpenType] Cleaning up before exit...');
+      globalShortcut.unregisterAll();
+      this.tray?.destroy();
+      app.quit();
+    };
+
+    process.on('SIGTERM', cleanup);
+    process.on('SIGINT', cleanup);
   }
 }
 
