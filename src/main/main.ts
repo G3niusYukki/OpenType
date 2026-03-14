@@ -45,9 +45,10 @@ class OpenTypeApp {
 
   private getCloudProviderConfigs(): CloudProviderConfig[] {
     const providers = this.store.get('providers');
+    const supportedProviders = ['openai', 'groq', 'anthropic', 'deepseek', 'zhipu', 'minimax', 'moonshot'];
     return providers
-      .filter((p): p is ProviderConfig & { id: 'openai' | 'groq' | 'anthropic'; apiKey: string } => 
-        p.enabled && !!p.apiKey && ['openai', 'groq', 'anthropic'].includes(p.id)
+      .filter((p): p is ProviderConfig & { id: 'openai' | 'groq' | 'anthropic' | 'deepseek' | 'zhipu' | 'minimax' | 'moonshot'; apiKey: string } => 
+        p.enabled && !!p.apiKey && supportedProviders.includes(p.id)
       )
       .map(p => ({
         id: p.id,
