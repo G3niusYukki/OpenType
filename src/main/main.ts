@@ -467,6 +467,20 @@ class OpenTypeApp {
       }
 
       try {
+        const providerNameMap: Record<string, string> = {
+          'openai': 'OpenAI',
+          'groq': 'Groq',
+          'anthropic': 'Anthropic',
+          'deepseek': 'DeepSeek',
+          'zhipu': '智谱 GLM',
+          'minimax': 'MiniMax',
+          'moonshot': 'Kimi',
+          'whisper.cpp': 'whisper.cpp',
+          'local': 'Local',
+          'none': 'None'
+        };
+        const providerDisplayName = providerNameMap[result.provider] || result.provider;
+
         this.mainWindow?.webContents.send('transcription:complete', {
           rawText,
           processedText: finalText,
@@ -476,7 +490,7 @@ class OpenTypeApp {
           aiLatency: aiResult?.latencyMs,
           aiProvider: aiResult?.provider,
           success: result.success,
-          provider: result.provider,
+          provider: providerDisplayName,
           error: result.error,
           fallbackToClipboard
         });

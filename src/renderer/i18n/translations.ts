@@ -47,6 +47,23 @@ export interface Translations {
     preferredProviderCloud: string;
     providers: string;
     providersDescription: string;
+    apiKey: string;
+    model: string;
+    baseUrl: string;
+    test: string;
+    testing: string;
+    enabled: string;
+    aiPostProcessing: string;
+    enableAiPostProcessing: string;
+    aiPostProcessingDescription: string;
+    processingOptions: string;
+    removeFillerWords: string;
+    removeRepetition: string;
+    detectSelfCorrection: string;
+    showComparison: string;
+    aiAvailable: string;
+    aiNotAvailable: string;
+    configureAiProvider: string;
     audio: string;
     audioDescription: string;
     about: string;
@@ -109,6 +126,12 @@ export interface Translations {
     active: string;
     ffmpegRequired: string;
     installCommand: string;
+    dependencies: string;
+    readyToTranscribe: string;
+    using: string;
+    noProviderConfigured: string;
+    noProviderDescription: string;
+    loading: string;
   };
   // Tray
   tray: {
@@ -172,6 +195,23 @@ export const en: Translations = {
     preferredProviderCloud: 'Cloud (API only)',
     providers: 'AI Providers',
     providersDescription: 'Configure cloud transcription services',
+    apiKey: 'API Key',
+    model: 'Model',
+    baseUrl: 'Base URL',
+    test: 'Test',
+    testing: 'Testing...',
+    enabled: 'Enabled',
+    aiPostProcessing: 'AI Post-Processing',
+    enableAiPostProcessing: 'Enable AI Post-Processing',
+    aiPostProcessingDescription: 'Automatically polish transcribed text using AI',
+    processingOptions: 'Processing Options',
+    removeFillerWords: 'Remove filler words (um, uh, 嗯, 啊)',
+    removeRepetition: 'Remove repeated words',
+    detectSelfCorrection: 'Detect and apply self-corrections',
+    showComparison: 'Show before/after comparison in results',
+    aiAvailable: 'AI provider configured',
+    aiNotAvailable: 'No AI provider configured',
+    configureAiProvider: 'Configure an AI provider above to enable post-processing',
     audio: 'Audio Settings',
     audioDescription: 'Configure audio input and recording settings',
     about: 'About',
@@ -231,6 +271,12 @@ export const en: Translations = {
     active: 'Active',
     ffmpegRequired: 'ffmpeg is required for audio recording.',
     installCommand: 'Install with:',
+    dependencies: 'Dependencies',
+    readyToTranscribe: 'Ready to transcribe',
+    using: 'Using',
+    noProviderConfigured: 'No transcription provider configured',
+    noProviderDescription: 'Install whisper.cpp + model for local transcription, or configure a cloud provider (OpenAI, Groq, etc.) below.',
+    loading: 'Loading system status...',
   },
   tray: {
     startDictation: 'Start Dictation',
@@ -292,6 +338,23 @@ export const zh: Translations = {
     preferredProviderCloud: '云端（仅 API）',
     providers: 'AI 提供商',
     providersDescription: '配置云端转录服务',
+    apiKey: 'API 密钥',
+    model: '模型',
+    baseUrl: '基础 URL',
+    test: '测试',
+    testing: '测试中...',
+    enabled: '已启用',
+    aiPostProcessing: 'AI 后处理',
+    enableAiPostProcessing: '启用 AI 后处理',
+    aiPostProcessingDescription: '使用 AI 自动优化转录文本',
+    processingOptions: '处理选项',
+    removeFillerWords: '去除填充词（嗯、啊、um、uh）',
+    removeRepetition: '去除重复词汇',
+    detectSelfCorrection: '检测并应用自我修正',
+    showComparison: '在结果中显示前后对比',
+    aiAvailable: '已配置 AI 提供商',
+    aiNotAvailable: '未配置 AI 提供商',
+    configureAiProvider: '配置上方的 AI 提供商以启用后处理',
     audio: '音频设置',
     audioDescription: '配置音频输入和录音设置',
     about: '关于',
@@ -351,6 +414,12 @@ export const zh: Translations = {
     active: '当前使用',
     ffmpegRequired: '音频录制需要 ffmpeg。',
     installCommand: '安装命令：',
+    dependencies: '依赖项',
+    readyToTranscribe: '准备就绪',
+    using: '使用',
+    noProviderConfigured: '未配置转录提供商',
+    noProviderDescription: '安装 whisper.cpp + 模型进行本地转录，或在下方配置云端提供商（OpenAI、Groq 等）。',
+    loading: '加载系统状态...',
   },
   tray: {
     startDictation: '开始听写',
@@ -412,6 +481,23 @@ export const ja: Translations = {
     preferredProviderCloud: 'クラウド（API のみ）',
     providers: 'AI プロバイダー',
     providersDescription: 'クラウド文字起こしサービスを設定',
+    apiKey: 'API キー',
+    model: 'モデル',
+    baseUrl: 'ベース URL',
+    test: 'テスト',
+    testing: 'テスト中...',
+    enabled: '有効',
+    aiPostProcessing: 'AI 後処理',
+    enableAiPostProcessing: 'AI 後処理を有効化',
+    aiPostProcessingDescription: 'AI を使用して文字起こしテキストを自動的に磨き上げ',
+    processingOptions: '処理オプション',
+    removeFillerWords: 'フィラー語を削除（えーと、あの、um、uh）',
+    removeRepetition: '繰り返し単語を削除',
+    detectSelfCorrection: '自己修正を検出して適用',
+    showComparison: '結果に前後の比較を表示',
+    aiAvailable: 'AI プロバイダーが設定済み',
+    aiNotAvailable: 'AI プロバイダーが設定されていません',
+    configureAiProvider: '後処理を有効にするには上記で AI プロバイダーを設定してください',
     audio: '音声設定', 
     audioDescription: '音声入力と録音設定を構成',
     about: 'について',
@@ -471,6 +557,12 @@ export const ja: Translations = {
     active: '使用中',
     ffmpegRequired: '音声録音には ffmpeg が必要です。',
     installCommand: 'インストールコマンド：',
+    dependencies: '依存関係',
+    readyToTranscribe: '文字起こし準備完了',
+    using: '使用中',
+    noProviderConfigured: '文字起こしプロバイダーが設定されていません',
+    noProviderDescription: 'ローカル文字起こし用に whisper.cpp + モデルをインストールするか、以下でクラウドプロバイダー（OpenAI、Groq など）を設定してください。',
+    loading: 'システム状態を読み込み中...',
   },
   tray: {
     startDictation: '音声入力を開始',
@@ -532,6 +624,23 @@ export const ko: Translations = {
     preferredProviderCloud: '클우드 (API 전용)',
     providers: 'AI 제공자',
     providersDescription: '클우드 전사 서비스 구성',
+    apiKey: 'API 키',
+    model: '모델',
+    baseUrl: '기본 URL',
+    test: '테스트',
+    testing: '테스트 중...',
+    enabled: '활성화됨',
+    aiPostProcessing: 'AI 후처리',
+    enableAiPostProcessing: 'AI 후처리 활성화',
+    aiPostProcessingDescription: 'AI를 사용하여 전사된 텍스트를 자동으로 다듬기',
+    processingOptions: '처리 옵션',
+    removeFillerWords: '필러 단어 제거 (음, 어, um, uh)',
+    removeRepetition: '반복 단어 제거',
+    detectSelfCorrection: '자기 수정 감지 및 적용',
+    showComparison: '결과에 전후 비교 표시',
+    aiAvailable: 'AI 제공자가 구성됨',
+    aiNotAvailable: 'AI 제공자가 구성되지 않음',
+    configureAiProvider: '후처리를 활성화하려면 위에서 AI 제공자를 구성하세요',
     audio: '오디오 설정',
     audioDescription: '오디오 입력 및 녹음 설정 구성',
     about: '정보',
@@ -591,6 +700,12 @@ export const ko: Translations = {
     active: '활성',
     ffmpegRequired: '오디오 녹음에는 ffmpeg가 필요합니다.',
     installCommand: '설치 명령:',
+    dependencies: '종속성',
+    readyToTranscribe: '전사 준비 완료',
+    using: '사용 중',
+    noProviderConfigured: '전사 제공자가 구성되지 않았습니다',
+    noProviderDescription: '로컬 전사를 위해 whisper.cpp + 모델을 설치하거나 아래에서 클라우드 제공자(OpenAI, Groq 등)를 구성하세요.',
+    loading: '시스템 상태 로드 중...',
   },
   tray: {
     startDictation: '받아쓰기 시작',

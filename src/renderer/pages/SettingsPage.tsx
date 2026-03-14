@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Keyboard, Globe, Zap, Check, CheckCircle, AlertCircle, Terminal, ExternalLink } from 'lucide-react';
+import { useI18n } from '../i18n';
 
 interface Provider {
   id: string;
@@ -36,6 +37,7 @@ interface SystemStatus {
 }
 
 export function SettingsPage() {
+  const { t } = useI18n();
   const [hotkey, setHotkey] = useState('CommandOrControl+Shift+D');
   const [language, setLanguage] = useState('en-US');
   const [autoPunctuation, setAutoPunctuation] = useState(true);
@@ -198,7 +200,7 @@ export function SettingsPage() {
           color: '#fff',
           margin: 0,
         }}>
-          Settings
+          {t.settings.title}
         </h1>
         {saveStatus !== 'idle' && (
           <span style={{
@@ -228,7 +230,7 @@ export function SettingsPage() {
           marginBottom: '20px',
         }}
         >
-          System Status
+          {t.status.title}
         </h2>
 
         <div style={{
@@ -242,49 +244,49 @@ export function SettingsPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {/* Dependencies */}
               <div>
-                <h3 style={{ fontSize: '13px', color: '#888', marginBottom: '12px' }}>Dependencies</h3>
+                <h3 style={{ fontSize: '13px', color: '#888', marginBottom: '12px' }}>{t.status.dependencies}</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   <StatusRow
-                    label="ffmpeg"
+                    label={t.status.ffmpeg}
                     status={systemStatus.audio.ffmpegAvailable ? 'ready' : 'missing'}
-                    description={systemStatus.audio.ffmpegAvailable ? 'Installed' : 'Required for recording'}
+                    description={systemStatus.audio.ffmpegAvailable ? t.status.installed : t.status.ffmpegRequired}
                   />
                   <StatusRow
-                    label="Microphone"
+                    label={t.status.microphone}
                     status={systemStatus.audio.hasAudioDevices ? 'ready' : 'missing'}
-                    description={`${systemStatus.audio.deviceCount} device(s) found`}
+                    description={`${systemStatus.audio.deviceCount} ${t.status.devices}`}
                   />
                   <StatusRow
-                    label="whisper.cpp"
+                    label={t.status.whisper}
                     status={systemStatus.transcription.whisperInstalled ? 'ready' : 'missing'}
-                    description={systemStatus.transcription.whisperInstalled ? 'Installed' : 'Not found'}
+                    description={systemStatus.transcription.whisperInstalled ? t.status.installed : t.status.notFound}
                   />
                   <StatusRow
-                    label="Model file"
+                    label={t.status.modelFile}
                     status={systemStatus.transcription.modelAvailable ? 'ready' : 'missing'}
-                    description={systemStatus.transcription.modelAvailable ? 'Found' : 'Not found'}
+                    description={systemStatus.transcription.modelAvailable ? t.status.found : t.status.notFound}
                   />
                 </div>
                 
                 {!systemStatus.audio.ffmpegAvailable && (
                   <SetupHint
-                    title="ffmpeg not found"
+                    title={`${t.status.ffmpeg} ${t.status.notFound}`}
                     command="brew install ffmpeg"
-                    description="ffmpeg is required to record audio from your microphone."
+                    description={t.status.ffmpegRequired}
                   />
                 )}
                 
                 {!systemStatus.transcription.whisperInstalled && !systemStatus.transcription.hasCloudProvider && (
                   <SetupHint
-                    title="whisper.cpp not found"
+                    title={`${t.status.whisper} ${t.status.notFound}`}
                     command="brew install whisper.cpp"
-                    description="Install whisper.cpp for local transcription, or configure a cloud provider below."
+                    description={t.status.noProviderDescription}
                   />
                 )}
                 
                 {!systemStatus.transcription.modelAvailable && systemStatus.transcription.whisperInstalled && (
                   <SetupHint
-                    title="Whisper model not found"
+                    title={`${t.status.model} ${t.status.notFound}`}
                     command="mkdir -p ~/Library/Application\ Support/OpenType/models && curl -L -o ~/Library/Application\\ Support/OpenType/models/ggml-base.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin"
                     description="Download a Whisper model to enable local transcription. Base model (~74MB) recommended for most users."
                   />
@@ -303,10 +305,10 @@ export function SettingsPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Check size={16} color="#22c55e" />
                     <span style={{ color: '#22c55e', fontWeight: 500 }}>
-                      Ready to transcribe
+                      {t.status.readyToTranscribe}
                     </span>
                     <span style={{ color: '#666', marginLeft: 'auto', fontSize: '13px' }}>
-                      Using {systemStatus.transcription.activeProvider}
+                      {t.status.using} {systemStatus.transcription.activeProvider}
                     </span>
                   </div>
                 </div>
@@ -323,7 +325,7 @@ export function SettingsPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <AlertCircle size={16} color="#ef4444" />
                     <span style={{ color: '#ef4444', fontWeight: 500 }}>
-                      No transcription provider configured
+                      {t.status.noProviderConfigured}
                     </span>
                   </div>
                   <p style={{ 
@@ -332,14 +334,14 @@ export function SettingsPage() {
                     color: '#888',
                     paddingLeft: '24px'
                   }}>
-                    Install whisper.cpp + model for local transcription, or configure a cloud provider (OpenAI, Groq, etc.) below.
+                    {t.status.noProviderDescription}
                   </p>
                 </div>
               )}
             </div>
           ) : (
             <div style={{ color: '#666', textAlign: 'center', padding: '20px' }}>
-              Loading system status...
+              {t.status.loading}
             </div>
           )}
         </div>
@@ -356,7 +358,7 @@ export function SettingsPage() {
           marginBottom: '20px',
         }}
         >
-          General
+          {t.settings.general}
         </h2>
 
         <div style={{
@@ -377,7 +379,7 @@ export function SettingsPage() {
               marginBottom: '8px',
             }}
             >
-              <Keyboard size={16} /> Global Hotkey
+              <Keyboard size={16} /> {t.settings.hotkey}
             </label>
             <input
               type="text"
@@ -399,7 +401,7 @@ export function SettingsPage() {
               marginTop: '6px',
             }}
             >
-              Format: CommandOrControl+Shift+D, Option+Space, etc.
+              {t.settings.hotkeyDescription}
             </p>
           </div>
 
@@ -415,7 +417,7 @@ export function SettingsPage() {
               marginBottom: '8px',
             }}
             >
-              <Globe size={16} /> Transcription Language
+              <Globe size={16} /> {t.settings.transcriptionLanguage}
             </label>
             <select
               value={language}
@@ -446,7 +448,7 @@ export function SettingsPage() {
               marginTop: '6px',
             }}
             >
-              Language used for speech recognition. Currently using: {language.split('-')[0]}
+              {t.settings.transcriptionLanguageDescription}. {t.settings.using}: {language.split('-')[0]}
             </p>
           </div>
 
@@ -477,7 +479,7 @@ export function SettingsPage() {
                   margin: 0,
                 }}
                 >
-                  Auto-punctuation
+                  {t.settings.autoPunctuation}
                 </p>
                 <p style={{
                   fontSize: '12px',
@@ -485,7 +487,7 @@ export function SettingsPage() {
                   margin: 0,
                 }}
                 >
-                  Automatically add periods and commas
+                  {t.settings.autoPunctuationDescription}
                 </p>
               </div>
             </label>
@@ -503,7 +505,7 @@ export function SettingsPage() {
               marginBottom: '8px',
             }}
             >
-              <Zap size={16} /> Preferred Provider
+              <Zap size={16} /> {t.settings.preferredProvider}
             </label>
             <select
               value={preferredProvider}
@@ -518,9 +520,9 @@ export function SettingsPage() {
                 fontSize: '14px',
               }}
             >
-              <option value="auto">Auto (Local first, fallback to Cloud)</option>
-              <option value="local">Local (whisper.cpp only)</option>
-              <option value="cloud">Cloud (API only)</option>
+              <option value="auto">{t.settings.preferredProviderAuto}</option>
+              <option value="local">{t.settings.preferredProviderLocal}</option>
+              <option value="cloud">{t.settings.preferredProviderCloud}</option>
             </select>
             <p style={{
               fontSize: '12px',
@@ -528,7 +530,7 @@ export function SettingsPage() {
               marginTop: '6px',
             }}
             >
-              Choose which transcription provider to use
+              {t.settings.preferredProviderDescription}
             </p>
           </div>
         </div>
@@ -545,7 +547,7 @@ export function SettingsPage() {
           marginBottom: '20px',
         }}
         >
-          AI Providers (BYOK)
+          {t.settings.providers}
         </h2>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -604,7 +606,7 @@ export function SettingsPage() {
                       cursor: 'pointer',
                     }}
                   >
-                    {config.enabled ? 'Enabled' : 'Disabled'}
+                    {config.enabled ? t.settings.enabled : 'Disabled'}
                   </button>
                 </div>
 
@@ -626,13 +628,13 @@ export function SettingsPage() {
                           display: 'block',
                         }}
                         >
-                          API Key
+                          {t.settings.apiKey}
                         </label>
                         <input
                           type="password"
                           value={config.apiKey || ''}
                           onChange={(e) => updateProviderConfig(provider.id, { apiKey: e.target.value })}
-                          placeholder={`Enter your ${provider.name} API key`}
+                          placeholder={`${provider.name} API key`}
                           style={{
                             width: '100%',
                             padding: '10px 14px',
@@ -655,7 +657,7 @@ export function SettingsPage() {
                           display: 'block',
                         }}
                         >
-                          Model
+                          {t.settings.model}
                         </label>
                         <select
                           value={config.model || provider.defaultModel || provider.supportedModels[0]}
@@ -686,7 +688,7 @@ export function SettingsPage() {
                           display: 'block',
                         }}
                         >
-                          Base URL
+                          {t.settings.baseUrl}
                         </label>
                         <input
                           type="text"
@@ -730,7 +732,7 @@ export function SettingsPage() {
                         }}
                       >
                         <Zap size={14} />
-                        {isTesting ? 'Testing...' : 'Test Connection'}
+                        {isTesting ? t.settings.testing : t.settings.test}
                       </button>
 
                       {testRes && (
@@ -767,7 +769,7 @@ export function SettingsPage() {
           letterSpacing: '0.1em',
           marginBottom: '20px',
         }}>
-          AI Post-Processing
+          {t.settings.aiPostProcessing}
         </h2>
 
         <div style={{
@@ -802,7 +804,7 @@ export function SettingsPage() {
                   margin: 0,
                 }}
                 >
-                  Enable AI Post-Processing
+                  {t.settings.enableAiPostProcessing}
                 </p>
                 <p style={{
                   fontSize: '12px',
@@ -810,7 +812,7 @@ export function SettingsPage() {
                   margin: 0,
                 }}
                 >
-                  Automatically polish transcribed text using AI
+                  {t.settings.aiPostProcessingDescription}
                 </p>
               </div>
             </label>
@@ -827,7 +829,7 @@ export function SettingsPage() {
                   marginBottom: '12px',
                 }}
                 >
-                  Processing Options
+                  {t.settings.processingOptions}
                 </p>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -848,7 +850,7 @@ export function SettingsPage() {
                       })}
                       style={{ accentColor: '#6366f1' }}
                     />
-                    Remove filler words (um, uh, 嗯, 啊)
+                    {t.settings.removeFillerWords}
                   </label>
 
                   <label style={{
@@ -868,7 +870,7 @@ export function SettingsPage() {
                       })}
                       style={{ accentColor: '#6366f1' }}
                     />
-                    Remove repeated words
+                    {t.settings.removeRepetition}
                   </label>
 
                   <label style={{
@@ -888,7 +890,7 @@ export function SettingsPage() {
                       })}
                       style={{ accentColor: '#6366f1' }}
                     />
-                    Detect and apply self-corrections
+                    {t.settings.detectSelfCorrection}
                   </label>
                 </div>
               </div>
@@ -910,7 +912,7 @@ export function SettingsPage() {
                     onChange={(e) => updateAiSettings({ showComparison: e.target.checked })}
                     style={{ accentColor: '#6366f1' }}
                   />
-                  Show before/after comparison in results
+                  {t.settings.showComparison}
                 </label>
               </div>
 
@@ -931,9 +933,9 @@ export function SettingsPage() {
                 }}
                 >
                   {aiAvailable ? (
-                    <><Check size={14} /> AI provider available</>
+                    <><Check size={14} /> {t.settings.aiAvailable}</>
                   ) : (
-                    <><AlertCircle size={14} /> No AI provider configured. Enable OpenAI, Groq, or Anthropic above.</>
+                    <><AlertCircle size={14} /> {t.settings.configureAiProvider}</>
                   )}
                 </div>
               </div>
