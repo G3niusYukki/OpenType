@@ -1,0 +1,56 @@
+  private trayIcons: { idle: Electron.NativeImage; recording: Electron.NativeImage } | null = null;
+
+  private createTrayIcons(): { idle: Electron.NativeImage; recording: Electron.NativeImage } {
+    if (this.trayIcons) return this.trayIcons;
+
+    this.trayIcons = {
+      idle: nativeImage.createFromBuffer(Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMC4zjOaXUAAAAF5JREFUOE9j/P///38GMgAx8P///38GMoA0w5AJoGJIMwwZAFPD0A0g2QBkGgCrYegGANkAZBqAasg0ANUwZACuYcgAXMOQAbiGIQNwDUMG4BqGDMA1DBmAaxgyAAB5ZhjxX8s8RAAAAABJRU5ErkJggg==',
+        'base64'
+      )).resize({ width: 16, height: 16 }),
+      recording: nativeImage.createFromBuffer(Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMC4zjOaXUAAAAE5JREFUOE9j/P///38GMgAx8P///38GMoA0w5AJoGJIMwwZAFPD0A0g2QBkGgCrYegGANkAZBqAasg0ANUwZACuYcgAXMOQAbiGIQNwDUMG4BqGDMA1DBmAaxgyAAD5ZhjxX8s8RAAAAABJRU5ErkJggg==',
+        'base64'
+      )).resize({ width: 16, height: 16 }),
+    };
+
+    return this.trayIcons;
+  }
+
+  private createTray(): void {
+    const icons = this.createTrayIcons();
+    this.tray = new Tray(icons.idle);
+    this.tray.setToolTip('OpenType - Click to dictate');
+
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Start Dictation',
+        accelerator: this.store.get('hotkey') || 'CommandOrControl+Shift+D',
+        click: () => this.toggleRecording(),
+      },
+      { type: 'separator' },
+      {
+        label: 'Show Window',
+        click: () => this.showWindow(),
+      },
+      {
+        label: 'Settings',
+        click: () => this.showSettings(),
+      },
+      { type: 'separator' },
+      {
+        label: 'Quit',
+        click: () => this.quit(),
+      },
+    ]);
+
+    this.tray.setContextMenu(contextMenu);
+
+    this.tray.on('click', () => {
+      this.toggleRecording();
+    });
+
+    this.tray.on('right-click', () => {
+      this.tray?.popUpContextMenu(contextMenu);
+    });
+  }

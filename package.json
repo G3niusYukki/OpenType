@@ -18,7 +18,11 @@
     "restart": "npm run kill && npm run build && npm start",
     "dist": "npm run build && electron-builder",
     "dist:mac": "npm run build && electron-builder --mac",
-    "typecheck": "tsc --noEmit -p src/main/tsconfig.json && tsc --noEmit -p src/renderer/tsconfig.json"
+    "typecheck": "tsc --noEmit -p src/main/tsconfig.json && tsc --noEmit -p src/renderer/tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "ci": "npm run typecheck && npm run build && npm run test"
   },
   "keywords": [
     "dictation",
@@ -56,11 +60,13 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^4.1.0",
     "concurrently": "^9.1.2",
     "electron": "^36.9.5",
     "electron-builder": "^26.4.0",
     "typescript": "^5.8.2",
-    "vite": "^6.2.1"
+    "vite": "^6.2.1",
+    "vitest": "^4.1.0"
   },
   "dependencies": {
     "electron-store": "^10.0.1",
