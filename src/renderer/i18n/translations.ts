@@ -82,11 +82,26 @@ export interface Translations {
     ready: string;
     notReady: string;
     checking: string;
+    clickToCollapse: string;
+    clickToExpand: string;
+    audioRecording: string;
+    ffmpeg: string;
+    installed: string;
+    notFound: string;
+    microphone: string;
+    devices: string;
+    noDevices: string;
+    transcription: string;
     whisper: string;
     model: string;
-    audioCapture: string;
-    activeProvider: string;
-    configure: string;
+    modelFile: string;
+    found: string;
+    cloudProvider: string;
+    configured: string;
+    notConfigured: string;
+    active: string;
+    ffmpegRequired: string;
+    installCommand: string;
   };
   // Tray
   tray: {
@@ -182,11 +197,26 @@ export const en: Translations = {
     ready: 'Ready',
     notReady: 'Setup Required',
     checking: 'Checking...',
+    clickToCollapse: 'Click to collapse',
+    clickToExpand: 'Click to expand',
+    audioRecording: 'Audio Recording',
+    ffmpeg: 'ffmpeg',
+    installed: 'Installed',
+    notFound: 'Not found',
+    microphone: 'Microphone',
+    devices: 'device(s)',
+    noDevices: 'No devices',
+    transcription: 'Transcription',
     whisper: 'whisper.cpp',
     model: 'Model',
-    audioCapture: 'Audio Capture',
-    activeProvider: 'Active Provider',
-    configure: 'Configure',
+    modelFile: 'Model file',
+    found: 'Found',
+    cloudProvider: 'Cloud provider',
+    configured: 'Configured',
+    notConfigured: 'Not configured',
+    active: 'Active',
+    ffmpegRequired: 'ffmpeg is required for audio recording.',
+    installCommand: 'Install with:',
   },
   tray: {
     startDictation: 'Start Dictation',
@@ -280,11 +310,26 @@ export const zh: Translations = {
     ready: '就绪',
     notReady: '需要设置',
     checking: '检查中...',
+    clickToCollapse: '点击收起',
+    clickToExpand: '点击展开',
+    audioRecording: '音频录制',
+    ffmpeg: 'ffmpeg',
+    installed: '已安装',
+    notFound: '未找到',
+    microphone: '麦克风',
+    devices: '个设备',
+    noDevices: '无设备',
+    transcription: '转录',
     whisper: 'whisper.cpp',
     model: '模型',
-    audioCapture: '音频捕获',
-    activeProvider: '当前提供商',
-    configure: '配置',
+    modelFile: '模型文件',
+    found: '已找到',
+    cloudProvider: '云端提供商',
+    configured: '已配置',
+    notConfigured: '未配置',
+    active: '当前使用',
+    ffmpegRequired: '音频录制需要 ffmpeg。',
+    installCommand: '安装命令：',
   },
   tray: {
     startDictation: '开始听写',
@@ -378,11 +423,26 @@ export const ja: Translations = {
     ready: '準備完了',
     notReady: 'セットアップが必要',
     checking: '確認中...',
+    clickToCollapse: 'クリックで折りたたむ',
+    clickToExpand: 'クリックで展開',
+    audioRecording: '音声録音',
+    ffmpeg: 'ffmpeg',
+    installed: 'インストール済み',
+    notFound: '未インストール',
+    microphone: 'マイク',
+    devices: 'デバイス',
+    noDevices: 'デバイスなし',
+    transcription: '文字起こし',
     whisper: 'whisper.cpp',
     model: 'モデル',
-    audioCapture: '音声キャプチャ',
-    activeProvider: 'アクティブプロバイダー',
-    configure: '設定',
+    modelFile: 'モデルファイル',
+    found: '見つかりました',
+    cloudProvider: 'クラウドプロバイダー',
+    configured: '設定済み',
+    notConfigured: '未設定',
+    active: '使用中',
+    ffmpegRequired: '音声録音には ffmpeg が必要です。',
+    installCommand: 'インストールコマンド：',
   },
   tray: {
     startDictation: '音声入力を開始',
@@ -476,11 +536,26 @@ export const ko: Translations = {
     ready: '준비 완료',
     notReady: '설정 필요',
     checking: '확인 중...',
+    clickToCollapse: '클릭하여 접기',
+    clickToExpand: '클릭하여 펼치기',
+    audioRecording: '오디오 녹음',
+    ffmpeg: 'ffmpeg',
+    installed: '설치됨',
+    notFound: '찾을 수 없음',
+    microphone: '마이크',
+    devices: '장치',
+    noDevices: '장치 없음',
+    transcription: '전사',
     whisper: 'whisper.cpp',
     model: '모델',
-    audioCapture: '오디오 캡처',
-    activeProvider: '활성 제공자',
-    configure: '구성',
+    modelFile: '모델 파일',
+    found: '찾음',
+    cloudProvider: '클우드 제공자',
+    configured: '구성됨',
+    notConfigured: '구성되지 않음',
+    active: '활성',
+    ffmpegRequired: '오디오 녹음에는 ffmpeg가 필요합니다.',
+    installCommand: '설치 명령:',
   },
   tray: {
     startDictation: '받아쓰기 시작',

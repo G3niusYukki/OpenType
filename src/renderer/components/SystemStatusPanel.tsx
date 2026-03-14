@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useI18n } from '../i18n';
 
 interface SystemStatus {
   audio: {
@@ -74,6 +75,7 @@ function StatusItem({ label, status, detail }: StatusItemProps) {
 }
 
 export function SystemStatusPanel() {
+  const { t } = useI18n();
   const [status, setStatus] = useState<SystemStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
@@ -112,7 +114,7 @@ export function SystemStatusPanel() {
           fontSize: '13px',
         }}>
           <Loader2 size={14} className="animate-spin" />
-          Checking system status...
+          {t.status.checking}
         </div>
       </div>
     );
@@ -150,7 +152,7 @@ export function SystemStatusPanel() {
         }}
       >
         <CheckCircle size={14} />
-        <span>System ready — {providerLabel} active</span>
+        <span>{t.status.ready} — {providerLabel} {t.status.active}</span>
       </div>
     );
   }
@@ -183,17 +185,17 @@ export function SystemStatusPanel() {
           {needsSetup ? (
             <>
               <AlertCircle size={16} color="#ef4444" />
-              <span style={{ color: '#ef4444' }}>Setup Required</span>
+              <span style={{ color: '#ef4444' }}>{t.status.notReady}</span>
             </>
           ) : (
             <>
               <CheckCircle size={16} color="#22c55e" />
-              <span style={{ color: '#22c55e' }}>System Ready</span>
+              <span style={{ color: '#22c55e' }}>{t.status.ready}</span>
             </>
           )}
         </div>
         <span style={{ fontSize: '11px', color: '#666' }}>
-          {expanded ? 'Click to collapse' : 'Click to expand'}
+          {expanded ? t.status.clickToCollapse : t.status.clickToExpand}
         </span>
       </div>
 
@@ -208,18 +210,18 @@ export function SystemStatusPanel() {
               letterSpacing: '0.05em',
               marginBottom: '8px',
             }}>
-              Audio Recording
+              {t.status.audioRecording}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <StatusItem
-                label="ffmpeg"
+                label={t.status.ffmpeg}
                 status={audio.ffmpegAvailable ? 'ready' : 'missing'}
-                detail={audio.ffmpegAvailable ? 'Installed' : 'Not found'}
+                detail={audio.ffmpegAvailable ? t.status.installed : t.status.notFound}
               />
               <StatusItem
-                label="Microphone"
+                label={t.status.microphone}
                 status={audio.hasAudioDevices ? 'ready' : 'missing'}
-                detail={audio.hasAudioDevices ? `${audio.deviceCount} device(s)` : 'No devices'}
+                detail={audio.hasAudioDevices ? `${audio.deviceCount} ${t.status.devices}` : t.status.noDevices}
               />
             </div>
             {!audio.ffmpegAvailable && (
@@ -232,8 +234,11 @@ export function SystemStatusPanel() {
                 color: '#ef4444',
                 lineHeight: 1.5,
               }}>
-                <strong>ffmpeg is required for audio recording.</strong><br />
-                Install with: <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 4px', borderRadius: '3px' }}>brew install ffmpeg</code>
+                <strong>{t.status.ffmpegRequired}</strong><br />
+                {t.status.installCommand}{' '}
+                <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 4px', borderRadius: '3px' }}>
+                  brew install ffmpeg
+                </code>
               </div>
             )}
           </div>
@@ -247,23 +252,23 @@ export function SystemStatusPanel() {
               letterSpacing: '0.05em',
               marginBottom: '8px',
             }}>
-              Transcription
+              {t.status.transcription}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <StatusItem
-                label="whisper.cpp"
+                label={t.status.whisper}
                 status={transcription.whisperInstalled ? 'ready' : transcription.hasCloudProvider ? 'optional' : 'missing'}
-                detail={transcription.whisperInstalled ? 'Installed' : 'Not found'}
+                detail={transcription.whisperInstalled ? t.status.installed : t.status.notFound}
               />
               <StatusItem
-                label="Model file"
+                label={t.status.modelFile}
                 status={transcription.modelAvailable ? 'ready' : transcription.hasCloudProvider ? 'optional' : 'missing'}
-                detail={transcription.modelAvailable ? 'Found' : 'Not found'}
+                detail={transcription.modelAvailable ? t.status.found : t.status.notFound}
               />
               <StatusItem
-                label="Cloud provider"
+                label={t.status.cloudProvider}
                 status={transcription.hasCloudProvider ? 'ready' : 'optional'}
-                detail={transcription.hasCloudProvider ? 'Configured' : 'Not configured'}
+                detail={transcription.hasCloudProvider ? t.status.configured : t.status.notConfigured}
               />
             </div>
             
@@ -312,7 +317,7 @@ export function SystemStatusPanel() {
             }}
             >
               <CheckCircle size={14} />
-              <span><strong>Active:</strong> {transcription.activeProvider}</span>
+              <span><strong>{t.status.active}:</strong> {transcription.activeProvider}</span>
             </div>
           )}
         </div>
