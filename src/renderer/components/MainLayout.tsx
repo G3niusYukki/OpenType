@@ -1,8 +1,8 @@
 import { ReactNode } from 'react';
-import { Mic, Settings, History, BookOpen, Minus } from 'lucide-react';
+import { Mic, Settings, History, BookOpen, Minus, Activity } from 'lucide-react';
 import { useI18n } from '../i18n';
 
-type Page = 'home' | 'settings' | 'history' | 'dictionary';
+type Page = 'home' | 'settings' | 'history' | 'dictionary' | 'diagnostics';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -24,6 +24,7 @@ export function MainLayout({ children, currentPage, onNavigate }: MainLayoutProp
     { id: 'home', label: t.nav.dictate, icon: Mic },
     { id: 'history', label: t.nav.history, icon: History },
     { id: 'dictionary', label: t.nav.dictionary, icon: BookOpen },
+    { id: 'diagnostics', label: 'Diagnostics', icon: Activity },
     { id: 'settings', label: t.nav.settings, icon: Settings },
   ];
 

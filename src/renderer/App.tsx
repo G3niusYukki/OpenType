@@ -4,8 +4,9 @@ import { HomePage } from './pages/HomePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { DictionaryPage } from './pages/DictionaryPage';
+import { DiagnosticsPage } from './pages/DiagnosticsPage';
 
-type Page = 'home' | 'settings' | 'history' | 'dictionary';
+type Page = 'home' | 'settings' | 'history' | 'dictionary' | 'diagnostics';
 
 export function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
@@ -30,6 +31,8 @@ export function App() {
         return <HistoryPage />;
       case 'dictionary':
         return <DictionaryPage />;
+      case 'diagnostics':
+        return <DiagnosticsPage />;
       default:
         return <HomePage />;
     }

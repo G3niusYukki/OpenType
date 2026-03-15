@@ -55,6 +55,12 @@ export interface VoiceInputModeSettings {
   editSelectedText: boolean;
 }
 
+export interface AudioInputDevice {
+  index: string;
+  name: string;
+  selectedAt: number;
+}
+
 export interface AppSettings {
   hotkey: string;
   handsFreeHotkey: string;
@@ -67,6 +73,7 @@ export interface AppSettings {
   preferredProvider: 'local' | 'cloud' | 'auto';
   aiPostProcessing: AiPostProcessingSettings;
   voiceInputModes: VoiceInputModeSettings;
+  audioInputDevice?: AudioInputDevice;
 }
 
 type ExtraStoreData = {
@@ -187,5 +194,13 @@ export class Store {
       result = result.replace(regex, entry.replacement);
     }
     return result;
+  }
+
+  getAudioInputDevice(): AudioInputDevice | undefined {
+    return this.get('audioInputDevice');
+  }
+
+  setAudioInputDevice(device: AudioInputDevice): void {
+    this.set('audioInputDevice', device);
   }
 }

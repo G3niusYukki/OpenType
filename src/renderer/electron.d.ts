@@ -45,6 +45,25 @@ declare global {
       recordingStop: () => Promise<void>;
       recordingGetState: () => Promise<boolean>;
 
+      // Audio Device Management
+      audioGetDevices: () => Promise<Array<{ index: string; name: string }>>;
+      audioGetSelectedDevice: () => Promise<{ index: string; name: string; selectedAt: number } | undefined>;
+      audioSetSelectedDevice: (device: { index: string; name: string; selectedAt: number }) => Promise<void>;
+
+      // Diagnostics
+      diagnosticsRun: () => Promise<{
+        microphone: { status: string; message: string };
+        accessibility: { status: string; message: string };
+        automation: { status: string; message: string };
+        ffmpeg: { status: string; version?: string; message: string };
+        whisper: { status: string; path?: string; message: string };
+        model: { status: string; path?: string; size?: number; message: string };
+        transcriptionProvider: { status: string; provider: string; message: string };
+      }>;
+      diagnosticsGetLastFailure: () => Promise<{ timestamp: number; error: string; context: string } | null>;
+      diagnosticsRequestPermission: (permissionType: 'microphone' | 'accessibility' | 'automation') => Promise<boolean>;
+      diagnosticsOpenSettings: (permissionType: 'microphone' | 'accessibility' | 'automation') => Promise<void>;
+
       // Providers
       providersList: () => Promise<unknown[]>;
       providersListTranscription: () => Promise<unknown[]>;

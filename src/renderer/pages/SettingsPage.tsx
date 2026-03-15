@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Keyboard, Globe, Zap, Check, CheckCircle, AlertCircle, Terminal, ExternalLink } from 'lucide-react';
+import { Keyboard, Globe, Zap, Check, CheckCircle, AlertCircle, Terminal, ExternalLink, Mic } from 'lucide-react';
+import { AudioDeviceSelector } from '../components/AudioDeviceSelector';
 import { useI18n } from '../i18n';
 
 interface Provider {
@@ -555,6 +556,29 @@ export function SettingsPage() {
             }}
             >
               {t.settings.preferredProviderDescription}
+            </p>
+          </div>
+
+          {/* Audio Input Device */}
+          <div>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: '#ccc',
+              marginBottom: '8px',
+            }}>
+              <Mic size={16} /> Audio Input Device
+            </label>
+            <AudioDeviceSelector onSave={showSaveIndicator} />
+            <p style={{
+              fontSize: '12px',
+              color: '#555',
+              marginTop: '6px',
+            }}>
+              Select which microphone to use for recording
             </p>
           </div>
         </div>

@@ -144,7 +144,7 @@ export class AudioCapture {
     }
   }
 
-  async start(): Promise<AudioCaptureResult> {
+  async start(deviceIndex?: string): Promise<AudioCaptureResult> {
     try {
       // Ensure recordings directory exists
       const recordingsDir = path.join(app.getPath('userData'), 'recordings');
@@ -172,9 +172,22 @@ export class AudioCapture {
         };
       }
 
+      // Validate device index if provided
+      let selectedDevice = ':0'; // Default device
+      if (deviceIndex) {
+        const devices = await this.getAudioDevices();
+        const deviceExists = devices.some(d => d.index === deviceIndex);
+        if (deviceExists) {
+          selectedDevice = `:${deviceIndex}`;
+          console.log(`[AudioCapture] Using selected device: ${selectedDevice}`);
+        } else {
+          console.warn(`[AudioCapture] Selected device ${deviceIndex} not available, falling back to default`);
+        }
+      }
+
       // Start ffmpeg recording
       // -f avfoundation: Use macOS AVFoundation framework
-      // -i ":0": Use default audio input device (change to specific index if needed)
+      // -i ":0": Use default audio input device (or specific index)
       // -ar 16000: 16kHz sample rate (optimal for Whisper)
       // -ac 1: Mono audio
       // -c:a pcm_s16le: 16-bit PCM WAV format
@@ -183,7 +196,7 @@ export class AudioCapture {
       
       this.recordingProcess = spawn('ffmpeg', [
         '-f', 'avfoundation',
-        '-i', ':0',  // Default audio input device
+        '-i', selectedDevice,
         '-ar', '16000',
         '-ac', '1',
         '-c:a', 'pcm_s16le',

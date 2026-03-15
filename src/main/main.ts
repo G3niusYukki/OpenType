@@ -8,6 +8,7 @@ import { ProviderManager } from './providers';
 import { TranscriptionService, TranscriptionResult, CloudProviderConfig } from './transcription';
 import { AiPostProcessor, AiPostProcessingResult } from './aiPostProcessor';
 import { GlobalKeyboardMonitor } from './keyboard-monitor';
+import { DiagnosticsService } from './diagnostics';
 
 type RecordingMode = 'default' | 'handsfree' | 'translate' | 'edit';
 
@@ -26,6 +27,7 @@ export class OpenTypeApp {
   private recordingMode: RecordingMode = 'default';
   private selectedTextBeforeRecording: string = '';
   private holdModeActive: boolean = false;
+  private diagnosticsService: DiagnosticsService;
 
   constructor() {
     this.store = new Store();
@@ -33,6 +35,7 @@ export class OpenTypeApp {
     this.textInserter = new TextInserter();
     this.providerManager = new ProviderManager(this.store);
     this.aiPostProcessor = new AiPostProcessor(this.store, this.providerManager);
+    this.diagnosticsService = new DiagnosticsService();
 
     // Detect system language for transcription
     const systemLang = process.env.LANG || process.env.LC_ALL || 'en-US';
@@ -427,6 +430,32 @@ export class OpenTypeApp {
     ipcMain.handle('audio:devices', async () => {
       return this.audioCapture.getAudioDevices();
     });
+    ipcMain.handle('audio:get-selected-device', () => {
+      return this.store.getAudioInputDevice();
+    });
+    ipcMain.handle('audio:set-selected-device', (_, device) => {
+      this.store.setAudioInputDevice(device);
+    });
+
+    // Diagnostics
+    ipcMain.handle('diagnostics:run', async () => {
+      return this.diagnosticsService.runAllChecks();
+    });
+    ipcMain.handle('diagnostics:get-last-failure', () => {
+      return this.diagnosticsService.getLastFailure();
+    });
+    ipcMain.handle('diagnostics:request-permission', async (_, permissionType: 'microphone' | 'accessibility' | 'automation') => {
+      if (permissionType === 'microphone') {
+        const { systemPreferences } = await import('electron');
+        return await systemPreferences.askForMediaAccess('microphone');
+      }
+      // For accessibility and automation, just open settings
+      await this.diagnosticsService.openSettings(permissionType);
+      return true;
+    });
+    ipcMain.handle('diagnostics:open-settings', async (_, permissionType: 'microphone' | 'accessibility' | 'automation') => {
+      await this.diagnosticsService.openSettings(permissionType);
+    });
 
     // AI Post-Processing
     ipcMain.handle('ai:get-settings', () => this.store.get('aiPostProcessing'));
@@ -471,7 +500,9 @@ export class OpenTypeApp {
 
     this.mainWindow?.webContents.send('recording:started', { mode });
 
-    const result = await this.audioCapture.start();
+    // Get selected audio device
+    const audioDevice = this.store.getAudioInputDevice();
+    const result = await this.audioCapture.start(audioDevice?.index);
 
     if (!result.success || !result.audioPath) {
       this.isRecording = false;
