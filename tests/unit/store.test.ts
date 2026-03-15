@@ -1,24 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { mockStoreGet as mockGet, mockStoreSet as mockSet, resetStoreMocks } from './mocks';
 import { Store, HistoryItem, DictionaryEntry } from '../../src/main/store';
-
-// Create mock functions that persist across tests
-const mockGet = vi.fn();
-const mockSet = vi.fn();
-
-// Mock electron-store as a class constructor
-vi.mock('electron-store', () => ({
-  default: class MockStore {
-    get = mockGet;
-    set = mockSet;
-  },
-}));
 
 describe('Store', () => {
   let store: Store;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGet.mockReturnValue(undefined);
+    resetStoreMocks();
     store = new Store();
   });
 

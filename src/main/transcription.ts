@@ -598,8 +598,12 @@ export class TranscriptionService {
     
     for (const line of lines) {
       const trimmed = line.trim();
-      // Skip lines that look like metadata/timestamps
-      if (line.match(/^\[\d{2}:\d{2}:\d{2}\.\d{3} --> \d{2}:\d{2}:\d{2}\.\d{3}\]/)) {
+      const timestampMatch = trimmed.match(/^\[\d{2}:\d{2}:\d{2}\.\d{3} --> \d{2}:\d{2}:\d{2}\.\d{3}\]\s*(.*)$/);
+      if (timestampMatch) {
+        const timestampText = timestampMatch[1]?.trim();
+        if (timestampText) {
+          texts.push(timestampText);
+        }
         continue;
       }
       // Skip empty lines and log messages

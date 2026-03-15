@@ -3,6 +3,24 @@ import { TextInserter } from '../../src/main/text-inserter';
 import { clipboard } from 'electron';
 import { exec } from 'child_process';
 
+const mockExec = vi.hoisted(() => vi.fn());
+const mockPromisify = vi.hoisted(() =>
+  vi.fn((fn: (...args: any[]) => unknown) => (...args: any[]) =>
+    new Promise((resolve, reject) => {
+      const callback = (error: Error | null, stdout: string | null, stderr: string | null) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve({ stdout, stderr });
+      };
+
+      fn(...args, callback);
+    })
+  )
+);
+
 // Mock electron clipboard
 vi.mock('electron', () => ({
   clipboard: {
@@ -13,7 +31,17 @@ vi.mock('electron', () => ({
 
 // Mock child_process exec
 vi.mock('child_process', () => ({
-  exec: vi.fn(),
+  exec: mockExec,
+  default: {
+    exec: mockExec,
+  },
+}));
+
+vi.mock('util', () => ({
+  promisify: mockPromisify,
+  default: {
+    promisify: mockPromisify,
+  },
 }));
 
 describe('TextInserter', () => {
