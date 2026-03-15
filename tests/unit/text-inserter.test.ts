@@ -63,6 +63,24 @@ describe('TextInserter', () => {
       expect(result.text).toBe(text);
       expect(clipboard.writeText).toHaveBeenCalledWith(text);
     });
+
+    it('should fall back to clipboard result when copy mode throws', async () => {
+      const text = 'Copy fallback';
+
+      vi.mocked(clipboard.writeText)
+        .mockImplementationOnce(() => {
+          throw new Error('Clipboard unavailable');
+        })
+        .mockImplementation(() => undefined);
+
+      const result = await inserter.insert(text, 'copy');
+
+      expect(result.success).toBe(true);
+      expect(result.method).toBe('clipboard');
+      expect(result.error).toBe('Clipboard unavailable');
+      expect(clipboard.writeText).toHaveBeenCalledTimes(2);
+      expect(clipboard.writeText).toHaveBeenLastCalledWith(text);
+    });
   });
 
   describe('insert with paste mode', () => {
@@ -118,6 +136,40 @@ describe('TextInserter', () => {
   });
 
   describe('insert with type mode', () => {
+    it('should type text successfully when AppleScript succeeds', async () => {
+      const text = 'Hello "OpenType"\\nLine 2';
+
+      vi.mocked(exec).mockImplementation((command: string, callback: any) => {
+        callback(null, 'ok', '');
+        return {} as any;
+      });
+
+      const result = await inserter.insert(text, 'type');
+
+      expect(result.success).toBe(true);
+      expect(result.method).toBe('type');
+      expect(result.text).toBe(text);
+      expect(exec).toHaveBeenCalledWith(
+        expect.stringContaining('keystroke "Hello \\\"OpenType\\\"\\\\nLine 2"'),
+        expect.any(Function)
+      );
+    });
+
+    it('should fallback to paste behavior for unknown output mode', async () => {
+      const text = 'Unknown mode text';
+      vi.mocked(clipboard.readText).mockReturnValue('original');
+      vi.mocked(exec).mockImplementation((command: string, callback: any) => {
+        callback(null, 'ok', '');
+        return {} as any;
+      });
+
+      const result = await inserter.insert(text, 'unknown' as any);
+
+      expect(result.success).toBe(true);
+      expect(result.method).toBe('paste');
+      expect(clipboard.writeText).toHaveBeenLastCalledWith('original');
+    });
+
     it('should fallback to clipboard when typing fails', async () => {
       const text = 'Hello';
       
