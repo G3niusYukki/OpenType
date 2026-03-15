@@ -109,6 +109,26 @@ describe('OpenTypeApp', () => {
       app = new OpenTypeApp();
       expect(app).toBeDefined();
     });
+
+    it('should return only enabled cloud transcription provider configs', () => {
+      app = new OpenTypeApp();
+      const configs = (app as any).getCloudProviderConfigs();
+
+      expect(configs).toEqual([]);
+    });
+
+    it('should parse hotkeys into a key and modifiers', () => {
+      app = new OpenTypeApp();
+
+      expect((app as any).parseHotkey('CommandOrControl+Shift+T')).toEqual({
+        key: 'T',
+        modifiers: ['LEFT META', 'LEFT SHIFT'],
+      });
+      expect((app as any).parseHotkey('Control+Option+Space')).toEqual({
+        key: 'SPACE',
+        modifiers: ['LEFT CTRL', 'LEFT ALT'],
+      });
+    });
   });
 
   describe('initialize()', () => {
