@@ -482,69 +482,69 @@ OpenType follows a versioned release strategy. Below is our planned roadmap from
 
 ### ✅ v0.1.x Foundation (Completed)
 
-**目标**: 构建 OpenType 核心原型，实现基础语音输入与 AI 后处理能力。
+**Goal**: Build the OpenType core prototype with basic voice input and AI post-processing capabilities.
 
-- [x] 🎙️ **Core Voice Input** - 基础语音听写功能，支持全局快捷键触发
-- [x] 🔄 **4 Voice Input Modes** - 四种输入模式：基础、免提、翻译、编辑
-- [x] 🔌 **Multi-Provider Support** - 集成 7+ 家 AI 提供商用于后处理
-- [x] 💻 **Local Transcription** - 集成 whisper.cpp 实现本地转录
-- [x] 🤖 **AI Post-Processing** - 自动去除填充词，智能文本增强
-- [x] 🔔 **Visual Feedback** - 托盘图标状态指示与系统通知
-- [x] ⌨️ **Hold-to-Speak** - 修复同时触发快捷键的处理逻辑
+- [x] 🎙️ **Core Voice Input** - Basic dictation functionality with global hotkey support
+- [x] 🔄 **4 Voice Input Modes** - Four input modes: Basic, Hands-Free, Translate, Edit
+- [x] 🔌 **Multi-Provider Support** - Integration with 7+ AI providers for post-processing
+- [x] 💻 **Local Transcription** - whisper.cpp integration for offline transcription
+- [x] 🤖 **AI Post-Processing** - Automatic filler word removal and intelligent text enhancement
+- [x] 🔔 **Visual Feedback** - Tray icon status indicators and system notifications
+- [x] ⌨️ **Hold-to-Speak** - Fixed simultaneous shortcut handling logic
 
 ### 🎯 v0.2 Core Experience
 
-**目标**: 把 OpenType 从"可用原型"推进到"中文用户可以稳定日用"。
+**Goal**: Evolve OpenType from "usable prototype" to "daily driver for Chinese users".
 
-- [ ] 🎙️ 完成 1 到 2 个中文 ASR 提供商接入（优先：阿里云、腾讯云、百度、讯飞中的任意两家）
-- [ ] ⚙️ 支持 provider 级配置、连通性测试、错误提示和回退逻辑
-- [ ] ✨ 增强标点智能补全（AI 后处理链路中补充中英文标点恢复，支持按语言启用/关闭）
-- [ ] 💾 增加数据导出与清除（导出历史记录、词库、配置，一键清空本地历史与缓存）
-- [ ] 🛡️ 优化错误反馈与权限引导（更明确提示麦克风、辅助功能、Automation 权限状态）
+- [ ] 🎙️ Integrate 1-2 Chinese ASR providers (priority: Alibaba Cloud, Tencent Cloud, Baidu, or iFlytek)
+- [ ] ⚙️ Support provider-level configuration, connectivity testing, error prompts, and fallback logic
+- [ ] ✨ Enhanced intelligent punctuation completion (restore Chinese/English punctuation in AI post-processing pipeline with per-language toggle)
+- [ ] 💾 Add data export and cleanup (export history, dictionary, config; one-click clear local history and cache)
+- [ ] 🛡️ Improve error feedback and permission guidance (clearer prompts for microphone, accessibility, and Automation permissions)
 
-**Success criteria:** 中文用户无需本地 whisper.cpp 也能完成稳定转写，默认输出可读性明显提升，用户能清楚管理本地数据
+**Success criteria:** Chinese users can achieve stable transcription without local whisper.cpp; default output readability significantly improved; users can clearly manage local data
 
 ### 🚀 v0.3 Productivity Features
 
-**目标**: 让 OpenType 不只是"语音输入"，而是"语音编辑工具"。
+**Goal**: Transform OpenType from "voice input" to "voice editing tool".
 
-- [ ] 🎤 语音命令识别（支持如"换行""删除上一句""撤销""添加标题""翻译成英文"，区分"输入内容"和"编辑命令"）
-- [ ] 🌐 扩展多语言翻译模式（不再只限中文转英文，支持更多语言对，例如中日、中韩、英中）
-- [ ] 📚 自定义词库增强（批量导入导出、分类管理专业术语和专有名词）
-- [ ] 🗂️ 本地模型/缓存管理优化（更清晰展示模型状态、大小、路径和可删除项）
+- [ ] 🎤 Voice command recognition (support commands like "new line", "delete last sentence", "undo", "add heading", "translate to English"; distinguish between "input content" and "editing commands")
+- [ ] 🌐 Extended multilingual translation mode (beyond Chinese-to-English; support more language pairs such as Chinese-Japanese, Chinese-Korean, English-Chinese)
+- [ ] 📚 Enhanced custom dictionary (batch import/export, categorized management of professional terms and proper nouns)
+- [ ] 🗂️ Local model/cache management optimization (clearer display of model status, size, path, and deletable items)
 
-**Success criteria:** 高频文本编辑场景可通过语音完成，翻译模式成为独立可用功能，词库和模型管理不再依赖手工操作
+**Success criteria:** High-frequency text editing scenarios can be completed via voice; translation mode becomes a standalone usable feature; dictionary and model management no longer require manual operations
 
 ### ⚡ v0.4 Performance and Streaming
 
-**目标**: 提升实时性和长期运行体验。
+**Goal**: Improve real-time performance and long-running experience.
 
-- [ ] 📡 WebSocket/流式转录支持（云端 provider 支持边说边出结果，优化处理中间态和增量展示）
-- [ ] 💾 Electron 内存与后台驻留优化（降低长时间运行占用，优化窗口隐藏、托盘驻留、重复启动行为）
-- [ ] 🚀 启动速度优化（减少冷启动检查耗时，延迟加载非关键模块）
+- [ ] 📡 WebSocket/streaming transcription support (cloud providers support real-time results while speaking, optimized intermediate state and incremental display)
+- [ ] 💾 Electron memory and background residency optimization (reduce long-running resource usage, optimize window hiding, tray residency, and duplicate startup behavior)
+- [ ] 🚀 Startup speed optimization (reduce cold start check time, lazy-load non-critical modules)
 
-**Success criteria:** 录音结束到文字出现的等待时间明显下降，应用长时间驻留更稳定，首次启动和唤起更快
+**Success criteria:** Significantly reduced wait time from recording end to text appearance; more stable long-running application residency; faster first launch and invocation
 
 ### 🌐 v0.5 Platform and Extensibility
 
-**目标**: 评估并扩展产品边界。
+**Goal**: Evaluate and expand product boundaries.
 
-- [ ] 🪟 评估 Windows 支持（验证全局热键、文本插入、权限模型是否可接受）
-- [ ] 🐧 评估 Linux 支持（仅在主要桌面环境可稳定工作的前提下推进）
-- [ ] 🔌 设计轻量插件扩展点（文本后处理插件、自定义 provider 适配层）
-- [ ] ⚡ 自动化集成探索（评估 macOS Shortcuts 集成）
+- [ ] 🪟 Evaluate Windows support (validate global hotkeys, text insertion, permission models)
+- [ ] 🐧 Evaluate Linux support (proceed only if stable in major desktop environments)
+- [ ] 🔌 Design lightweight plugin extension points (text post-processing plugins, custom provider adapter layer)
+- [ ] ⚡ Explore automation integration (evaluate macOS Shortcuts integration)
 
-**Success criteria:** 明确跨平台是否值得继续投入，扩展能力有清晰边界，不破坏核心稳定性
+**Success criteria:** Clear understanding of whether cross-platform is worth continued investment; extension capabilities have clear boundaries without compromising core stability
 
 ### 🔮 Longer Term
 
 Future vision items we hope to explore beyond the immediate roadmap:
 
-- [ ] 🤖 离线 AI 后处理
-- [ ] 🔒 更强的隐私控制与敏感信息处理
-- [ ] 👥 团队/企业能力
-- [ ] 💼 商业化方案探索
-- [ ] 🎨 社区生态与主题系统
+- [ ] 🤖 Offline AI post-processing
+- [ ] 🔒 Stronger privacy controls and sensitive information handling
+- [ ] 👥 Team/enterprise capabilities
+- [ ] 💼 Commercialization exploration
+- [ ] 🎨 Community ecosystem and theming system
 
 ---
 
