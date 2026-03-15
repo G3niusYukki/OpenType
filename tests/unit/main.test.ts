@@ -166,9 +166,9 @@ describe('OpenTypeApp', () => {
       expect(mocks.app.on).toHaveBeenCalledWith('activate', expect.any(Function));
     });
 
-    it('should setup will-quit handler', async () => {
+    it('should setup before-quit handler', async () => {
       await app.initialize();
-      expect(mocks.app.on).toHaveBeenCalledWith('will-quit', expect.any(Function));
+      expect(mocks.app.on).toHaveBeenCalledWith('before-quit', expect.any(Function));
     });
   });
 
@@ -223,10 +223,10 @@ describe('OpenTypeApp', () => {
       expect(mocks.globalShortcut.register).toHaveBeenCalledWith('CommandOrControl+Space', expect.any(Function));
     });
 
-    it('should unregister all shortcuts on will-quit', async () => {
-      const willQuitHandler = mocks.app.on.mock.calls.find((call: any[]) => call[0] === 'will-quit')?.[1];
-      expect(willQuitHandler).toBeDefined();
-      willQuitHandler?.();
+    it('should unregister all shortcuts on before-quit', async () => {
+      const beforeQuitHandler = mocks.app.on.mock.calls.find((call: any[]) => call[0] === 'before-quit')?.[1];
+      expect(beforeQuitHandler).toBeDefined();
+      beforeQuitHandler?.();
       expect(mocks.globalShortcut.unregisterAll).toHaveBeenCalled();
     });
   });
