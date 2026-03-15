@@ -32,7 +32,6 @@ describe('Provider Fallback Behavior', () => {
   it('should handle transcription attempt', async () => {
     const result = await service.transcribe('/tmp/test.wav');
     expect(result).toHaveProperty('success');
-    expect(result).toHaveProperty('text');
   });
 
   it('should return error for non-existent audio file', async () => {

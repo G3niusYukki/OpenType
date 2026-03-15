@@ -1,4 +1,16 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+vi.mock('electron', () => ({
+  app: {
+    getPath: vi.fn(() => '/tmp/test-user-data'),
+  },
+  safeStorage: {
+    isEncryptionAvailable: vi.fn(() => true),
+    encryptString: vi.fn((text: string) => Buffer.from(text)),
+    decryptString: vi.fn((buffer: Buffer) => buffer.toString()),
+  },
+}));
+
 import { ProviderManager } from '../../src/main/providers';
 import { Store, ProviderConfig } from '../../src/main/store';
 

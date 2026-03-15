@@ -115,9 +115,9 @@ describe('OpenTypeApp', () => {
       expect(app).toBeDefined();
     });
 
-    it('should return only enabled cloud transcription provider configs', () => {
+    it('should return only enabled cloud transcription provider configs', async () => {
       app = new OpenTypeApp();
-      const configs = (app as any).getCloudProviderConfigs();
+      const configs = await (app as any).getCloudProviderConfigs();
 
       expect(configs).toEqual([]);
     });
