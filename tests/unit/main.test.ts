@@ -75,6 +75,11 @@ vi.mock('../../src/main/keyboard-monitor', () => ({
 }));
 
 vi.mock('child_process', () => ({
+  default: {
+    exec: vi.fn().mockImplementation((cmd: any, callback: any) => { if (callback) callback(null, { stdout: 'selected text' }); return { stdout: 'selected text' }; }),
+    execFile: vi.fn(),
+    spawn: vi.fn().mockReturnValue({ on: vi.fn(), once: vi.fn(), stderr: { on: vi.fn() }, stdin: { write: vi.fn() }, kill: vi.fn(), pid: 12345 }),
+  },
   exec: vi.fn().mockImplementation((cmd: any, callback: any) => { if (callback) callback(null, { stdout: 'selected text' }); return { stdout: 'selected text' }; }),
   execFile: vi.fn(),
   spawn: vi.fn().mockReturnValue({ on: vi.fn(), once: vi.fn(), stderr: { on: vi.fn() }, stdin: { write: vi.fn() }, kill: vi.fn(), pid: 12345 }),
