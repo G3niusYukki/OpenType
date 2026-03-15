@@ -109,7 +109,7 @@ describe('ProviderManager', () => {
       ];
       mockStore.get.mockReturnValue(existingConfigs);
 
-      const result = await manager.setConfig('openai', { enabled: true, apiKey: 'sk-test' });
+      const result = await manager.setConfig('openai', { enabled: true });
 
       expect(result).toBe(true);
     });
@@ -117,7 +117,7 @@ describe('ProviderManager', () => {
     it('should add new provider config', async () => {
       mockStore.get.mockReturnValue([]);
 
-      const result = await manager.setConfig('openai', { enabled: true, apiKey: 'sk-test' });
+      const result = await manager.setConfig('openai', { enabled: true });
 
       expect(result).toBe(true);
     });
