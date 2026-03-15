@@ -69,8 +69,8 @@ export function SettingsPage() {
     editSelectedText: true,
   });
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
-  const [audioDevices, setAudioDevices] = useState<Array<{ id: string; name: string; isDefault: boolean }>>([]);
-  const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
+  const [audioDevices, setAudioDevices] = useState<Array<{ index: string; name: string }>>([]);
+  const [selectedDevice, setSelectedDevice] = useState<string>('0');
   const [audioDevicesLoading, setAudioDevicesLoading] = useState(false);
 
   const showSaveIndicator = () => {
@@ -164,8 +164,8 @@ export function SettingsPage() {
       const devices = await window.electronAPI.audioGetDevices();
       const selected = await window.electronAPI.audioGetSelectedDevice();
       setAudioDevices(devices);
-      if (selected && selected.device) {
-        setSelectedDevice(selected.device.id);
+      if (selected) {
+        setSelectedDevice(selected.index);
       }
     } catch (error) {
       console.error('Failed to load audio devices:', error);
@@ -174,13 +174,13 @@ export function SettingsPage() {
     }
   };
 
-  const handleDeviceSelect = async (deviceId: string) => {
-    setSelectedDevice(deviceId);
+  const handleDeviceSelect = async (deviceIndex: string) => {
+    setSelectedDevice(deviceIndex);
     showSaveIndicator();
     try {
       await window.electronAPI.audioSetSelectedDevice({ 
-        id: deviceId, 
-        name: audioDevices.find(d => d.id === deviceId)?.name || '',
+        index: deviceIndex, 
+        name: audioDevices.find(d => d.index === deviceIndex)?.name || '',
         selectedAt: Date.now()
       });
     } catch (error) {
@@ -460,8 +460,8 @@ export function SettingsPage() {
                 }}
               >
                 {audioDevices.map((device) => (
-                  <option key={device.id} value={device.id}>
-                    {device.name} {device.isDefault && '(Default)'}
+                  <option key={device.index} value={device.index}>
+                    {device.name} {device.index === '0' && '(Default)'}
                   </option>
                 ))}
               </select>
