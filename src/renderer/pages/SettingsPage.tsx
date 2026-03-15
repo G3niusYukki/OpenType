@@ -69,6 +69,9 @@ export function SettingsPage() {
     editSelectedText: true,
   });
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [audioDevices, setAudioDevices] = useState<Array<{ id: string; name: string; isDefault: boolean }>>([]);
+  const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
+  const [audioDevicesLoading, setAudioDevicesLoading] = useState(false);
 
   const showSaveIndicator = () => {
     setSaveStatus('saving');
@@ -80,6 +83,7 @@ export function SettingsPage() {
     loadSettings();
     loadProviders();
     loadSystemStatus();
+    loadAudioDevices();
   }, []);
 
   const loadSettings = async () => {
@@ -154,6 +158,36 @@ export function SettingsPage() {
     }
   };
 
+  const loadAudioDevices = async () => {
+    setAudioDevicesLoading(true);
+    try {
+      const devices = await window.electronAPI.audioGetDevices();
+      const selected = await window.electronAPI.audioGetSelectedDevice();
+      setAudioDevices(devices);
+      if (selected && selected.device) {
+        setSelectedDevice(selected.device.id);
+      }
+    } catch (error) {
+      console.error('Failed to load audio devices:', error);
+    } finally {
+      setAudioDevicesLoading(false);
+    }
+  };
+
+  const handleDeviceSelect = async (deviceId: string) => {
+    setSelectedDevice(deviceId);
+    showSaveIndicator();
+    try {
+      await window.electronAPI.audioSetSelectedDevice({ 
+        id: deviceId, 
+        name: audioDevices.find(d => d.id === deviceId)?.name || '',
+        selectedAt: Date.now()
+      });
+    } catch (error) {
+      console.error('Failed to select device:', error);
+    }
+  };
+
   const saveHotkey = async (value: string) => {
     setHotkey(value);
     showSaveIndicator();
@@ -196,6 +230,7 @@ export function SettingsPage() {
     if (updates.enabled !== undefined || updates.apiKey !== undefined) {
       setTimeout(() => {
         loadSystemStatus();
+    loadAudioDevices();
         checkAiAvailability();
       }, 100);
     }
@@ -369,6 +404,77 @@ export function SettingsPage() {
               {t.status.loading}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Audio Device Selection Section */}
+      <section style={{ marginBottom: '40px' }}>
+        <h2 style={{
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#666',
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          marginBottom: '20px',
+        }}>
+          Audio Input
+        </h2>
+
+        <div style={{
+          background: '#161616',
+          border: '1px solid #222',
+          borderRadius: '12px',
+          padding: '24px',
+        }}>
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: '#ccc',
+              marginBottom: '8px',
+            }}>
+              <Mic size={16} /> Microphone Device
+            </label>
+            
+            {audioDevicesLoading ? (
+              <div style={{ color: '#666', padding: '12px' }}>Loading devices...</div>
+            ) : audioDevices.length === 0 ? (
+              <div style={{ color: '#ef4444', padding: '12px' }}>
+                No audio devices found. Please check your microphone connection.
+              </div>
+            ) : (
+              <select
+                value={selectedDevice || ''}
+                onChange={(e) => handleDeviceSelect(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: '#0f0f0f',
+                  border: '1px solid #2a2a2a',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontSize: '14px',
+                }}
+              >
+                {audioDevices.map((device) => (
+                  <option key={device.id} value={device.id}>
+                    {device.name} {device.isDefault && '(Default)'}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <p style={{
+              fontSize: '12px',
+              color: '#555',
+              marginTop: '8px',
+            }}>
+              Select your preferred microphone for voice input. Changes take effect immediately.
+            </p>
+          </div>
         </div>
       </section>
 

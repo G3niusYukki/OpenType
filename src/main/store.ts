@@ -30,7 +30,8 @@ export interface ProviderConfig {
   enabled: boolean;
   enabledForTranscription?: boolean;
   enabledForPostProcessing?: boolean;
-  apiKey?: string;
+  apiKey?: string; // Deprecated: migrated to secure storage
+  hasKeyInKeychain?: boolean;
   baseUrl?: string;
   model?: string;
 }

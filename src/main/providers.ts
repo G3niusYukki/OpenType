@@ -1,4 +1,5 @@
 import { ProviderConfig, Store } from './store';
+import { secureStorage } from './secure-storage';
 
 interface Provider {
   id: string;
@@ -173,6 +174,18 @@ export class ProviderManager {
     this.store = store;
   }
 
+  async getProviderApiKey(providerId: string): Promise<string | null> {
+    return await secureStorage.getProviderApiKey(providerId);
+  }
+
+  async setProviderApiKey(providerId: string, apiKey: string): Promise<void> {
+    await secureStorage.setProviderApiKey(providerId, apiKey);
+  }
+
+  async deleteProviderApiKey(providerId: string): Promise<void> {
+    await secureStorage.deleteProviderApiKey(providerId);
+  }
+
   listProviders(): Provider[] {
     return AVAILABLE_PROVIDERS;
   }
@@ -185,24 +198,42 @@ export class ProviderManager {
     return POST_PROCESSING_PROVIDERS;
   }
 
-  getConfig(providerId: string): { provider: Provider; config: ProviderConfig } | null {
+  async getConfig(providerId: string): Promise<{ provider: Provider; config: ProviderConfig } | null> {
     const provider = AVAILABLE_PROVIDERS.find(p => p.id === providerId);
     if (!provider) return null;
 
     const providers = this.store.get('providers');
     const config = providers.find(p => p.id === providerId);
+    
+    // Check if key exists in secure storage
+    const hasKeyInKeychain = await secureStorage.hasProviderApiKey(providerId);
 
     return {
       provider,
-      config: config || { id: providerId, name: provider.name, enabled: false },
+      config: {
+        ...(config || { id: providerId, name: provider.name, enabled: false }),
+        apiKey: undefined, // Never return the actual key
+        hasKeyInKeychain
+      },
     };
   }
 
-  setConfig(providerId: string, config: Partial<ProviderConfig>): boolean {
+  async setConfig(providerId: string, config: Partial<ProviderConfig> & { apiKey?: string }): Promise<boolean> {
     try {
       const provider = AVAILABLE_PROVIDERS.find(p => p.id === providerId);
       const providers = [...this.store.get('providers')];
       const index = providers.findIndex(p => p.id === providerId);
+
+      if (config.apiKey !== undefined) {
+        if (config.apiKey) {
+          await secureStorage.setProviderApiKey(providerId, config.apiKey);
+          config.hasKeyInKeychain = true;
+        } else {
+          await secureStorage.deleteProviderApiKey(providerId);
+          config.hasKeyInKeychain = false;
+        }
+        delete config.apiKey;
+      }
 
       if (index >= 0) {
         providers[index] = { ...providers[index], ...config };
@@ -224,7 +255,7 @@ export class ProviderManager {
   }
 
   async testConnection(providerId: string): Promise<{ success: boolean; error?: string }> {
-    const config = this.getConfig(providerId);
+    const config = await this.getConfig(providerId);
     if (!config) {
       return { success: false, error: 'Provider not found' };
     }
@@ -235,7 +266,8 @@ export class ProviderManager {
       return { success: false, error: 'Provider not enabled' };
     }
 
-    if (config.provider.requireApiKey && !cfg.apiKey) {
+    const apiKey = await secureStorage.getProviderApiKey(providerId);
+    if (config.provider.requireApiKey && !apiKey) {
       return { success: false, error: 'API key required' };
     }
 
@@ -254,7 +286,7 @@ export class ProviderManager {
         const response = await fetch(testUrl, {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${cfg.apiKey}`,
+            'Authorization': `Bearer ${apiKey}`,
           },
           timeout: 10000
         } as any);
@@ -303,7 +335,7 @@ export class ProviderManager {
         const response = await fetch(testUrl, {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${cfg.apiKey}`,
+            'Authorization': `Bearer ${apiKey}`,
           },
           timeout: 10000
         } as any);

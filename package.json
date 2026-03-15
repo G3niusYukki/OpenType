@@ -75,6 +75,7 @@
   "dependencies": {
     "electron-store": "^10.0.1",
     "form-data": "^4.0.0",
+    "keytar": "^7.9.0",
     "lucide-react": "^0.479.0",
     "node-fetch": "^3.3.2",
     "react": "^19.0.0",

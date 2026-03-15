@@ -5,10 +5,12 @@ import { AudioCapture } from './audio-capture';
 import { TextInserter } from './text-inserter';
 import type { InsertionResult } from './text-inserter';
 import { ProviderManager } from './providers';
-import { TranscriptionService, TranscriptionResult, CloudProviderConfig } from './transcription';
+import { TranscriptionService, TranscriptionResult, CloudProviderConfig, CloudProviderType } from './transcription';
 import { AiPostProcessor, AiPostProcessingResult } from './aiPostProcessor';
 import { GlobalKeyboardMonitor } from './keyboard-monitor';
 import { DiagnosticsService } from './diagnostics';
+import { AudioDeviceManager } from './audio-device-manager';
+import { secureStorage } from './secure-storage';
 
 type RecordingMode = 'default' | 'handsfree' | 'translate' | 'edit';
 
@@ -19,7 +21,7 @@ export class OpenTypeApp {
   private audioCapture: AudioCapture;
   private textInserter: TextInserter;
   private providerManager: ProviderManager;
-  private transcriptionService: TranscriptionService;
+  private transcriptionService: TranscriptionService | null = null;
   private aiPostProcessor: AiPostProcessor;
   private keyboardMonitors: Map<string, GlobalKeyboardMonitor> = new Map();
   private isRecording = false;
@@ -28,6 +30,8 @@ export class OpenTypeApp {
   private selectedTextBeforeRecording: string = '';
   private holdModeActive: boolean = false;
   private diagnosticsService: DiagnosticsService;
+  private audioDeviceManager: AudioDeviceManager;
+  private transcriptionLanguage: string;
 
   constructor() {
     this.store = new Store();
@@ -36,6 +40,7 @@ export class OpenTypeApp {
     this.providerManager = new ProviderManager(this.store);
     this.aiPostProcessor = new AiPostProcessor(this.store, this.providerManager);
     this.diagnosticsService = new DiagnosticsService();
+    this.audioDeviceManager = new AudioDeviceManager(this.audioCapture, this.store);
 
     // Detect system language for transcription
     const systemLang = process.env.LANG || process.env.LC_ALL || 'en-US';
@@ -45,38 +50,60 @@ export class OpenTypeApp {
 
     console.log(`[OpenType] System language: ${defaultLang}, Transcription language: ${transcriptionLang}`);
 
-    this.transcriptionService = new TranscriptionService({
-      language: transcriptionLang,
-      useLocalFirst: true,
-      preferredProvider: this.store.get('preferredProvider') || 'auto',
-      cloudProviders: this.getCloudProviderConfigs()
-    });
+    this.transcriptionLanguage = transcriptionLang;
   }
 
-  private getCloudProviderConfigs(): CloudProviderConfig[] {
+  private async getCloudProviderConfigs(): Promise<CloudProviderConfig[]> {
     const providers = this.store.get('providers');
-    // Only include providers that support audio transcription
-    // DeepSeek, Zhipu, MiniMax, Moonshot are text-only LLMs for post-processing, not audio transcription
     const audioTranscriptionProviders = ['openai', 'groq'];
-    return providers
-      .filter((p): p is ProviderConfig & { id: 'openai' | 'groq'; apiKey: string } => {
-        // Check if enabled for transcription (new field) or fallback to general enabled (backward compatibility)
-        const isEnabled = p.enabledForTranscription ?? p.enabled;
-        return isEnabled && !!p.apiKey && audioTranscriptionProviders.includes(p.id);
-      })
-      .map(p => ({
-        id: p.id,
+    
+    const configs: CloudProviderConfig[] = [];
+    
+    for (const p of providers) {
+      const isEnabled = p.enabledForTranscription ?? p.enabled;
+      if (!isEnabled || !audioTranscriptionProviders.includes(p.id)) continue;
+      
+      // Get API key from secure storage
+      const apiKey = await secureStorage.getProviderApiKey(p.id);
+      if (!apiKey) continue;
+      
+      configs.push({
+        id: p.id as CloudProviderType,
         name: p.name,
-        apiKey: p.apiKey,
+        apiKey,
         baseUrl: p.baseUrl,
         model: p.model,
-        enabled: p.enabledForTranscription ?? p.enabled
-      }));
+        enabled: isEnabled
+      });
+    }
+    
+    return configs;
   }
 
   async initialize(): Promise<void> {
     await app.whenReady();
     
+    // Initialize secure storage
+    await secureStorage.initialize();
+
+    // Check for migration and migrate API keys if needed
+    if (secureStorage.isMigrationNeeded(this.store)) {
+      console.log('[OpenType] Migrating API keys to secure storage...');
+      const result = await secureStorage.migrateFromPlaintext(this.store);
+      if (result.success) {
+        console.log(`[OpenType] Successfully migrated ${result.migrated} API keys to secure storage`);
+      } else {
+        console.error('[OpenType] Migration errors:', result.errors);
+      }
+    }
+
+    this.transcriptionService = new TranscriptionService({
+      language: this.transcriptionLanguage,
+      useLocalFirst: true,
+      preferredProvider: this.store.get('preferredProvider') || 'auto',
+      cloudProviders: await this.getCloudProviderConfigs()
+    });
+
     this.createMainWindow();
     this.createTray();
     this.registerGlobalShortcuts();
@@ -384,12 +411,12 @@ export class OpenTypeApp {
     ipcMain.handle('providers:list', () => this.providerManager.listProviders());
     ipcMain.handle('providers:list-transcription', () => this.providerManager.listTranscriptionProviders());
     ipcMain.handle('providers:list-post-processing', () => this.providerManager.listPostProcessingProviders());
-    ipcMain.handle('providers:get-config', (_, id: string) => this.providerManager.getConfig(id));
-    ipcMain.handle('providers:set-config', (_, id: string, config: unknown) => {
-      const result = this.providerManager.setConfig(id, (config || {}) as any);
+    ipcMain.handle('providers:get-config', async (_, id: string) => await this.providerManager.getConfig(id));
+    ipcMain.handle('providers:set-config', async (_, id: string, config: unknown) => {
+      const result = await this.providerManager.setConfig(id, (config || {}) as any);
       // Update transcription service when any provider config changes
       this.transcriptionService.updateConfig({
-        cloudProviders: this.getCloudProviderConfigs()
+        cloudProviders: await this.getCloudProviderConfigs()
       });
       return result;
     });
@@ -428,13 +455,13 @@ export class OpenTypeApp {
     
     // Audio devices
     ipcMain.handle('audio:devices', async () => {
-      return this.audioCapture.getAudioDevices();
+      return this.audioDeviceManager.getDevices();
     });
     ipcMain.handle('audio:get-selected-device', () => {
-      return this.store.getAudioInputDevice();
+      return this.audioDeviceManager.getSelectedDevice();
     });
     ipcMain.handle('audio:set-selected-device', (_, device) => {
-      this.store.setAudioInputDevice(device);
+      return this.audioDeviceManager.selectDevice(device.id);
     });
 
     // Diagnostics
@@ -594,7 +621,7 @@ export class OpenTypeApp {
     const language = mode === 'translate' ? 'zh' : (this.store.get('language')?.split('-')[0] || 'en');
     this.transcriptionService.updateConfig({
       language,
-      cloudProviders: this.getCloudProviderConfigs(),
+      cloudProviders: await this.getCloudProviderConfigs(),
       useLocalFirst: true
     });
 
