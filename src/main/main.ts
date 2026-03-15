@@ -132,11 +132,15 @@ export class OpenTypeApp {
 
   private async logSystemStatus(): Promise<void> {
     try {
+      if (!this.transcriptionService) {
+        console.log('[OpenType] Transcription service not initialized yet');
+        return;
+      }
       const status = await this.transcriptionService.getStatus();
       console.log('[OpenType] System Status:');
       console.log(`  - whisper.cpp: ${status.whisperInstalled ? '✅' : '❌'} ${status.whisperPath || ''}`);
       console.log(`  - Model: ${status.modelAvailable ? '✅' : '❌'} ${status.modelPath || ''}`);
-      
+
       if (status.recommendations.length > 0) {
         console.log('[OpenType] Setup needed:');
         status.recommendations.forEach(r => console.log(`    ${r}`));
@@ -387,13 +391,13 @@ export class OpenTypeApp {
       }
       if (key === 'language' && typeof value === 'string') {
         const langCode = value.split('-')[0];
-        this.transcriptionService.updateConfig({
+        this.transcriptionService?.updateConfig({
           language: langCode
         });
         console.log(`[OpenType] Language updated to: ${langCode}`);
       }
       if (key === 'preferredProvider' && typeof value === 'string') {
-        this.transcriptionService.updateConfig({
+        this.transcriptionService?.updateConfig({
           preferredProvider: value as 'local' | 'cloud' | 'auto'
         });
       }
@@ -414,8 +418,7 @@ export class OpenTypeApp {
     ipcMain.handle('providers:get-config', async (_, id: string) => await this.providerManager.getConfig(id));
     ipcMain.handle('providers:set-config', async (_, id: string, config: unknown) => {
       const result = await this.providerManager.setConfig(id, (config || {}) as any);
-      // Update transcription service when any provider config changes
-      this.transcriptionService.updateConfig({
+      this.transcriptionService?.updateConfig({
         cloudProviders: await this.getCloudProviderConfigs()
       });
       return result;
@@ -445,7 +448,15 @@ export class OpenTypeApp {
     
     // Transcription status
     ipcMain.handle('transcription:status', async () => {
-      return this.transcriptionService.getStatus();
+      return this.transcriptionService?.getStatus() || {
+        whisperInstalled: false,
+        whisperPath: undefined,
+        modelAvailable: false,
+        modelPath: undefined,
+        hasCloudProvider: false,
+        activeProvider: undefined,
+        recommendations: ['Transcription service not initialized']
+      };
     });
     
     // Audio status
@@ -618,6 +629,14 @@ export class OpenTypeApp {
   }
 
   private async transcribeAudio(audioPath: string, mode: RecordingMode = 'default'): Promise<TranscriptionResult> {
+    if (!this.transcriptionService) {
+      return {
+        success: false,
+        error: 'Transcription service not initialized',
+        provider: 'none',
+        text: ''
+      };
+    }
     const language = mode === 'translate' ? 'zh' : (this.store.get('language')?.split('-')[0] || 'en');
     this.transcriptionService.updateConfig({
       language,

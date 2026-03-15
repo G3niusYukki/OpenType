@@ -6,7 +6,7 @@ import { HistoryPage } from './pages/HistoryPage';
 import { DictionaryPage } from './pages/DictionaryPage';
 import { DiagnosticsPage } from './pages/DiagnosticsPage';
 
-type Page = 'home' | 'settings' | 'history' | 'dictionary' | 'diagnostics';
+type Page = 'home' | 'settings' | 'history' | 'dictionary' | 'diagnostics' | 'profiles';
 
 export function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
