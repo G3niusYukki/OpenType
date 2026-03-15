@@ -262,7 +262,8 @@ export class ProviderManager {
 
     const cfg = config.config;
 
-    if (!cfg.enabled) {
+    const isEnabled = cfg.enabledForTranscription ?? cfg.enabled;
+    if (!isEnabled) {
       return { success: false, error: 'Provider not enabled' };
     }
 
