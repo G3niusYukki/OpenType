@@ -11,6 +11,8 @@ import { GlobalKeyboardMonitor } from './keyboard-monitor';
 import { DiagnosticsService } from './diagnostics';
 import { AudioDeviceManager } from './audio-device-manager';
 import { secureStorage } from './secure-storage';
+import { ProfileManager } from './profile-manager';
+import { TranscriptionStream } from './transcription-stream';
 
 type RecordingMode = 'default' | 'handsfree' | 'translate' | 'edit';
 
@@ -32,6 +34,8 @@ export class OpenTypeApp {
   private diagnosticsService: DiagnosticsService;
   private audioDeviceManager: AudioDeviceManager;
   private transcriptionLanguage: string;
+  private profileManager: ProfileManager;
+  private transcriptionStream: TranscriptionStream | null = null;
 
   constructor() {
     this.store = new Store();
@@ -41,6 +45,7 @@ export class OpenTypeApp {
     this.aiPostProcessor = new AiPostProcessor(this.store, this.providerManager);
     this.diagnosticsService = new DiagnosticsService();
     this.audioDeviceManager = new AudioDeviceManager(this.audioCapture, this.store);
+    this.profileManager = new ProfileManager(this.store);
 
     // Detect system language for transcription
     const systemLang = process.env.LANG || process.env.LC_ALL || 'en-US';
@@ -109,8 +114,9 @@ export class OpenTypeApp {
     this.registerGlobalShortcuts();
     this.setupIpcHandlers();
     this.setupSignalHandlers();
-    
-    // Log system status on startup
+
+    this.profileManager.startMonitoring();
+
     this.logSystemStatus();
     
     app.on('window-all-closed', () => {
@@ -127,6 +133,7 @@ export class OpenTypeApp {
       globalShortcut.unregisterAll();
       this.keyboardMonitors.forEach((monitor) => monitor.stopMonitoring());
       this.keyboardMonitors.clear();
+      this.profileManager.stopMonitoring();
     });
   }
 
@@ -502,6 +509,42 @@ export class OpenTypeApp {
     });
     ipcMain.handle('ai:test', async (_, text: string) => {
       return await this.aiPostProcessor.process(text);
+    });
+
+    ipcMain.handle('profile:get-all', async () => {
+      return await this.profileManager.getProfiles();
+    });
+    ipcMain.handle('profile:get-current', () => {
+      return this.profileManager.getCurrentProfile();
+    });
+    ipcMain.handle('profile:save', async (_, profile) => {
+      await this.profileManager.saveProfile(profile);
+    });
+    ipcMain.handle('profile:delete', async (_, profileId: string) => {
+      await this.profileManager.deleteProfile(profileId);
+    });
+
+    ipcMain.handle('transcription:start-stream', () => {
+      if (!this.transcriptionService) return { success: false, error: 'Transcription service not initialized' };
+      this.transcriptionStream = new TranscriptionStream(this.transcriptionService, {
+        chunkDurationMs: 3000,
+        overlapMs: 500
+      });
+      this.transcriptionStream.on('partial', (chunk) => {
+        this.mainWindow?.webContents.send('transcription:partial', chunk);
+      });
+      this.transcriptionStream.on('final', (chunk) => {
+        this.mainWindow?.webContents.send('transcription:final', chunk);
+      });
+      this.transcriptionStream.start();
+      return { success: true };
+    });
+    ipcMain.handle('transcription:stop-stream', () => {
+      if (this.transcriptionStream) {
+        this.transcriptionStream.stop();
+        this.transcriptionStream = null;
+      }
+      return { success: true };
     });
   }
 

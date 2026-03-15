@@ -89,6 +89,35 @@ OpenType provides four distinct ways to interact with voice input:
 
 ---
 
+
+### 🔧 System Diagnostics
+
+Built-in diagnostics panel to check system health:
+- **Permission Status** - Verify microphone, accessibility, and automation permissions
+- **Dependency Check** - Confirm ffmpeg, whisper.cpp, and model availability
+- **Real-time Monitoring** - Continuous status updates with one-click fixes
+
+### 🎛️ Audio Device Selection
+
+Choose your preferred microphone input:
+- **Device Detection** - Automatically lists all available audio input devices
+- **Persistent Selection** - Remember your preferred device across sessions
+- **Graceful Fallback** - Falls back to default device if selected device is unavailable
+
+### 🔐 Secure API Key Storage
+
+Enhanced security for your API keys:
+- **macOS Keychain Integration** - API keys stored securely using electron.safeStorage
+- **Automatic Migration** - Seamlessly migrates existing keys from plaintext to secure storage
+- **Keychain Indicator** - Visual confirmation when keys are stored securely
+
+### 👤 Per-App Dictation Profiles *(Coming Soon)*
+
+Configure different settings for different applications:
+- **App Detection** - Automatically detects foreground application
+- **Profile Assignment** - Link profiles to specific apps (e.g., Slack, VS Code, Safari)
+- **Custom Settings per App** - Different languages, providers, and AI processing per app
+
 ## 🚀 Installation
 
 ### Requirements

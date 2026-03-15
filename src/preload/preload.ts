@@ -133,6 +133,16 @@ export interface ElectronAPI {
   onRecordingStopped: (callback: () => void) => () => void;
   onTranscriptionComplete: (callback: (result: TranscriptionResult) => void) => () => void;
   onNavigate: (callback: (path: string) => void) => () => void;
+  onTranscriptionPartial: (callback: (chunk: { text: string; isPartial: boolean }) => void) => () => void;
+  onTranscriptionFinal: (callback: (chunk: { text: string; isPartial: boolean }) => void) => () => void;
+
+  profileGetAll: () => Promise<any[]>;
+  profileGetCurrent: () => Promise<any | null>;
+  profileSave: (profile: any) => Promise<void>;
+  profileDelete: (profileId: string) => Promise<void>;
+
+  transcriptionStartStream: () => Promise<{ success: boolean; error?: string }>;
+  transcriptionStopStream: () => Promise<{ success: boolean }>;
 }
 
 const api: ElectronAPI = {
@@ -215,6 +225,26 @@ const api: ElectronAPI = {
     ipcRenderer.on('navigate', handler);
     return () => ipcRenderer.off('navigate', handler);
   },
+
+  onTranscriptionPartial: (callback: (chunk: { text: string; isPartial: boolean }) => void) => {
+    const handler = (_: unknown, chunk: { text: string; isPartial: boolean }) => callback(chunk);
+    ipcRenderer.on('transcription:partial', handler);
+    return () => ipcRenderer.off('transcription:partial', handler);
+  },
+
+  onTranscriptionFinal: (callback: (chunk: { text: string; isPartial: boolean }) => void) => {
+    const handler = (_: unknown, chunk: { text: string; isPartial: boolean }) => callback(chunk);
+    ipcRenderer.on('transcription:final', handler);
+    return () => ipcRenderer.off('transcription:final', handler);
+  },
+
+  profileGetAll: () => ipcRenderer.invoke('profile:get-all'),
+  profileGetCurrent: () => ipcRenderer.invoke('profile:get-current'),
+  profileSave: (profile: any) => ipcRenderer.invoke('profile:save', profile),
+  profileDelete: (profileId: string) => ipcRenderer.invoke('profile:delete', profileId),
+
+  transcriptionStartStream: () => ipcRenderer.invoke('transcription:start-stream'),
+  transcriptionStopStream: () => ipcRenderer.invoke('transcription:stop-stream'),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);

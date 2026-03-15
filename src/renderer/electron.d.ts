@@ -128,6 +128,16 @@ declare global {
       onRecordingStopped: (callback: () => void) => () => void;
       onTranscriptionComplete: (callback: (result: TranscriptionResult) => void) => () => void;
       onNavigate: (callback: (path: string) => void) => () => void;
+      onTranscriptionPartial: (callback: (chunk: { text: string; isPartial: boolean }) => void) => () => void;
+      onTranscriptionFinal: (callback: (chunk: { text: string; isPartial: boolean }) => void) => () => void;
+
+      profileGetAll: () => Promise<any[]>;
+      profileGetCurrent: () => Promise<any | null>;
+      profileSave: (profile: any) => Promise<void>;
+      profileDelete: (profileId: string) => Promise<void>;
+
+      transcriptionStartStream: () => Promise<{ success: boolean; error?: string }>;
+      transcriptionStopStream: () => Promise<{ success: boolean }>;
     };
   }
 }

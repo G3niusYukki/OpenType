@@ -4,6 +4,7 @@ import { HomePage } from './pages/HomePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { DictionaryPage } from './pages/DictionaryPage';
+import { ProfilesPage } from './pages/ProfilesPage';
 import { DiagnosticsPage } from './pages/DiagnosticsPage';
 
 type Page = 'home' | 'settings' | 'history' | 'dictionary' | 'diagnostics' | 'profiles';
@@ -31,6 +32,8 @@ export function App() {
         return <HistoryPage />;
       case 'dictionary':
         return <DictionaryPage />;
+      case 'profiles':
+        return <ProfilesPage />;
       case 'diagnostics':
         return <DiagnosticsPage />;
       default:
