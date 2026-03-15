@@ -27,6 +27,7 @@ export class OpenTypeApp {
   private aiPostProcessor: AiPostProcessor;
   private keyboardMonitors: Map<string, GlobalKeyboardMonitor> = new Map();
   private isRecording = false;
+  private isQuitting = false;
   private currentAudioPath: string | null = null;
   private recordingMode: RecordingMode = 'default';
   private selectedTextBeforeRecording: string = '';
@@ -118,22 +119,50 @@ export class OpenTypeApp {
     this.profileManager.startMonitoring();
 
     this.logSystemStatus();
-    
+
     app.on('window-all-closed', () => {
-      // Keep app running in tray on macOS
+      if (process.platform !== 'darwin') {
+        app.quit();
+      }
     });
 
     app.on('activate', () => {
       if (this.mainWindow === null) {
         this.createMainWindow();
+      } else {
+        this.mainWindow?.show();
       }
     });
 
-    app.on('will-quit', () => {
+    app.on('before-quit', async (event) => {
+      event.preventDefault();
+      this.isQuitting = true;
+
+      if (this.isRecording) {
+        await this.stopRecording();
+      }
+
+      if (this.transcriptionStream) {
+        this.transcriptionStream.stop();
+        this.transcriptionStream = null;
+      }
+
+      await this.audioCapture.stop();
+
       globalShortcut.unregisterAll();
       this.keyboardMonitors.forEach((monitor) => monitor.stopMonitoring());
       this.keyboardMonitors.clear();
       this.profileManager.stopMonitoring();
+
+      if (this.tray) {
+        this.tray.destroy();
+        this.tray = null;
+      }
+
+      this.mainWindow?.destroy();
+      this.mainWindow = null;
+
+      app.exit(0);
     });
   }
 
@@ -200,7 +229,7 @@ export class OpenTypeApp {
     });
 
     this.mainWindow.on('close', (event) => {
-      if (process.platform === 'darwin') {
+      if (process.platform === 'darwin' && !this.isQuitting) {
         event.preventDefault();
         this.mainWindow?.hide();
       }
