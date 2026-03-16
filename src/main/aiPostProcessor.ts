@@ -209,7 +209,7 @@ export class AiPostProcessor {
     if (options.restorePunctuation) {
       const punctLang = options.punctuationLanguage === 'auto' ? language : options.punctuationLanguage;
       if (punctLang === 'zh' || punctLang === 'chinese') {
-        instructions.push('- 恢复和修正中文标点符号：使用全角标点（，。！？；：""''）');
+        instructions.push('- 恢复和修正中文标点符号：使用全角标点（，。！？；：""）');
         instructions.push('- 确保中英文标点不混用：中文内容使用全角标点，英文内容使用半角标点');
         instructions.push('- 在适当位置添加句号、逗号，使文本更易读');
       } else {

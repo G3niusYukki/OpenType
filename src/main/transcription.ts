@@ -229,9 +229,9 @@ export class TranscriptionService {
         if (provider.id === 'local' || provider.id === 'whisper.cpp') {
           result = await this.transcribeWithWhisperCpp(audioPath);
         } else if (provider.id === 'aliyun-asr') {
-          result = await this.transcribeWithAliyunASR(audioPath, provider);
+          result = await this.transcribeWithAliyunASR(audioPath, provider as CloudProviderConfig);
         } else {
-          result = await this.transcribeWithCloudProvider(audioPath, provider);
+          result = await this.transcribeWithCloudProvider(audioPath, provider as CloudProviderConfig);
         }
 
         if (result.success) {

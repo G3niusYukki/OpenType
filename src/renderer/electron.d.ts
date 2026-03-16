@@ -30,6 +30,7 @@ declare global {
       removeFillerWords: boolean;
       removeRepetition: boolean;
       detectSelfCorrection: boolean;
+      restorePunctuation: boolean;
     };
     showComparison: boolean;
   }

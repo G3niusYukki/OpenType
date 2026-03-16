@@ -61,6 +61,7 @@ export function SettingsPage() {
       removeFillerWords: true,
       removeRepetition: true,
       detectSelfCorrection: true,
+      restorePunctuation: true,
     },
     showComparison: true,
   });
