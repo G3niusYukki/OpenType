@@ -30,3 +30,12 @@ coverage/
 # Misc
 *.tmp
 .cache/
+
+# Claude Code
+.claude/
+
+# OpenCode
+.opencode/
+
+# OpenSpec
+openspec/
