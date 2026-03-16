@@ -31,6 +31,7 @@ export interface MockAiPostProcessingSettings {
     removeFillerWords: boolean;
     removeRepetition: boolean;
     detectSelfCorrection: boolean;
+    restorePunctuation: boolean;
   };
   showComparison: boolean;
 }
@@ -64,6 +65,18 @@ export interface ElectronAPIMock {
   onRecordingStopped: MockFn<(callback: () => void) => () => void>;
   onTranscriptionComplete: MockFn<(callback: (result: MockTranscriptionResult) => void) => () => void>;
   onNavigate: MockFn<(callback: (path: string) => void) => () => void>;
+  // Data export/cleanup
+  getStorageStats: MockFn<() => Promise<{ historyCount: number; dictionaryCount: number; tempFilesCount: number; tempFilesSize: number }>>;
+  clearTemporaryFiles: MockFn<(maxAgeHours?: number) => Promise<{ deleted: number; freedBytes: number }>>;
+  clearAllData: MockFn<(resetSettings: boolean) => Promise<void>>;
+  exportHistory: MockFn<(format: 'json' | 'csv') => Promise<{ success: boolean; data?: string; error?: string }>>;
+  exportDictionary: MockFn<() => Promise<{ success: boolean; data?: string; error?: string }>>;
+  exportSettings: MockFn<() => Promise<{ success: boolean; data?: string; error?: string }>>;
+  saveExportFile: MockFn<(data: string, filename: string) => Promise<{ success: boolean; path?: string; canceled?: boolean; error?: string }>>;
+  // Audio device management
+  audioGetDevices: MockFn<() => Promise<Array<{ index: string; name: string }>>>;
+  audioGetSelectedDevice: MockFn<() => Promise<{ index: string; name: string; selectedAt: number } | undefined>>;
+  audioSetSelectedDevice: MockFn<(device: { index: string; name: string; selectedAt: number }) => Promise<void>>;
 }
 
 export interface ElectronAPIMockHelpers {
@@ -78,6 +91,7 @@ const defaultAiSettings = (): MockAiPostProcessingSettings => ({
     removeFillerWords: false,
     removeRepetition: false,
     detectSelfCorrection: false,
+    restorePunctuation: true,
   },
   showComparison: false,
 });
@@ -138,6 +152,18 @@ export const createElectronAPIMock = (): ElectronAPIMockHelpers => {
     onRecordingStopped: vi.fn<(callback: () => void) => () => void>().mockReturnValue(unsubscribe),
     onTranscriptionComplete: vi.fn<(callback: (result: MockTranscriptionResult) => void) => () => void>().mockReturnValue(unsubscribe),
     onNavigate: vi.fn<(callback: (path: string) => void) => () => void>().mockReturnValue(unsubscribe),
+    // Data export/cleanup
+    getStorageStats: vi.fn<() => Promise<{ historyCount: number; dictionaryCount: number; tempFilesCount: number; tempFilesSize: number }>>().mockResolvedValue({ historyCount: 0, dictionaryCount: 0, tempFilesCount: 0, tempFilesSize: 0 }),
+    clearTemporaryFiles: vi.fn<(maxAgeHours?: number) => Promise<{ deleted: number; freedBytes: number }>>().mockResolvedValue({ deleted: 0, freedBytes: 0 }),
+    clearAllData: vi.fn<(resetSettings: boolean) => Promise<void>>().mockResolvedValue(),
+    exportHistory: vi.fn<(format: 'json' | 'csv') => Promise<{ success: boolean; data?: string; error?: string }>>().mockResolvedValue({ success: true, data: '[]' }),
+    exportDictionary: vi.fn<() => Promise<{ success: boolean; data?: string; error?: string }>>().mockResolvedValue({ success: true, data: '[]' }),
+    exportSettings: vi.fn<() => Promise<{ success: boolean; data?: string; error?: string }>>().mockResolvedValue({ success: true, data: '{}' }),
+    saveExportFile: vi.fn<(data: string, filename: string) => Promise<{ success: boolean; path?: string; canceled?: boolean; error?: string }>>().mockResolvedValue({ success: true, path: '/mock/path' }),
+    // Audio device management
+    audioGetDevices: vi.fn<() => Promise<Array<{ index: string; name: string }>>>().mockResolvedValue([{ index: '0', name: 'Mock Microphone' }]),
+    audioGetSelectedDevice: vi.fn<() => Promise<{ index: string; name: string; selectedAt: number } | undefined>>().mockResolvedValue({ index: '0', name: 'Mock Microphone', selectedAt: Date.now() }),
+    audioSetSelectedDevice: vi.fn<(device: { index: string; name: string; selectedAt: number }) => Promise<void>>().mockResolvedValue(),
   };
 
   const assignToWindow = (): ElectronAPIMock => {
@@ -207,6 +233,28 @@ export const createElectronAPIMock = (): ElectronAPIMockHelpers => {
     electronAPI.onTranscriptionComplete.mockReturnValue(unsubscribe);
     electronAPI.onNavigate.mockReset();
     electronAPI.onNavigate.mockReturnValue(unsubscribe);
+    // Data export/cleanup
+    electronAPI.getStorageStats.mockReset();
+    electronAPI.getStorageStats.mockResolvedValue({ historyCount: 0, dictionaryCount: 0, tempFilesCount: 0, tempFilesSize: 0 });
+    electronAPI.clearTemporaryFiles.mockReset();
+    electronAPI.clearTemporaryFiles.mockResolvedValue({ deleted: 0, freedBytes: 0 });
+    electronAPI.clearAllData.mockReset();
+    electronAPI.clearAllData.mockResolvedValue();
+    electronAPI.exportHistory.mockReset();
+    electronAPI.exportHistory.mockResolvedValue({ success: true, data: '[]' });
+    electronAPI.exportDictionary.mockReset();
+    electronAPI.exportDictionary.mockResolvedValue({ success: true, data: '[]' });
+    electronAPI.exportSettings.mockReset();
+    electronAPI.exportSettings.mockResolvedValue({ success: true, data: '{}' });
+    electronAPI.saveExportFile.mockReset();
+    electronAPI.saveExportFile.mockResolvedValue({ success: true, path: '/mock/path' });
+    // Audio device management
+    electronAPI.audioGetDevices.mockReset();
+    electronAPI.audioGetDevices.mockResolvedValue([{ index: '0', name: 'Mock Microphone' }]);
+    electronAPI.audioGetSelectedDevice.mockReset();
+    electronAPI.audioGetSelectedDevice.mockResolvedValue({ index: '0', name: 'Mock Microphone', selectedAt: Date.now() });
+    electronAPI.audioSetSelectedDevice.mockReset();
+    electronAPI.audioSetSelectedDevice.mockResolvedValue();
   };
 
   return {

@@ -133,7 +133,7 @@ describe('SettingsPage', () => {
       render(<SettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Settings')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
       });
 
       // Check general settings are rendered
@@ -268,7 +268,7 @@ describe('SettingsPage', () => {
       render(<SettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Settings')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
       });
 
       const hotkeyInput = screen.getByDisplayValue('CommandOrControl+Shift+D');
@@ -281,7 +281,7 @@ describe('SettingsPage', () => {
       render(<SettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Settings')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
       });
 
       const hotkeyInput = screen.getByDisplayValue('CommandOrControl+Shift+D');
@@ -867,7 +867,7 @@ describe('SettingsPage', () => {
       render(<SettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Settings')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
       });
 
       // Trigger a save by changing hotkey
@@ -882,7 +882,7 @@ describe('SettingsPage', () => {
       render(<SettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Settings')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
       });
 
       // Trigger a save
@@ -901,7 +901,7 @@ describe('SettingsPage', () => {
       const { rerender } = render(<SettingsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Settings')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
       });
 
       // Trigger a save
