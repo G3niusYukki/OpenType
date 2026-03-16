@@ -204,9 +204,16 @@ export class ProviderManager {
 
     const providers = this.store.get('providers');
     const config = providers.find(p => p.id === providerId);
-    
+
     // Check if key exists in secure storage
-    const hasKeyInKeychain = await secureStorage.hasProviderApiKey(providerId);
+    let hasKeyInKeychain = await secureStorage.hasProviderApiKey(providerId);
+
+    // For providers with credentials (like Alibaba Cloud), check credential keys
+    if (!hasKeyInKeychain && providerId === 'aliyun-asr') {
+      const hasAccessKeyId = await secureStorage.hasProviderCredential(providerId, 'accessKeyId');
+      const hasAccessKeySecret = await secureStorage.hasProviderCredential(providerId, 'accessKeySecret');
+      hasKeyInKeychain = hasAccessKeyId && hasAccessKeySecret;
+    }
 
     return {
       provider,
@@ -218,12 +225,13 @@ export class ProviderManager {
     };
   }
 
-  async setConfig(providerId: string, config: Partial<ProviderConfig> & { apiKey?: string }): Promise<boolean> {
+  async setConfig(providerId: string, config: Partial<ProviderConfig> & { apiKey?: string; credentials?: Record<string, string> }): Promise<boolean> {
     try {
       const provider = AVAILABLE_PROVIDERS.find(p => p.id === providerId);
       const providers = [...this.store.get('providers')];
       const index = providers.findIndex(p => p.id === providerId);
 
+      // Handle single API key (traditional)
       if (config.apiKey !== undefined) {
         if (config.apiKey) {
           await secureStorage.setProviderApiKey(providerId, config.apiKey);
@@ -233,6 +241,19 @@ export class ProviderManager {
           config.hasKeyInKeychain = false;
         }
         delete config.apiKey;
+      }
+
+      // Handle credentials key-value pairs (for providers like Alibaba Cloud)
+      if (config.credentials !== undefined) {
+        for (const [keyName, value] of Object.entries(config.credentials)) {
+          if (value) {
+            await secureStorage.setProviderCredential(providerId, keyName, value);
+          } else {
+            await secureStorage.deleteProviderCredential(providerId, keyName);
+          }
+        }
+        config.hasKeyInKeychain = Object.keys(config.credentials).length > 0;
+        delete config.credentials;
       }
 
       if (index >= 0) {
@@ -267,6 +288,18 @@ export class ProviderManager {
       return { success: false, error: 'Provider not enabled' };
     }
 
+    // Handle providers with multiple credentials (like Alibaba Cloud)
+    if (providerId === 'aliyun-asr') {
+      const accessKeyId = await secureStorage.getProviderCredential(providerId, 'accessKeyId');
+      const accessKeySecret = await secureStorage.getProviderCredential(providerId, 'accessKeySecret');
+
+      if (!accessKeyId || !accessKeySecret) {
+        return { success: false, error: 'AccessKey ID and AccessKey Secret required' };
+      }
+
+      return this.testAlibabaCloudConnection(accessKeyId, accessKeySecret);
+    }
+
     const apiKey = await secureStorage.getProviderApiKey(providerId);
     if (config.provider.requireApiKey && !apiKey) {
       return { success: false, error: 'API key required' };
@@ -276,14 +309,14 @@ export class ProviderManager {
     if (providerId === 'openai' || providerId === 'groq') {
       try {
         const fetch = (await import('node-fetch')).default;
-        
+
         let testUrl: string;
         if (providerId === 'groq') {
           testUrl = 'https://api.groq.com/openai/v1/models';
         } else {
           testUrl = 'https://api.openai.com/v1/models';
         }
-        
+
         const response = await fetch(testUrl, {
           method: 'GET',
           headers: {
@@ -314,7 +347,7 @@ export class ProviderManager {
     if (['deepseek', 'zhipu', 'minimax', 'moonshot'].includes(providerId)) {
       try {
         const fetch = (await import('node-fetch')).default;
-        
+
         let testUrl: string;
         switch (providerId) {
           case 'deepseek':
@@ -332,7 +365,7 @@ export class ProviderManager {
           default:
             return { success: false, error: 'Unknown provider' };
         }
-        
+
         const response = await fetch(testUrl, {
           method: 'GET',
           headers: {
@@ -361,6 +394,75 @@ export class ProviderManager {
 
     // For other providers, just verify config is present
     return { success: true };
+  }
+
+  /**
+   * Test Alibaba Cloud ASR connection by verifying credentials
+   */
+  private async testAlibabaCloudConnection(accessKeyId: string, accessKeySecret: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const fetch = (await import('node-fetch')).default;
+      const crypto = await import('crypto');
+
+      // Use Alibaba Cloud STS AssumeRole API as a lightweight test
+      // This validates credentials without consuming ASR quota
+      const date = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+      const region = 'cn-shanghai';
+      const endpoint = `https://sts.${region}.aliyuncs.com`;
+
+      // Build canonical query string
+      const params = new URLSearchParams({
+        'Action': 'GetCallerIdentity',
+        'Version': '2015-04-01',
+        'Format': 'JSON',
+        'AccessKeyId': accessKeyId,
+        'SignatureMethod': 'HMAC-SHA1',
+        'SignatureVersion': '1.0',
+        'SignatureNonce': crypto.randomUUID(),
+        'Timestamp': date
+      });
+
+      // Sort parameters
+      const sortedParams = new URLSearchParams([...params.entries()].sort());
+
+      // Create string to sign
+      const stringToSign = `GET&${encodeURIComponent('/')}&${encodeURIComponent(sortedParams.toString())}`;
+
+      // Generate signature
+      const signature = crypto.createHmac('sha1', `${accessKeySecret}&`)
+        .update(stringToSign)
+        .digest('base64');
+
+      // Add signature to params
+      sortedParams.set('Signature', signature);
+
+      const response = await fetch(`${endpoint}/?${sortedParams.toString()}`, {
+        method: 'GET',
+        timeout: 10000
+      } as any);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage: string;
+        try {
+          const errorJson = JSON.parse(errorText);
+          const code = errorJson.Code || errorJson.code;
+          const message = errorJson.Message || errorJson.message;
+
+          if (code === 'InvalidAccessKeyId.NotFound' || code === 'SignatureDoesNotMatch') {
+            return { success: false, error: 'Invalid AccessKey ID or Secret. Please check your credentials in Alibaba Cloud console.' };
+          }
+          errorMessage = message || errorText;
+        } catch {
+          errorMessage = errorText || `HTTP ${response.status}`;
+        }
+        return { success: false, error: errorMessage };
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error?.message || 'Alibaba Cloud connection test failed' };
+    }
   }
 
   getActiveProvider(): { provider: Provider; config: ProviderConfig } | null {

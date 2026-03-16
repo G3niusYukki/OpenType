@@ -93,6 +93,22 @@ export interface ElectronAPI {
   historyDelete: (id: string) => Promise<void>;
   historyClear: () => Promise<void>;
 
+  // Data Export
+  exportHistory: (format: 'json' | 'csv') => Promise<{ success: boolean; data?: string; error?: string }>;
+  exportDictionary: () => Promise<{ success: boolean; data?: string; error?: string }>;
+  exportSettings: () => Promise<{ success: boolean; data?: string; error?: string }>;
+  saveExportFile: (data: string, filename: string) => Promise<{ success: boolean; path?: string; canceled?: boolean; error?: string }>;
+
+  // Data Cleanup
+  getStorageStats: () => Promise<{
+    historyCount: number;
+    dictionaryCount: number;
+    tempFilesCount: number;
+    tempFilesSize: number;
+  }>;
+  clearTemporaryFiles: (maxAgeHours?: number) => Promise<{ deleted: number; freedBytes: number }>;
+  clearAllData: (resetSettings: boolean) => Promise<void>;
+
   // Dictionary
   dictionaryGet: () => Promise<unknown[]>;
   dictionaryAdd: (word: string, replacement: string) => Promise<void>;
@@ -182,6 +198,17 @@ const api: ElectronAPI = {
   historyGet: (limit: number) => ipcRenderer.invoke('history:get', limit),
   historyDelete: (id: string) => ipcRenderer.invoke('history:delete', id),
   historyClear: () => ipcRenderer.invoke('history:clear'),
+
+  // Data Export
+  exportHistory: (format: 'json' | 'csv') => ipcRenderer.invoke('export:history', format),
+  exportDictionary: () => ipcRenderer.invoke('export:dictionary'),
+  exportSettings: () => ipcRenderer.invoke('export:settings'),
+  saveExportFile: (data: string, filename: string) => ipcRenderer.invoke('export:save-file', data, filename),
+
+  // Data Cleanup
+  getStorageStats: () => ipcRenderer.invoke('cleanup:storage-stats'),
+  clearTemporaryFiles: (maxAgeHours?: number) => ipcRenderer.invoke('cleanup:clear-temp', maxAgeHours),
+  clearAllData: (resetSettings: boolean) => ipcRenderer.invoke('cleanup:clear-all', resetSettings),
 
   // Dictionary
   dictionaryGet: () => ipcRenderer.invoke('dictionary:get'),

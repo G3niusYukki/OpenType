@@ -4,18 +4,21 @@ import fs from 'fs';
 import { spawn } from 'child_process';
 import { promisify } from 'util';
 import { execFile } from 'child_process';
+import crypto from 'crypto';
 
 const execFileAsync = promisify(execFile);
 
-export type CloudProviderType = 'openai' | 'groq' | 'anthropic' | 'deepseek' | 'zhipu' | 'minimax' | 'moonshot';
+export type CloudProviderType = 'openai' | 'groq' | 'anthropic' | 'deepseek' | 'zhipu' | 'minimax' | 'moonshot' | 'aliyun-asr' | 'tencent-asr' | 'baidu-asr' | 'iflytek-asr';
 
 export interface CloudProviderConfig {
   id: CloudProviderType;
   name: string;
   apiKey?: string;
+  credentials?: Record<string, string>; // For providers needing multiple credentials (e.g., accessKeyId, accessKeySecret)
   baseUrl?: string;
   model?: string;
   enabled: boolean;
+  region?: string; // For region-specific providers like Alibaba Cloud
 }
 
 export interface TranscriptionStatus {
@@ -33,9 +36,11 @@ export interface TranscriptionResult {
   success: boolean;
   text?: string;
   error?: string;
-  provider: 'whisper.cpp' | 'openai' | 'groq' | 'anthropic' | 'deepseek' | 'zhipu' | 'minimax' | 'moonshot' | 'local' | 'none';
+  provider: 'whisper.cpp' | 'openai' | 'groq' | 'anthropic' | 'deepseek' | 'zhipu' | 'minimax' | 'moonshot' | 'aliyun-asr' | 'tencent-asr' | 'baidu-asr' | 'iflytek-asr' | 'local' | 'none';
   duration?: number;
   fallbackToClipboard?: boolean;
+  fallbackUsed?: boolean;
+  fallbackFrom?: string;
 }
 
 export interface TranscriptionConfig {
@@ -184,10 +189,13 @@ export class TranscriptionService {
 
   /**
    * Transcribe audio file to text
+   * Implements fallback chain: preferred provider -> other cloud providers -> local
    */
-  async transcribe(audioPath: string): Promise<TranscriptionResult> {
+  async transcribe(audioPath: string, options?: { preferredProvider?: string; enableFallback?: boolean }): Promise<TranscriptionResult> {
     const startTime = Date.now();
-    
+    const enableFallback = options?.enableFallback ?? true;
+    const preferredProviderId = options?.preferredProvider;
+
     // Check if file exists and has content
     if (!fs.existsSync(audioPath)) {
       return {
@@ -196,7 +204,7 @@ export class TranscriptionService {
         provider: 'none'
       };
     }
-    
+
     const stats = fs.statSync(audioPath);
     if (stats.size === 0) {
       return {
@@ -206,49 +214,103 @@ export class TranscriptionService {
       };
     }
 
-    // Track errors for debugging
-    const errors: string[] = [];
+    // Build provider chain
+    const providerChain = this.buildProviderChain(preferredProviderId, enableFallback);
 
-    // Try whisper.cpp first if configured
-    if (this.config.useLocalFirst) {
+    // Track errors and attempts
+    const errors: Array<{ provider: string; error: string }> = [];
+    let fallbackFrom: string | undefined;
+
+    // Try each provider in the chain
+    for (const provider of providerChain.slice(0, 3)) { // Max 3 attempts
       try {
-        const localResult = await this.transcribeWithWhisperCpp(audioPath);
-        if (localResult.success) {
+        let result: TranscriptionResult;
+
+        if (provider.id === 'local' || provider.id === 'whisper.cpp') {
+          result = await this.transcribeWithWhisperCpp(audioPath);
+        } else if (provider.id === 'aliyun-asr') {
+          result = await this.transcribeWithAliyunASR(audioPath, provider);
+        } else {
+          result = await this.transcribeWithCloudProvider(audioPath, provider);
+        }
+
+        if (result.success) {
           return {
-            ...localResult,
-            duration: Date.now() - startTime
+            ...result,
+            duration: Date.now() - startTime,
+            fallbackUsed: !!fallbackFrom,
+            fallbackFrom
           };
         }
-        errors.push(`whisper.cpp: ${localResult.error}`);
-        console.log('[Transcription] Local whisper.cpp failed, falling back:', localResult.error);
+
+        // Track error and continue to next provider
+        errors.push({ provider: provider.name || provider.id, error: result.error || 'Unknown error' });
+        if (!fallbackFrom) {
+          fallbackFrom = provider.name || provider.id;
+        }
+
+        console.log(`[Transcription] ${provider.name || provider.id} failed, trying next:`, result.error);
       } catch (error: any) {
-        const errorMsg = error?.message || 'Unknown whisper.cpp error';
-        errors.push(`whisper.cpp exception: ${errorMsg}`);
-        console.error('[Transcription] whisper.cpp threw exception:', errorMsg);
+        const errorMsg = error?.message || `Unknown ${provider.name || provider.id} error`;
+        errors.push({ provider: provider.name || provider.id, error: errorMsg });
+        console.error(`[Transcription] ${provider.name || provider.id} threw exception:`, errorMsg);
+
+        if (!fallbackFrom) {
+          fallbackFrom = provider.name || provider.id;
+        }
       }
     }
 
-    // Try cloud providers in priority order
-    const cloudProvider = this.getActiveCloudProvider();
-    if (cloudProvider) {
-      try {
-        const cloudResult = await this.transcribeWithCloudProvider(audioPath, cloudProvider);
-        if (cloudResult.success) {
-          return {
-            ...cloudResult,
-            duration: Date.now() - startTime
-          };
-        }
-        errors.push(`${cloudProvider.name}: ${cloudResult.error}`);
-      } catch (error: any) {
-        const errorMsg = error?.message || `Unknown ${cloudProvider.name} error`;
-        errors.push(`${cloudProvider.name} exception: ${errorMsg}`);
-        console.error(`[Transcription] ${cloudProvider.name} threw exception:`, errorMsg);
+    // Return comprehensive error with all attempts
+    return this.createPlaceholderResult(audioPath, errors.map(e => `${e.provider}: ${e.error}`));
+  }
+
+  /**
+   * Build the provider chain for fallback
+   */
+  private buildProviderChain(preferredProviderId?: string, enableFallback: boolean = true): Array<CloudProviderConfig | { id: string; name: string }> {
+    const chain: Array<CloudProviderConfig | { id: string; name: string }> = [];
+    const cloudProviders = this.config.cloudProviders || [];
+
+    // If a specific provider is preferred and fallback is disabled, only use that provider
+    if (preferredProviderId && !enableFallback) {
+      if (preferredProviderId === 'local' || preferredProviderId === 'whisper.cpp') {
+        return [{ id: 'local', name: 'Local whisper.cpp' }];
+      }
+      const provider = cloudProviders.find(p => p.id === preferredProviderId && p.enabled);
+      if (provider) {
+        return [provider];
       }
     }
 
-    // Return structured failure with guidance
-    return this.createPlaceholderResult(audioPath, errors);
+    // Add preferred provider first
+    if (preferredProviderId) {
+      if (preferredProviderId === 'local' || preferredProviderId === 'whisper.cpp') {
+        chain.push({ id: 'local', name: 'Local whisper.cpp' });
+      } else {
+        const provider = cloudProviders.find(p => p.id === preferredProviderId && p.enabled);
+        if (provider) {
+          chain.push(provider);
+        }
+      }
+    }
+
+    if (!enableFallback) {
+      return chain;
+    }
+
+    // Add other enabled cloud providers (excluding already added)
+    const enabledCloudProviders = cloudProviders.filter(
+      p => p.enabled && p.id !== preferredProviderId && (p.apiKey || p.credentials)
+    );
+    chain.push(...enabledCloudProviders);
+
+    // Add local whisper.cpp as last resort (if not already added)
+    if (preferredProviderId !== 'local' && preferredProviderId !== 'whisper.cpp') {
+      chain.push({ id: 'local', name: 'Local whisper.cpp' });
+    }
+
+    return chain;
   }
 
   /**
@@ -448,6 +510,196 @@ export class TranscriptionService {
   }
 
   /**
+   * Transcribe using Alibaba Cloud ASR
+   */
+  private async transcribeWithAliyunASR(
+    audioPath: string,
+    provider: CloudProviderConfig
+  ): Promise<TranscriptionResult> {
+    const credentials = provider.credentials;
+    if (!credentials?.accessKeyId || !credentials?.accessKeySecret) {
+      return {
+        success: false,
+        error: 'Alibaba Cloud ASR requires AccessKey ID and AccessKey Secret',
+        provider: 'aliyun-asr'
+      };
+    }
+
+    try {
+      // Convert audio to PCM 16kHz 16-bit mono format required by Alibaba Cloud
+      const pcmPath = await this.convertToPcmFormat(audioPath);
+
+      // Read audio file as base64
+      const audioBase64 = fs.readFileSync(pcmPath).toString('base64');
+
+      // Clean up temp file
+      try {
+        fs.unlinkSync(pcmPath);
+      } catch {}
+
+      // Build request parameters
+      const region = provider.region || 'cn-shanghai';
+      const endpoint = provider.baseUrl || `https://nls-gateway-${region}.aliyuncs.com/stream/v1/asr`;
+
+      // Use pop-style API (simpler for file-based recognition)
+      const popEndpoint = 'https://nls-meta.cn-shanghai.aliyuncs.com';
+      const apiPath = '/rest/2022-12/14/asr';
+
+      // Create request body
+      const requestBody = {
+        payload: {
+          audio_base64: audioBase64,
+          audio_format: 'pcm',
+          sample_rate: 16000,
+          enable_punctuation_prediction: true,
+          enable_inverse_text_normalization: true
+        },
+        context: {
+          device_id: 'opentype-client'
+        }
+      };
+
+      // Generate signature for Alibaba Cloud POP API
+      const signature = this.generateAliyunSignature(
+        credentials.accessKeyId,
+        credentials.accessKeySecret,
+        'POST',
+        apiPath,
+        requestBody
+      );
+
+      const fetch = (await import('node-fetch')).default;
+
+      const response = await fetch(`${popEndpoint}${apiPath}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `acs ${credentials.accessKeyId}:${signature}`
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage: string;
+        let errorCode: string | undefined;
+
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || errorText;
+          errorCode = errorJson.code;
+        } catch {
+          errorMessage = errorText || `HTTP ${response.status}`;
+        }
+
+        // Handle specific Alibaba Cloud error codes
+        if (errorCode === 'InvalidAccessKeyId.NotFound' || errorCode === 'SignatureDoesNotMatch') {
+          return {
+            success: false,
+            error: `Alibaba Cloud authentication failed: ${errorMessage}. Please check your AccessKey ID and Secret.`,
+            provider: 'aliyun-asr'
+          };
+        }
+
+        if (errorCode === 'QuotaExceeded') {
+          return {
+            success: false,
+            error: `Alibaba Cloud quota exceeded: ${errorMessage}. Please check your console for quota limits.`,
+            provider: 'aliyun-asr'
+          };
+        }
+
+        throw new Error(`Alibaba Cloud ASR error: ${errorMessage}`);
+      }
+
+      const data = await response.json() as {
+        payload?: {
+          result?: string;
+          words?: Array<{ text: string; beginTime: number; endTime: number }>;
+        };
+      };
+
+      const transcribedText = data.payload?.result;
+
+      if (!transcribedText) {
+        return {
+          success: false,
+          error: 'Alibaba Cloud ASR returned empty transcription',
+          provider: 'aliyun-asr'
+        };
+      }
+
+      return {
+        success: true,
+        text: transcribedText,
+        provider: 'aliyun-asr'
+      };
+    } catch (error: any) {
+      const errorMsg = error?.message || 'Alibaba Cloud ASR transcription failed';
+      console.error('[Transcription] Alibaba Cloud ASR failed:', errorMsg);
+
+      return {
+        success: false,
+        error: errorMsg,
+        provider: 'aliyun-asr'
+      };
+    }
+  }
+
+  /**
+   * Convert audio to PCM 16kHz 16-bit mono format using ffmpeg
+   */
+  private async convertToPcmFormat(audioPath: string): Promise<string> {
+    const outputPath = audioPath.replace(/\.[^/.]+$/, '') + '_16k_pcm.wav';
+
+    try {
+      await execFileAsync('ffmpeg', [
+        '-i', audioPath,
+        '-ar', '16000',      // Sample rate: 16kHz
+        '-ac', '1',          // Channels: mono
+        '-acodec', 'pcm_s16le', // Codec: PCM 16-bit little-endian
+        '-y',                // Overwrite output file
+        outputPath
+      ], {
+        timeout: 30000
+      });
+
+      return outputPath;
+    } catch (error: any) {
+      console.error('[Transcription] Failed to convert audio to PCM:', error);
+      throw new Error(`Audio format conversion failed: ${error?.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Generate HMAC-SHA1 signature for Alibaba Cloud API
+   */
+  private generateAliyunSignature(
+    accessKeyId: string,
+    accessKeySecret: string,
+    method: string,
+    path: string,
+    body: object,
+    timestamp?: string
+  ): string {
+    const date = timestamp || new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+
+    // Create canonical request
+    const canonicalRequest = `${method}\n${path}\n\n${JSON.stringify(body)}`;
+
+    // Create string to sign
+    const stringToSign = `ACS3-HMAC-SHA256\n${date}\n${canonicalRequest}`;
+
+    // Generate signature using HMAC-SHA256
+    const signature = crypto
+      .createHmac('sha256', accessKeySecret)
+      .update(stringToSign)
+      .digest('base64');
+
+    return signature;
+  }
+
+  /**
    * Legacy: Transcribe using OpenAI API (maintained for backward compatibility)
    */
   private async transcribeWithOpenAI(audioPath: string): Promise<TranscriptionResult> {
@@ -474,16 +726,17 @@ export class TranscriptionService {
    */
   private createPlaceholderResult(audioPath: string, errors?: string[]): TranscriptionResult {
     const status = this.getQuickStatus();
-    const hasCloudConfig = this.getActiveCloudProvider() !== null;
-    
+    const cloudProviders = this.config.cloudProviders || [];
+    const hasCloudConfig = cloudProviders.some(p => p.enabled && (p.apiKey || p.credentials));
+
     let text = '[Transcription unavailable - ';
-    
+
     if (!status.whisperInstalled && !hasCloudConfig && !this.config.openaiApiKey) {
       text += 'No transcription provider configured]\n\n';
       text += 'To enable dictation:\n';
       text += '1. Install whisper.cpp: brew install whisper.cpp\n';
       text += '2. Download a model (see README)\n';
-      text += '3. Or configure a cloud provider (OpenAI, Groq, etc.) in settings';
+      text += '3. Or configure a cloud provider (OpenAI, Alibaba Cloud, etc.) in settings';
     } else if (!status.modelAvailable && status.whisperInstalled) {
       text += 'Whisper model not found]\n\n';
       text += 'Download a model to enable transcription:\n';

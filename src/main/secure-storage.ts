@@ -7,6 +7,7 @@ import { Store } from './store';
 interface SecretFile {
   version: number;
   providerKeys: Record<string, string>; // providerId -> encrypted key (base64)
+  providerKeyPairs: Record<string, Record<string, string>>; // providerId -> {keyName -> encrypted value}
   lastMigration?: number;
 }
 
@@ -41,7 +42,8 @@ export class SecureStorage {
         // Create empty secrets file
         await this.saveSecrets({
           version: CURRENT_VERSION,
-          providerKeys: {}
+          providerKeys: {},
+          providerKeyPairs: {}
         });
       }
 
@@ -185,6 +187,115 @@ export class SecureStorage {
   }
 
   /**
+   * Get a specific credential value for a provider (for key-value pairs like AccessKey ID/Secret)
+   */
+  async getProviderCredential(providerId: string, keyName: string): Promise<string | null> {
+    const cacheKey = `${providerId}:${keyName}`;
+
+    // Check cache first
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey)!;
+    }
+
+    try {
+      const secrets = await this.loadSecrets();
+      const providerCredentials = secrets.providerKeyPairs[providerId];
+
+      if (!providerCredentials || !providerCredentials[keyName]) {
+        return null;
+      }
+
+      // Decrypt
+      const encryptedKey = providerCredentials[keyName];
+      const encryptedBuffer = Buffer.from(encryptedKey, 'base64');
+      const decrypted = safeStorage.decryptString(encryptedBuffer);
+
+      // Cache decrypted value
+      this.cache.set(cacheKey, decrypted);
+
+      return decrypted;
+    } catch (error) {
+      console.error(`[SecureStorage] Failed to get credential ${keyName} for ${providerId}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Store a specific credential value for a provider (for key-value pairs like AccessKey ID/Secret)
+   */
+  async setProviderCredential(providerId: string, keyName: string, value: string): Promise<void> {
+    try {
+      // Encrypt
+      const encrypted = safeStorage.encryptString(value);
+      const encryptedBase64 = encrypted.toString('base64');
+
+      // Load and update secrets
+      const secrets = await this.loadSecrets();
+      if (!secrets.providerKeyPairs[providerId]) {
+        secrets.providerKeyPairs[providerId] = {};
+      }
+      secrets.providerKeyPairs[providerId][keyName] = encryptedBase64;
+
+      await this.saveSecrets(secrets);
+
+      // Update cache
+      const cacheKey = `${providerId}:${keyName}`;
+      this.cache.set(cacheKey, value);
+    } catch (error) {
+      console.error(`[SecureStorage] Failed to set credential ${keyName} for ${providerId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a specific credential for a provider
+   */
+  async deleteProviderCredential(providerId: string, keyName: string): Promise<void> {
+    try {
+      const secrets = await this.loadSecrets();
+      if (secrets.providerKeyPairs[providerId]) {
+        delete secrets.providerKeyPairs[providerId][keyName];
+        await this.saveSecrets(secrets);
+      }
+
+      // Remove from cache
+      const cacheKey = `${providerId}:${keyName}`;
+      this.cache.delete(cacheKey);
+    } catch (error) {
+      console.error(`[SecureStorage] Failed to delete credential ${keyName} for ${providerId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if a provider has a specific credential stored
+   */
+  async hasProviderCredential(providerId: string, keyName: string): Promise<boolean> {
+    const secrets = await this.loadSecrets();
+    return !!(secrets.providerKeyPairs[providerId] && secrets.providerKeyPairs[providerId][keyName]);
+  }
+
+  /**
+   * Get all credentials for a provider as a key-value object
+   */
+  async getProviderCredentials(providerId: string, keyNames: string[]): Promise<Record<string, string | null>> {
+    const result: Record<string, string | null> = {};
+    for (const keyName of keyNames) {
+      result[keyName] = await this.getProviderCredential(providerId, keyName);
+    }
+    return result;
+  }
+
+  /**
+   * Set multiple credentials for a provider at once
+   */
+  async setProviderCredentials(providerId: string, credentials: Record<string, string>): Promise<void> {
+    for (const [keyName, value] of Object.entries(credentials)) {
+      await this.setProviderCredential(providerId, keyName, value);
+    }
+  }
+
+  /**
    * Clear all cached keys (call on lock/sleep)
    */
   clearCache(): void {
@@ -195,19 +306,25 @@ export class SecureStorage {
     try {
       const data = await fs.readFile(this.secretsPath, 'utf-8');
       const secrets = JSON.parse(data) as SecretFile;
-      
+
       // Handle version migration if needed
       if (secrets.version !== CURRENT_VERSION) {
         // Future: handle version migrations
         secrets.version = CURRENT_VERSION;
       }
-      
+
+      // Ensure providerKeyPairs exists (backward compatibility)
+      if (!secrets.providerKeyPairs) {
+        secrets.providerKeyPairs = {};
+      }
+
       return secrets;
     } catch (error) {
       // Return empty secrets if file doesn't exist or is corrupted
       return {
         version: CURRENT_VERSION,
-        providerKeys: {}
+        providerKeys: {},
+        providerKeyPairs: {}
       };
     }
   }

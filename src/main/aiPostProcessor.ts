@@ -5,6 +5,8 @@ export interface AiPostProcessingOptions {
   removeFillerWords: boolean;
   removeRepetition: boolean;
   detectSelfCorrection: boolean;
+  restorePunctuation?: boolean;
+  punctuationLanguage?: 'chinese' | 'english' | 'auto';
   language: 'zh' | 'en' | 'auto';
 }
 
@@ -64,10 +66,17 @@ export class AiPostProcessor {
     options?: Partial<AiPostProcessingOptions>
   ): Promise<AiPostProcessingResult> {
     const startTime = Date.now();
+
+    // Get settings from store
+    const aiSettings = this.store.get('aiPostProcessing');
+    const punctuationLanguage = this.store.get('punctuationLanguage');
+
     const defaultOptions: AiPostProcessingOptions = {
       removeFillerWords: true,
       removeRepetition: true,
       detectSelfCorrection: true,
+      restorePunctuation: aiSettings.options.restorePunctuation ?? true,
+      punctuationLanguage: punctuationLanguage === 'auto' ? 'auto' : punctuationLanguage,
       language: 'auto',
     };
     const opts = { ...defaultOptions, ...options };
@@ -196,9 +205,23 @@ export class AiPostProcessor {
       }
     }
 
+    // Add punctuation restoration instructions
+    if (options.restorePunctuation) {
+      const punctLang = options.punctuationLanguage === 'auto' ? language : options.punctuationLanguage;
+      if (punctLang === 'zh' || punctLang === 'chinese') {
+        instructions.push('- 恢复和修正中文标点符号：使用全角标点（，。！？；：""''）');
+        instructions.push('- 确保中英文标点不混用：中文内容使用全角标点，英文内容使用半角标点');
+        instructions.push('- 在适当位置添加句号、逗号，使文本更易读');
+      } else {
+        instructions.push('- Restore and correct punctuation: use standard English punctuation');
+        instructions.push('- Add periods and commas where appropriate to improve readability');
+        instructions.push('- Ensure proper spacing after punctuation marks');
+      }
+    }
+
     const systemPrompt = language === 'zh' 
-      ? `你是一位专业的文本编辑助手。请优化以下语音转录文本，使其更流畅、专业。\n\n优化规则：\n${instructions.join('\n')}\n\n要求：\n- 保持原意不变\n- 让文本更简洁流畅\n- 只返回优化后的文本，不要解释`
-      : `You are a professional text editor. Please polish the following transcribed speech to make it more fluent and professional.\n\nOptimization rules:\n${instructions.join('\n')}\n\nRequirements:\n- Maintain the original meaning\n- Make text concise and flowing\n- Return only the polished text, no explanations`;
+      ? `你是一位专业的文本编辑助手。请优化以下语音转录文本，使其更流畅、专业。\n\n优化规则：\n${instructions.join('\n')}\n\n要求：\n- 保持原意不变\n- 让文本更简洁流畅\n- 修正标点符号使用\n- 只返回优化后的文本，不要解释`
+      : `You are a professional text editor. Please polish the following transcribed speech to make it more fluent and professional.\n\nOptimization rules:\n${instructions.join('\n')}\n\nRequirements:\n- Maintain the original meaning\n- Make text concise and flowing\n- Fix punctuation usage\n- Return only the polished text, no explanations`;
 
     return systemPrompt;
   }

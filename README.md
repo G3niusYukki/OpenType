@@ -492,17 +492,17 @@ OpenType follows a versioned release strategy. Below is our planned roadmap from
 - [x] 🔔 **Visual Feedback** - Tray icon status indicators and system notifications
 - [x] ⌨️ **Hold-to-Speak** - Fixed simultaneous shortcut handling logic
 
-### 🎯 v0.2 Core Experience
+### ✅ v0.2 Core Experience (Completed)
 
 **Goal**: Evolve OpenType from "usable prototype" to "daily driver for Chinese users".
 
-- [ ] 🎙️ Integrate 1-2 Chinese ASR providers (priority: Alibaba Cloud, Tencent Cloud, Baidu, or iFlytek)
-- [ ] ⚙️ Support provider-level configuration, connectivity testing, error prompts, and fallback logic
-- [ ] ✨ Enhanced intelligent punctuation completion (restore Chinese/English punctuation in AI post-processing pipeline with per-language toggle)
-- [ ] 💾 Add data export and cleanup (export history, dictionary, config; one-click clear local history and cache)
-- [ ] 🛡️ Improve error feedback and permission guidance (clearer prompts for microphone, accessibility, and Automation permissions)
+- [x] 🎙️ Integrate Alibaba Cloud ASR for Chinese speech recognition
+- [x] ⚙️ Support provider-level configuration, connectivity testing, error prompts, and fallback logic
+- [x] ✨ Enhanced intelligent punctuation completion (restore Chinese/English punctuation in AI post-processing pipeline)
+- [x] 💾 Add data export and cleanup (export history, dictionary, config; one-click clear local history and cache)
+- [x] 🛡️ Improve error feedback and permission guidance
 
-**Success criteria:** Chinese users can achieve stable transcription without local whisper.cpp; default output readability significantly improved; users can clearly manage local data
+**Success criteria:** ✅ Chinese users can achieve stable transcription without local whisper.cpp; default output readability significantly improved; users can clearly manage local data
 
 ### 🚀 v0.3 Productivity Features
 

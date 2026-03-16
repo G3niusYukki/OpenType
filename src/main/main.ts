@@ -1,5 +1,6 @@
 import { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, clipboard, nativeImage, dialog, Notification } from 'electron';
 import path from 'path';
+import fs from 'fs';
 import { Store, ProviderConfig } from './store';
 import { AudioCapture } from './audio-capture';
 import { TextInserter } from './text-inserter';
@@ -61,18 +62,36 @@ export class OpenTypeApp {
 
   private async getCloudProviderConfigs(): Promise<CloudProviderConfig[]> {
     const providers = this.store.get('providers');
-    const audioTranscriptionProviders = ['openai', 'groq'];
-    
+    const audioTranscriptionProviders = ['openai', 'groq', 'aliyun-asr', 'tencent-asr', 'baidu-asr', 'iflytek-asr'];
+
     const configs: CloudProviderConfig[] = [];
-    
+
     for (const p of providers) {
       const isEnabled = p.enabledForTranscription ?? p.enabled;
       if (!isEnabled || !audioTranscriptionProviders.includes(p.id)) continue;
-      
-      // Get API key from secure storage
+
+      // Handle providers with multiple credentials (like Alibaba Cloud)
+      if (p.id === 'aliyun-asr') {
+        const accessKeyId = await secureStorage.getProviderCredential(p.id, 'accessKeyId');
+        const accessKeySecret = await secureStorage.getProviderCredential(p.id, 'accessKeySecret');
+        if (!accessKeyId || !accessKeySecret) continue;
+
+        configs.push({
+          id: p.id as CloudProviderType,
+          name: p.name,
+          credentials: { accessKeyId, accessKeySecret },
+          baseUrl: p.baseUrl,
+          model: p.model,
+          enabled: isEnabled,
+          region: p.region
+        });
+        continue;
+      }
+
+      // Get API key from secure storage for other providers
       const apiKey = await secureStorage.getProviderApiKey(p.id);
       if (!apiKey) continue;
-      
+
       configs.push({
         id: p.id as CloudProviderType,
         name: p.name,
@@ -82,7 +101,7 @@ export class OpenTypeApp {
         enabled: isEnabled
       });
     }
-    
+
     return configs;
   }
 
@@ -465,6 +484,62 @@ export class OpenTypeApp {
     ipcMain.handle('history:get', (_, limit: number) => this.store.getHistory(limit));
     ipcMain.handle('history:delete', (_, id: string) => this.store.deleteHistoryItem(id));
     ipcMain.handle('history:clear', () => this.store.clearHistory());
+
+    // Data Export
+    ipcMain.handle('export:history', (_, format: 'json' | 'csv') => {
+      try {
+        if (format === 'csv') {
+          return { success: true, data: this.store.exportHistoryToCSV() };
+        }
+        return { success: true, data: JSON.stringify(this.store.exportHistoryToJSON(), null, 2) };
+      } catch (error: any) {
+        return { success: false, error: error?.message || 'Export failed' };
+      }
+    });
+    ipcMain.handle('export:dictionary', () => {
+      try {
+        return { success: true, data: JSON.stringify(this.store.exportDictionaryToJSON(), null, 2) };
+      } catch (error: any) {
+        return { success: false, error: error?.message || 'Export failed' };
+      }
+    });
+    ipcMain.handle('export:settings', () => {
+      try {
+        return { success: true, data: JSON.stringify(this.store.exportSettingsToJSON(), null, 2) };
+      } catch (error: any) {
+        return { success: false, error: error?.message || 'Export failed' };
+      }
+    });
+    ipcMain.handle('export:save-file', async (_, data: string, filename: string) => {
+      try {
+        const result = await dialog.showSaveDialog(this.mainWindow!, {
+          defaultPath: filename,
+          filters: [
+            { name: 'JSON Files', extensions: ['json'] },
+            { name: 'CSV Files', extensions: ['csv'] },
+            { name: 'All Files', extensions: ['*'] }
+          ]
+        });
+        if (result.canceled || !result.filePath) {
+          return { success: false, canceled: true };
+        }
+        fs.writeFileSync(result.filePath, data, 'utf-8');
+        return { success: true, path: result.filePath };
+      } catch (error: any) {
+        return { success: false, error: error?.message || 'Save failed' };
+      }
+    });
+
+    // Data Cleanup
+    ipcMain.handle('cleanup:storage-stats', async () => {
+      return await this.store.getStorageStats();
+    });
+    ipcMain.handle('cleanup:clear-temp', async (_, maxAgeHours?: number) => {
+      return await this.store.clearTemporaryFiles(maxAgeHours);
+    });
+    ipcMain.handle('cleanup:clear-all', async (_, resetSettings: boolean) => {
+      await this.store.clearAllData(resetSettings);
+    });
 
     // Dictionary
     ipcMain.handle('dictionary:get', () => this.store.getDictionary());

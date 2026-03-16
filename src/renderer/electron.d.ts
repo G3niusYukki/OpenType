@@ -89,6 +89,22 @@ declare global {
       historyDelete: (id: string) => Promise<void>;
       historyClear: () => Promise<void>;
 
+      // Data Export
+      exportHistory: (format: 'json' | 'csv') => Promise<{ success: boolean; data?: string; error?: string }>;
+      exportDictionary: () => Promise<{ success: boolean; data?: string; error?: string }>;
+      exportSettings: () => Promise<{ success: boolean; data?: string; error?: string }>;
+      saveExportFile: (data: string, filename: string) => Promise<{ success: boolean; path?: string; canceled?: boolean; error?: string }>;
+
+      // Data Cleanup
+      getStorageStats: () => Promise<{
+        historyCount: number;
+        dictionaryCount: number;
+        tempFilesCount: number;
+        tempFilesSize: number;
+      }>;
+      clearTemporaryFiles: (maxAgeHours?: number) => Promise<{ deleted: number; freedBytes: number }>;
+      clearAllData: (resetSettings: boolean) => Promise<void>;
+
       // Dictionary
       dictionaryGet: () => Promise<unknown[]>;
       dictionaryAdd: (word: string, replacement: string) => Promise<void>;

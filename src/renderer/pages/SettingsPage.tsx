@@ -22,6 +22,8 @@ interface ProviderConfig {
   apiKey?: string;
   baseUrl?: string;
   model?: string;
+  credentials?: Record<string, string>;
+  hasKeyInKeychain?: boolean;
 }
 
 interface SystemStatus {
@@ -46,6 +48,7 @@ export function SettingsPage() {
   const [language, setLanguage] = useState('en-US');
   const [autoPunctuation, setAutoPunctuation] = useState(true);
   const [preferredProvider, setPreferredProvider] = useState<'local' | 'cloud' | 'auto'>('auto');
+  const [fallbackEnabled, setFallbackEnabled] = useState(true);
   const [transcriptionProviders, setTranscriptionProviders] = useState<Provider[]>([]);
   const [postProcessingProviders, setPostProcessingProviders] = useState<Provider[]>([]);
   const [providerConfigs, setProviderConfigs] = useState<Record<string, ProviderConfig>>({});
@@ -87,13 +90,14 @@ export function SettingsPage() {
   }, []);
 
   const loadSettings = async () => {
-    const [savedHotkey, savedLanguage, savedPunctuation, savedPreferredProvider, savedAiSettings, savedVoiceModes] = await Promise.all([
+    const [savedHotkey, savedLanguage, savedPunctuation, savedPreferredProvider, savedAiSettings, savedVoiceModes, savedFallbackSettings] = await Promise.all([
       window.electronAPI.storeGet('hotkey'),
       window.electronAPI.storeGet('language'),
       window.electronAPI.storeGet('autoPunctuation'),
       window.electronAPI.storeGet('preferredProvider'),
       window.electronAPI.aiGetSettings(),
       window.electronAPI.storeGet('voiceInputModes'),
+      window.electronAPI.storeGet('fallbackSettings'),
     ]);
 
     if (savedHotkey) setHotkey(savedHotkey as string);
@@ -106,6 +110,9 @@ export function SettingsPage() {
     }
     if (savedVoiceModes) {
       setVoiceInputModes(savedVoiceModes as typeof voiceInputModes);
+    }
+    if (savedFallbackSettings) {
+      setFallbackEnabled((savedFallbackSettings as { enabled: boolean }).enabled ?? true);
     }
   };
 
@@ -213,6 +220,16 @@ export function SettingsPage() {
     showSaveIndicator();
     await window.electronAPI.storeSet('preferredProvider', value);
     setTimeout(loadSystemStatus, 100);
+  };
+
+  const saveFallbackEnabled = async (enabled: boolean) => {
+    setFallbackEnabled(enabled);
+    showSaveIndicator();
+    const currentSettings = await window.electronAPI.storeGet('fallbackSettings') as { enabled: boolean; providerOrder: string[]; maxAttempts: number };
+    await window.electronAPI.storeSet('fallbackSettings', {
+      ...currentSettings,
+      enabled,
+    });
   };
 
   const updateProviderConfig = async (providerId: string, updates: Partial<ProviderConfig>) => {
@@ -665,6 +682,47 @@ export function SettingsPage() {
             </p>
           </div>
 
+          {/* Fallback Settings */}
+          <div style={{ marginTop: '16px' }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+            }}
+            >
+              <div>
+                <p style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: '#ccc',
+                  margin: '0 0 4px 0',
+                }}
+                >
+                  Enable Provider Fallback
+                </p>
+                <p style={{
+                  fontSize: '12px',
+                  color: '#666',
+                  margin: 0,
+                }}
+                >
+                  Automatically try alternative providers if the primary one fails
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={fallbackEnabled}
+                onChange={(e) => saveFallbackEnabled(e.target.checked)}
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  accentColor: '#6366f1',
+                }}
+              />
+            </label>
+          </div>
+
           {/* Audio Input Device */}
           <div>
             <label style={{
@@ -733,15 +791,33 @@ export function SettingsPage() {
                 }}
                 >
                   <div>
-                    <h3 style={{
-                      fontSize: '16px',
-                      fontWeight: 600,
-                      color: '#fff',
-                      margin: '0 0 4px 0',
-                    }}
-                    >
-                      {provider.name}
-                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <h3 style={{
+                        fontSize: '16px',
+                        fontWeight: 600,
+                        color: '#fff',
+                        margin: 0,
+                      }}
+                      >
+                        {provider.name}
+                      </h3>
+                      {/* Provider Status Indicator */}
+                      {config.hasKeyInKeychain && (
+                        <span style={{
+                          fontSize: '11px',
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          background: testRes?.success ? 'rgba(34, 197, 94, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                          color: testRes?.success ? '#22c55e' : '#f59e0b',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}>
+                          {testRes?.success ? <CheckCircle size={10} /> : <AlertCircle size={10} />}
+                          {testRes?.success ? 'Connected' : 'Configured'}
+                        </span>
+                      )}
+                    </div>
                     <p style={{
                       fontSize: '13px',
                       color: '#666',
@@ -778,7 +854,7 @@ export function SettingsPage() {
                     gap: '12px',
                   }}
                   >
-                    {provider.requireApiKey && (
+                    {provider.requireApiKey && provider.id !== 'aliyun-asr' && (
                       <div>
                         <label style={{
                           fontSize: '12px',
@@ -805,6 +881,14 @@ export function SettingsPage() {
                           }}
                         />
                       </div>
+                    )}
+
+                    {provider.id === 'aliyun-asr' && (
+                      <AliyunCredentialInputs
+                        providerId={provider.id}
+                        config={config}
+                        onUpdate={updateProviderConfig}
+                      />
                     )}
 
                     {provider.supportedModels.length > 1 && (
@@ -1282,6 +1366,26 @@ export function SettingsPage() {
                     />
                     {t.settings.detectSelfCorrection}
                   </label>
+
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    color: '#aaa',
+                  }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={aiSettings.options.restorePunctuation ?? true}
+                      onChange={(e) => updateAiSettings({
+                        options: { ...aiSettings.options, restorePunctuation: e.target.checked }
+                      })}
+                      style={{ accentColor: '#6366f1' }}
+                    />
+                    Restore punctuation
+                  </label>
                 </div>
               </div>
 
@@ -1529,6 +1633,730 @@ export function SettingsPage() {
           </div>
         </div>
       </section>
+
+      {/* Data Management Section */}
+      <section style={{ marginBottom: '48px' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          marginBottom: '24px',
+          paddingBottom: '16px',
+          borderBottom: '1px solid #222',
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div>
+            <h2 style={{
+              fontSize: '20px',
+              fontWeight: 600,
+              color: '#fff',
+              margin: 0,
+            }}>
+              Data Management
+            </h2>
+            <p style={{
+              fontSize: '13px',
+              color: '#666',
+              margin: '4px 0 0 0',
+            }}>
+              Export and manage your local data
+            </p>
+          </div>
+        </div>
+
+        <DataManagementSection />
+      </section>
+    </div>
+  );
+}
+
+// Data Management Component
+function DataManagementSection() {
+  const [storageStats, setStorageStats] = useState({
+    historyCount: 0,
+    dictionaryCount: 0,
+    tempFilesCount: 0,
+    tempFilesSize: 0,
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [exportStatus, setExportStatus] = useState<string | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState<'clear-history' | 'clear-cache' | 'clear-all' | null>(null);
+  const [confirmText, setConfirmText] = useState('');
+
+  useEffect(() => {
+    loadStorageStats();
+  }, []);
+
+  const loadStorageStats = async () => {
+    try {
+      const stats = await window.electronAPI.getStorageStats();
+      setStorageStats(stats);
+    } catch (error) {
+      console.error('Failed to load storage stats:', error);
+    }
+  };
+
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const handleExportHistory = async (format: 'json' | 'csv') => {
+    setIsLoading(true);
+    setExportStatus(null);
+    try {
+      const result = await window.electronAPI.exportHistory(format);
+      if (result.success && result.data) {
+        const filename = `opentype-history-${new Date().toISOString().split('T')[0]}.${format}`;
+        const saveResult = await window.electronAPI.saveExportFile(result.data, filename);
+        if (saveResult.success) {
+          setExportStatus(`History exported to ${saveResult.path}`);
+        } else if (saveResult.canceled) {
+          setExportStatus('Export canceled');
+        } else {
+          setExportStatus(`Export failed: ${saveResult.error}`);
+        }
+      } else {
+        setExportStatus(`Export failed: ${result.error}`);
+      }
+    } catch (error: any) {
+      setExportStatus(`Export error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setExportStatus(null), 3000);
+    }
+  };
+
+  const handleExportDictionary = async () => {
+    setIsLoading(true);
+    setExportStatus(null);
+    try {
+      const result = await window.electronAPI.exportDictionary();
+      if (result.success && result.data) {
+        const filename = `opentype-dictionary-${new Date().toISOString().split('T')[0]}.json`;
+        const saveResult = await window.electronAPI.saveExportFile(result.data, filename);
+        if (saveResult.success) {
+          setExportStatus(`Dictionary exported to ${saveResult.path}`);
+        } else if (saveResult.canceled) {
+          setExportStatus('Export canceled');
+        } else {
+          setExportStatus(`Export failed: ${saveResult.error}`);
+        }
+      } else {
+        setExportStatus(`Export failed: ${result.error}`);
+      }
+    } catch (error: any) {
+      setExportStatus(`Export error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setExportStatus(null), 3000);
+    }
+  };
+
+  const handleExportSettings = async () => {
+    setIsLoading(true);
+    setExportStatus(null);
+    try {
+      const result = await window.electronAPI.exportSettings();
+      if (result.success && result.data) {
+        const filename = `opentype-settings-${new Date().toISOString().split('T')[0]}.json`;
+        const saveResult = await window.electronAPI.saveExportFile(result.data, filename);
+        if (saveResult.success) {
+          setExportStatus(`Settings exported to ${saveResult.path}`);
+        } else if (saveResult.canceled) {
+          setExportStatus('Export canceled');
+        } else {
+          setExportStatus(`Export failed: ${saveResult.error}`);
+        }
+      } else {
+        setExportStatus(`Export failed: ${result.error}`);
+      }
+    } catch (error: any) {
+      setExportStatus(`Export error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setExportStatus(null), 3000);
+    }
+  };
+
+  const handleClearHistory = async () => {
+    if (confirmText !== 'DELETE') return;
+    setIsLoading(true);
+    try {
+      await window.electronAPI.historyClear();
+      await loadStorageStats();
+      setShowConfirmDialog(null);
+      setConfirmText('');
+      setExportStatus('History cleared successfully');
+    } catch (error: any) {
+      setExportStatus(`Failed to clear history: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setExportStatus(null), 3000);
+    }
+  };
+
+  const handleClearCache = async () => {
+    setIsLoading(true);
+    try {
+      const result = await window.electronAPI.clearTemporaryFiles(0);
+      await loadStorageStats();
+      setShowConfirmDialog(null);
+      setExportStatus(`Cache cleared. Deleted ${result.deleted} files, freed ${formatBytes(result.freedBytes)}`);
+    } catch (error: any) {
+      setExportStatus(`Failed to clear cache: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setExportStatus(null), 5000);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (confirmText !== 'DELETE ALL') return;
+    setIsLoading(true);
+    try {
+      await window.electronAPI.clearAllData(true);
+      await loadStorageStats();
+      setShowConfirmDialog(null);
+      setConfirmText('');
+      setExportStatus('All data cleared. Settings have been reset.');
+    } catch (error: any) {
+      setExportStatus(`Failed to clear data: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setExportStatus(null), 3000);
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Storage Stats */}
+      <div style={{
+        background: '#161616',
+        border: '1px solid #222',
+        borderRadius: '12px',
+        padding: '20px',
+      }}>
+        <h3 style={{
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#fff',
+          margin: '0 0 16px 0',
+        }}>
+          Storage Usage
+        </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+          <StatCard label="History Items" value={storageStats.historyCount.toString()} />
+          <StatCard label="Dictionary Entries" value={storageStats.dictionaryCount.toString()} />
+          <StatCard label="Temp Files" value={storageStats.tempFilesCount.toString()} />
+          <StatCard label="Temp Storage" value={formatBytes(storageStats.tempFilesSize)} />
+        </div>
+        <button
+          onClick={loadStorageStats}
+          disabled={isLoading}
+          style={{
+            marginTop: '16px',
+            padding: '8px 16px',
+            background: 'transparent',
+            border: '1px solid #333',
+            borderRadius: '6px',
+            color: '#666',
+            fontSize: '13px',
+            cursor: 'pointer',
+          }}
+        >
+          Refresh
+        </button>
+      </div>
+
+      {/* Export Section */}
+      <div style={{
+        background: '#161616',
+        border: '1px solid #222',
+        borderRadius: '12px',
+        padding: '20px',
+      }}>
+        <h3 style={{
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#fff',
+          margin: '0 0 16px 0',
+        }}>
+          Export Data
+        </h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <ExportRow
+            label="Transcription History"
+            description={`${storageStats.historyCount} items`}
+            onExportJSON={() => handleExportHistory('json')}
+            onExportCSV={() => handleExportHistory('csv')}
+            disabled={storageStats.historyCount === 0 || isLoading}
+          />
+          <ExportRow
+            label="Custom Dictionary"
+            description={`${storageStats.dictionaryCount} entries`}
+            onExportJSON={handleExportDictionary}
+            disabled={storageStats.dictionaryCount === 0 || isLoading}
+            hideCSV
+          />
+          <ExportRow
+            label="Settings"
+            description="App configuration (API keys excluded)"
+            onExportJSON={handleExportSettings}
+            disabled={isLoading}
+            hideCSV
+          />
+        </div>
+        {exportStatus && (
+          <p style={{
+            marginTop: '12px',
+            fontSize: '13px',
+            color: exportStatus.includes('failed') || exportStatus.includes('error') ? '#ef4444' : '#22c55e',
+          }}>
+            {exportStatus}
+          </p>
+        )}
+      </div>
+
+      {/* Cleanup Section */}
+      <div style={{
+        background: '#161616',
+        border: '1px solid #222',
+        borderRadius: '12px',
+        padding: '20px',
+      }}>
+        <h3 style={{
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#fff',
+          margin: '0 0 16px 0',
+        }}>
+          Data Cleanup
+        </h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <CleanupRow
+            label="Clear History"
+            description="Delete all transcription records and associated audio files"
+            onClick={() => setShowConfirmDialog('clear-history')}
+            disabled={storageStats.historyCount === 0 || isLoading}
+            danger
+          />
+          <CleanupRow
+            label="Clear Cache"
+            description="Remove temporary audio files"
+            onClick={() => setShowConfirmDialog('clear-cache')}
+            disabled={storageStats.tempFilesCount === 0 || isLoading}
+          />
+          <CleanupRow
+            label="Clear All Data"
+            description="Delete everything and reset settings to defaults"
+            onClick={() => setShowConfirmDialog('clear-all')}
+            disabled={isLoading}
+            danger
+          />
+        </div>
+      </div>
+
+      {/* Confirmation Dialog */}
+      {showConfirmDialog && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }}>
+          <div style={{
+            background: '#1a1a1a',
+            border: '1px solid #333',
+            borderRadius: '12px',
+            padding: '24px',
+            maxWidth: '400px',
+            width: '90%',
+          }}>
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: 600,
+              color: showConfirmDialog === 'clear-all' ? '#ef4444' : '#fff',
+              margin: '0 0 12px 0',
+            }}>
+              {showConfirmDialog === 'clear-history' && 'Clear History?'}
+              {showConfirmDialog === 'clear-cache' && 'Clear Cache?'}
+              {showConfirmDialog === 'clear-all' && 'Clear All Data?'}
+            </h3>
+            <p style={{
+              fontSize: '14px',
+              color: '#888',
+              margin: '0 0 16px 0',
+              lineHeight: 1.5,
+            }}>
+              {showConfirmDialog === 'clear-history' && 'This will permanently delete all transcription history and associated audio files. This action cannot be undone.'}
+              {showConfirmDialog === 'clear-cache' && `This will delete ${storageStats.tempFilesCount} temporary files (${formatBytes(storageStats.tempFilesSize)}).`}
+              {showConfirmDialog === 'clear-all' && 'This will delete ALL data including history, dictionary, and reset all settings to defaults. API keys in secure storage will be preserved. This action cannot be undone.'}
+            </p>
+            {(showConfirmDialog === 'clear-history' || showConfirmDialog === 'clear-all') && (
+              <div style={{ marginBottom: '16px' }}>
+                <p style={{
+                  fontSize: '13px',
+                  color: '#666',
+                  margin: '0 0 8px 0',
+                }}>
+                  Type "{showConfirmDialog === 'clear-all' ? 'DELETE ALL' : 'DELETE'}" to confirm:
+                </p>
+                <input
+                  type="text"
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                  placeholder={showConfirmDialog === 'clear-all' ? 'DELETE ALL' : 'DELETE'}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    background: '#222',
+                    border: '1px solid #333',
+                    borderRadius: '6px',
+                    color: '#fff',
+                    fontSize: '14px',
+                  }}
+                />
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setShowConfirmDialog(null);
+                  setConfirmText('');
+                }}
+                style={{
+                  padding: '10px 16px',
+                  background: 'transparent',
+                  border: '1px solid #333',
+                  borderRadius: '6px',
+                  color: '#888',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={
+                  showConfirmDialog === 'clear-history' ? handleClearHistory :
+                  showConfirmDialog === 'clear-cache' ? handleClearCache :
+                  handleClearAll
+                }
+                disabled={
+                  isLoading ||
+                  ((showConfirmDialog === 'clear-history' || showConfirmDialog === 'clear-all') &&
+                    confirmText !== (showConfirmDialog === 'clear-all' ? 'DELETE ALL' : 'DELETE'))
+                }
+                style={{
+                  padding: '10px 16px',
+                  background: showConfirmDialog === 'clear-all' ? '#ef4444' : '#6366f1',
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: '#fff',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  opacity: isLoading ? 0.5 : 1,
+                }}
+              >
+                {isLoading ? 'Processing...' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Alibaba Cloud Credential Inputs Component
+function AliyunCredentialInputs({
+  providerId,
+  config,
+  onUpdate,
+}: {
+  providerId: string;
+  config: ProviderConfig;
+  onUpdate: (id: string, updates: Partial<ProviderConfig> & { credentials?: Record<string, string> }) => void;
+}) {
+  const [accessKeyId, setAccessKeyId] = useState('');
+  const [accessKeySecret, setAccessKeySecret] = useState('');
+
+  const handleSave = () => {
+    if (accessKeyId && accessKeySecret) {
+      onUpdate(providerId, {
+        credentials: {
+          accessKeyId,
+          accessKeySecret,
+        },
+      });
+      // Clear inputs after save for security
+      setAccessKeyId('');
+      setAccessKeySecret('');
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div>
+        <label style={{
+          fontSize: '12px',
+          color: '#666',
+          marginBottom: '6px',
+          display: 'block',
+        }}>
+          AccessKey ID
+        </label>
+        <input
+          type="password"
+          value={accessKeyId}
+          onChange={(e) => setAccessKeyId(e.target.value)}
+          placeholder="Enter Alibaba Cloud AccessKey ID"
+          style={{
+            width: '100%',
+            padding: '10px 14px',
+            background: '#0f0f0f',
+            border: '1px solid #2a2a2a',
+            borderRadius: '6px',
+            color: '#fff',
+            fontSize: '13px',
+          }}
+        />
+      </div>
+      <div>
+        <label style={{
+          fontSize: '12px',
+          color: '#666',
+          marginBottom: '6px',
+          display: 'block',
+        }}>
+          AccessKey Secret
+        </label>
+        <input
+          type="password"
+          value={accessKeySecret}
+          onChange={(e) => setAccessKeySecret(e.target.value)}
+          placeholder="Enter Alibaba Cloud AccessKey Secret"
+          style={{
+            width: '100%',
+            padding: '10px 14px',
+            background: '#0f0f0f',
+            border: '1px solid #2a2a2a',
+            borderRadius: '6px',
+            color: '#fff',
+            fontSize: '13px',
+          }}
+        />
+      </div>
+      {config.hasKeyInKeychain && (
+        <p style={{
+          fontSize: '12px',
+          color: '#22c55e',
+          margin: 0,
+        }}>
+          ✓ Credentials saved in secure storage
+        </p>
+      )}
+      <button
+        onClick={handleSave}
+        disabled={!accessKeyId || !accessKeySecret}
+        style={{
+          padding: '10px 16px',
+          background: accessKeyId && accessKeySecret ? '#6366f1' : '#333',
+          border: 'none',
+          borderRadius: '6px',
+          color: accessKeyId && accessKeySecret ? '#fff' : '#666',
+          fontSize: '13px',
+          cursor: accessKeyId && accessKeySecret ? 'pointer' : 'not-allowed',
+        }}
+      >
+        Save Credentials
+      </button>
+    </div>
+  );
+}
+
+function StatCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{
+      background: '#1a1a1a',
+      borderRadius: '8px',
+      padding: '16px',
+      textAlign: 'center',
+    }}>
+      <p style={{
+        fontSize: '24px',
+        fontWeight: 600,
+        color: '#fff',
+        margin: '0 0 4px 0',
+      }}>
+        {value}
+      </p>
+      <p style={{
+        fontSize: '12px',
+        color: '#666',
+        margin: 0,
+      }}>
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function ExportRow({
+  label,
+  description,
+  onExportJSON,
+  onExportCSV,
+  disabled,
+  hideCSV,
+}: {
+  label: string;
+  description: string;
+  onExportJSON: () => void;
+  onExportCSV?: () => void;
+  disabled: boolean;
+  hideCSV?: boolean;
+}) {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '12px',
+      background: '#1a1a1a',
+      borderRadius: '8px',
+    }}>
+      <div>
+        <p style={{
+          fontSize: '14px',
+          fontWeight: 500,
+          color: '#ccc',
+          margin: '0 0 4px 0',
+        }}>
+          {label}
+        </p>
+        <p style={{
+          fontSize: '12px',
+          color: '#666',
+          margin: 0,
+        }}>
+          {description}
+        </p>
+      </div>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button
+          onClick={onExportJSON}
+          disabled={disabled}
+          style={{
+            padding: '8px 14px',
+            background: disabled ? '#222' : '#6366f1',
+            border: 'none',
+            borderRadius: '6px',
+            color: disabled ? '#666' : '#fff',
+            fontSize: '13px',
+            cursor: disabled ? 'not-allowed' : 'pointer',
+          }}
+        >
+          Export JSON
+        </button>
+        {!hideCSV && onExportCSV && (
+          <button
+            onClick={onExportCSV}
+            disabled={disabled}
+            style={{
+              padding: '8px 14px',
+              background: disabled ? '#222' : '#333',
+              border: '1px solid #444',
+              borderRadius: '6px',
+              color: disabled ? '#666' : '#ccc',
+              fontSize: '13px',
+              cursor: disabled ? 'not-allowed' : 'pointer',
+            }}
+          >
+            Export CSV
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CleanupRow({
+  label,
+  description,
+  onClick,
+  disabled,
+  danger,
+}: {
+  label: string;
+  description: string;
+  onClick: () => void;
+  disabled: boolean;
+  danger?: boolean;
+}) {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '12px',
+      background: '#1a1a1a',
+      borderRadius: '8px',
+    }}>
+      <div>
+        <p style={{
+          fontSize: '14px',
+          fontWeight: 500,
+          color: danger ? '#ef4444' : '#ccc',
+          margin: '0 0 4px 0',
+        }}>
+          {label}
+        </p>
+        <p style={{
+          fontSize: '12px',
+          color: '#666',
+          margin: 0,
+        }}>
+          {description}
+        </p>
+      </div>
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        style={{
+          padding: '8px 14px',
+          background: danger ? 'rgba(239, 68, 68, 0.1)' : '#333',
+          border: `1px solid ${danger ? '#ef4444' : '#444'}`,
+          borderRadius: '6px',
+          color: danger ? '#ef4444' : '#ccc',
+          fontSize: '13px',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+        }}
+      >
+        {label}
+      </button>
     </div>
   );
 }
