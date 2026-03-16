@@ -34,16 +34,37 @@ export class AudioCapture {
   private currentOutputPath: string | null = null;
   private currentTempPath: string | null = null;
   private ffmpegAvailable: boolean | null = null;
+  private ffmpegPath: string = 'ffmpeg';
 
   /**
    * Check if ffmpeg is available on the system
    */
   private async checkFfmpeg(): Promise<boolean> {
     if (this.ffmpegAvailable !== null) return this.ffmpegAvailable;
-    
+
+    // Common ffmpeg installation paths on macOS
+    const candidates = [
+      '/opt/homebrew/bin/ffmpeg',      // Apple Silicon Homebrew
+      '/usr/local/bin/ffmpeg',          // Intel Homebrew
+      '/usr/bin/ffmpeg',                // System
+    ];
+
+    for (const ffmpegPath of candidates) {
+      try {
+        await execFileAsync(ffmpegPath, ['-version']);
+        this.ffmpegAvailable = true;
+        this.ffmpegPath = ffmpegPath;
+        return true;
+      } catch {
+        // Continue to next candidate
+      }
+    }
+
+    // Fallback: try PATH lookup (may not work in sandboxed app)
     try {
       await execFileAsync('ffmpeg', ['-version']);
       this.ffmpegAvailable = true;
+      this.ffmpegPath = 'ffmpeg';
       return true;
     } catch {
       this.ffmpegAvailable = false;
@@ -86,7 +107,7 @@ export class AudioCapture {
    */
   async getAudioDevices(): Promise<Array<{ index: string; name: string }>> {
     try {
-      const { stdout } = await execFileAsync('ffmpeg', [
+      const { stdout } = await execFileAsync(this.ffmpegPath, [
         '-f', 'avfoundation',
         '-list_devices', 'true',
         '-i', ''
@@ -194,7 +215,7 @@ export class AudioCapture {
       // -y: Overwrite output file
       console.log(`[AudioCapture] Starting ffmpeg recording to: ${this.currentTempPath}`);
       
-      this.recordingProcess = spawn('ffmpeg', [
+      this.recordingProcess = spawn(this.ffmpegPath, [
         '-f', 'avfoundation',
         '-i', selectedDevice,
         '-ar', '16000',

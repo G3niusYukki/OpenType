@@ -137,6 +137,9 @@ export class OpenTypeApp {
 
     this.profileManager.startMonitoring();
 
+    // Request microphone permission on first launch
+    this.requestMicrophonePermission();
+
     this.logSystemStatus();
 
     app.on('window-all-closed', () => {
@@ -183,6 +186,22 @@ export class OpenTypeApp {
 
       app.exit(0);
     });
+  }
+
+  private async requestMicrophonePermission(): Promise<void> {
+    try {
+      const { systemPreferences } = await import('electron');
+      const status = systemPreferences.getMediaAccessStatus('microphone');
+      console.log(`[OpenType] Microphone permission status: ${status}`);
+
+      if (status === 'not-determined') {
+        console.log('[OpenType] Requesting microphone permission...');
+        const granted = await systemPreferences.askForMediaAccess('microphone');
+        console.log(`[OpenType] Microphone permission ${granted ? 'granted' : 'denied'}`);
+      }
+    } catch (error) {
+      console.error('[OpenType] Failed to request microphone permission:', error);
+    }
   }
 
   private async logSystemStatus(): Promise<void> {

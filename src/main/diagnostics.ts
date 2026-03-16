@@ -165,17 +165,41 @@ export class DiagnosticsService {
   }
 
   async checkFfmpeg(): Promise<DiagnosticsResult['ffmpeg']> {
+    // Common ffmpeg installation paths on macOS
+    const candidates = [
+      '/opt/homebrew/bin/ffmpeg',      // Apple Silicon Homebrew
+      '/usr/local/bin/ffmpeg',          // Intel Homebrew
+      '/usr/bin/ffmpeg',                // System
+    ];
+
+    for (const path of candidates) {
+      try {
+        const { stdout } = await execAsync(`"${path}" -version`, { timeout: 5000 });
+        const versionMatch = stdout.match(/version\s+(\S+)/);
+        const version = versionMatch ? versionMatch[1] : 'unknown';
+
+        return {
+          status: 'ok',
+          version,
+          message: `ffmpeg ${version} installed`
+        };
+      } catch {
+        // Continue to next candidate
+      }
+    }
+
+    // Fallback: try PATH lookup (may not work in sandboxed app)
     try {
       const { stdout } = await execAsync('ffmpeg -version', { timeout: 5000 });
       const versionMatch = stdout.match(/version\s+(\S+)/);
       const version = versionMatch ? versionMatch[1] : 'unknown';
-      
+
       return {
         status: 'ok',
         version,
         message: `ffmpeg ${version} installed`
       };
-    } catch (error) {
+    } catch {
       return {
         status: 'missing',
         message: 'ffmpeg not found. Install with: brew install ffmpeg'
