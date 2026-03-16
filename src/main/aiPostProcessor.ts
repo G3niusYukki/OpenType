@@ -75,7 +75,7 @@ export class AiPostProcessor {
       removeFillerWords: true,
       removeRepetition: true,
       detectSelfCorrection: true,
-      restorePunctuation: aiSettings.options.restorePunctuation ?? true,
+      restorePunctuation: aiSettings?.options?.restorePunctuation ?? true,
       punctuationLanguage: punctuationLanguage === 'auto' ? 'auto' : punctuationLanguage,
       language: 'auto',
     };
