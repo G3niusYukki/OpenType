@@ -746,9 +746,12 @@ describe('SettingsPage', () => {
         expect(screen.getByText('Edit Selected Text')).toBeInTheDocument();
       });
 
-      const editSection = screen.getByText('Edit Selected Text').closest('label');
-      const checkbox = editSection?.querySelector('input[type="checkbox"]');
-      expect(checkbox).not.toBeChecked();
+      // Wait for state to load from mock
+      await waitFor(() => {
+        const editSection = screen.getByText('Edit Selected Text').closest('label');
+        const checkbox = editSection?.querySelector('input[type="checkbox"]');
+        expect(checkbox).not.toBeChecked();
+      });
     });
   });
 
