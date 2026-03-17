@@ -206,6 +206,30 @@ export class AgentCommunication {
   }
 
   /**
+   * Record server start event
+   */
+  recordServerStart(): void {
+    const event: SessionEvent = {
+      type: 'session_start',
+      sessionId: 'server_' + Date.now(),
+      timestamp: new Date().toISOString(),
+    };
+    this.appendSessionEvent(event);
+  }
+
+  /**
+   * Record server stop event
+   */
+  recordServerStop(): void {
+    const event: SessionEvent = {
+      type: 'session_end',
+      sessionId: 'server_' + Date.now(),
+      timestamp: new Date().toISOString(),
+    };
+    this.appendSessionEvent(event);
+  }
+
+  /**
    * Handle GET /status
    */
   private handleGetStatus(res: http.ServerResponse): void {
