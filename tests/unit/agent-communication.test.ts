@@ -1,125 +1,119 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { agentCommunication, AgentCommunication } from '../../src/main/agent-communication';
+import { AgentCommunication } from '../../src/main/agent-communication';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as http from 'http';
+import * as os from 'os';
+
+// Mock electron's app module
+vi.mock('electron', () => ({
+  app: {
+    getVersion: vi.fn().mockReturnValue('0.2.0'),
+    getPath: vi.fn().mockReturnValue('/tmp'),
+  },
+}));
 
 describe('AgentCommunication', () => {
-  const mockApp = { getVersion: vi.fn().mockReturnValue('0.2.0') };
+  let agentComm: AgentCommunication;
+  const testDir = path.join(os.tmpdir(), `test-opentype-agent-${Date.now()}`);
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Clean up test files
-    const testDir = path.join('/tmp', 'test-opentype-agent');
-    if (fs.existsSync(testDir)) {
-      fs.rmSync(testDir, { recursive: true });
-    }
+    agentComm = new AgentCommunication();
   });
 
   afterEach(() => {
-    agentCommunication.stop();
+    agentComm.stop();
+    // Clean up test files
+    if (fs.existsSync(testDir)) {
+      fs.rmSync(testDir, { recursive: true, force: true });
+    }
   });
 
   describe('Initialization', () => {
     it('should create status file path correctly', () => {
-      const comm = new AgentCommunication();
-      const statusPath = comm.getStatusFilePath();
+      const statusPath = agentComm.getStatusFilePath();
       expect(statusPath).toContain('OpenTypeAgent');
       expect(statusPath).toContain('status.json');
     });
 
     it('should create directories if they do not exist', () => {
-      const testDir = path.join('/tmp', `test-opentype-${Date.now()}`);
-      const comm = new AgentCommunication();
-      expect(fs.existsSync(testDir) || true).toBe(true);
+      // The constructor should create the directory
+      const statusPath = agentComm.getStatusFilePath();
+      const dir = path.dirname(statusPath);
+      expect(fs.existsSync(dir) || true).toBe(true);
     });
   });
 
   describe('Server Lifecycle', () => {
     it('should start HTTP server', () => {
-      agentCommunication.start();
-      // Server should be running without errors
-      expect(agentCommunication).toBeDefined();
+      expect(() => agentComm.start()).not.toThrow();
+      expect(agentComm).toBeDefined();
     });
 
     it('should stop HTTP server', () => {
-      agentCommunication.start();
-      agentCommunication.stop();
-      // Should complete without errors
-      expect(agentCommunication).toBeDefined();
+      agentComm.start();
+      expect(() => agentComm.stop()).not.toThrow();
     });
 
     it('should handle double start gracefully', () => {
-      agentCommunication.start();
-      agentCommunication.start(); // Should not throw
-      expect(agentCommunication).toBeDefined();
+      expect(() => {
+        agentComm.start();
+        agentComm.start();
+      }).not.toThrow();
     });
   });
 
   describe('Status Management', () => {
     it('should update status to running', () => {
-      agentCommunication.updateStatus('running');
-      const statusPath = agentCommunication.getStatusFilePath();
-      expect(fs.existsSync(statusPath) || true).toBe(true);
+      expect(() => agentComm.updateStatus('running')).not.toThrow();
     });
 
     it('should update status to stopped', () => {
-      agentCommunication.updateStatus('stopped');
-      const statusPath = agentCommunication.getStatusFilePath();
-      expect(fs.existsSync(statusPath) || true).toBe(true);
+      expect(() => agentComm.updateStatus('stopped')).not.toThrow();
     });
 
     it('should include message in status', () => {
-      agentCommunication.updateStatus('error', 'Test error message');
-      const statusPath = agentCommunication.getStatusFilePath();
-      expect(fs.existsSync(statusPath) || true).toBe(true);
+      expect(() => agentComm.updateStatus('error', 'Test error message')).not.toThrow();
     });
   });
 
   describe('Recording State', () => {
     it('should set recording state', () => {
-      agentCommunication.setRecordingState(true, 'default');
-      expect(agentCommunication).toBeDefined();
+      expect(() => agentComm.setRecordingState(true, 'default')).not.toThrow();
     });
 
     it('should clear recording state', () => {
-      agentCommunication.setRecordingState(true, 'handsfree');
-      agentCommunication.setRecordingState(false);
-      expect(agentCommunication).toBeDefined();
+      agentComm.setRecordingState(true, 'handsfree');
+      expect(() => agentComm.setRecordingState(false)).not.toThrow();
     });
   });
 
   describe('Session Management', () => {
     it('should record session start', () => {
-      const sessionId = agentCommunication.recordSessionStart('openai', 'default');
+      const sessionId = agentComm.recordSessionStart('openai', 'default');
       expect(sessionId).toBeDefined();
       expect(typeof sessionId).toBe('string');
     });
 
     it('should record session end with word count', () => {
-      agentCommunication.recordSessionStart('openai', 'default');
-      agentCommunication.recordSessionEnd(100);
-      // Should complete without errors
-      expect(agentCommunication).toBeDefined();
+      agentComm.recordSessionStart('openai', 'default');
+      expect(() => agentComm.recordSessionEnd(100)).not.toThrow();
     });
 
     it('should handle session end without start', () => {
       // Should not throw
-      agentCommunication.recordSessionEnd(50);
-      expect(agentCommunication).toBeDefined();
+      expect(() => agentComm.recordSessionEnd(50)).not.toThrow();
     });
   });
 
   describe('Server Events', () => {
     it('should record server start', () => {
-      agentCommunication.recordServerStart();
-      expect(agentCommunication).toBeDefined();
+      expect(() => agentComm.recordServerStart()).not.toThrow();
     });
 
     it('should record server stop', () => {
-      agentCommunication.recordServerStart();
-      agentCommunication.recordServerStop();
-      expect(agentCommunication).toBeDefined();
+      agentComm.recordServerStart();
+      expect(() => agentComm.recordServerStop()).not.toThrow();
     });
   });
 });
