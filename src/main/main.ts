@@ -14,6 +14,7 @@ import { AudioDeviceManager } from './audio-device-manager';
 import { secureStorage } from './secure-storage';
 import { ProfileManager } from './profile-manager';
 import { TranscriptionStream } from './transcription-stream';
+import { agentCommunication } from './agent-communication';
 
 type RecordingMode = 'default' | 'handsfree' | 'translate' | 'edit';
 
@@ -137,6 +138,9 @@ export class OpenTypeApp {
 
     this.profileManager.startMonitoring();
 
+    // Start agent communication server
+    agentCommunication.start();
+
     // Request microphone permission on first launch
     this.requestMicrophonePermission();
 
@@ -175,6 +179,9 @@ export class OpenTypeApp {
       this.keyboardMonitors.forEach((monitor) => monitor.stopMonitoring());
       this.keyboardMonitors.clear();
       this.profileManager.stopMonitoring();
+
+      // Stop agent communication server
+      agentCommunication.stop();
 
       if (this.tray) {
         this.tray.destroy();
@@ -694,6 +701,10 @@ export class OpenTypeApp {
 
     this.isRecording = true;
     this.updateTrayIcon();
+
+    // Update agent communication
+    agentCommunication.setRecordingState(true, mode);
+    agentCommunication.recordSessionStart(undefined, mode);
     
     // Show recording notification
     new Notification({
@@ -741,6 +752,9 @@ export class OpenTypeApp {
     const currentMode = this.recordingMode;
     this.isRecording = false;
     this.updateTrayIcon();
+
+    // Update agent communication
+    agentCommunication.setRecordingState(false);
 
     // Notify renderer
     this.mainWindow?.webContents.send('recording:stopped');
@@ -918,6 +932,10 @@ export class OpenTypeApp {
       } catch (historyError) {
         console.error('[OpenType] Failed to add history item:', historyError);
       }
+
+      // Record session end with word count
+      const wordCount = finalText.split(/\s+/).filter(w => w.length > 0).length;
+      agentCommunication.recordSessionEnd(wordCount);
 
       // Insert text if successful and track fallback state
       let fallbackToClipboard = false;

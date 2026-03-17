@@ -1,0 +1,94 @@
+name: Build Agent
+
+on:
+  push:
+    branches: [main, develop]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-agent:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Python dependencies
+        run: |
+          cd agent
+          pip install -r requirements.txt
+          pip install py2app
+
+      - name: Build OpenType (Electron)
+        run: npm run build
+
+      - name: Build OpenTypeAgent
+        run: |
+          cd agent
+          python3 setup.py py2app
+
+      - name: Ad-hoc sign Agent
+        run: |
+          cd agent
+          chmod +x scripts/sign.sh
+          ./scripts/sign.sh || true
+
+      - name: Upload Agent Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenTypeAgent
+          path: agent/dist/OpenTypeAgent.app
+          retention-days: 30
+
+      - name: Build DMG (on tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cd agent
+          chmod +x scripts/build-dmg.sh
+          # Skip actual DMG creation in CI (no signing identity)
+          # Just verify the script syntax
+          bash -n scripts/build-dmg.sh
+
+  release:
+    needs: build-agent
+    runs-on: macos-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Download Agent Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: OpenTypeAgent
+          path: ./OpenTypeAgent.app
+
+      - name: Create Release ZIP
+        run: |
+          zip -r OpenTypeAgent.zip OpenTypeAgent.app
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: OpenTypeAgent.zip
+          draft: true
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

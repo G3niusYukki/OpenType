@@ -1,0 +1,13 @@
+# OpenType Agent - PyObjC Menu Bar Application
+# Python dependencies for the native macOS menu bar agent
+
+# Core PyObjC framework
+pyobjc-core>=10.0
+pyobjc-framework-Cocoa>=10.0
+pyobjc-framework-Foundation>=10.0
+
+# Optional: For better HTTP handling
+urllib3>=2.0.0
+
+# Development dependencies (not needed for runtime)
+# py2app>=0.28.0  # For building .app bundle

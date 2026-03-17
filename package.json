@@ -23,7 +23,17 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "echo 'E2E tests not implemented yet' && exit 0",
-    "ci": "npm run typecheck && npm run build && npm run test"
+    "ci": "npm run typecheck && npm run build && npm run test",
+    "build:agent": "cd agent && python3 setup.py py2app",
+    "build:agent:dev": "cd agent && python3 -m OpenTypeAgent",
+    "dist:agent": "npm run build:agent && npm run dist:agent:dmg",
+    "dist:agent:dmg": "cd agent && ./scripts/build-dmg.sh",
+    "dist:combined": "npm run build && npm run build:agent && npm run dist:combined:dmg",
+    "dist:combined:dmg": "echo 'Combined DMG creation requires manual packaging - build both apps and create DMG with both bundles'",
+    "agent:sign": "cd agent && ./scripts/sign.sh",
+    "agent:build:dmg": "cd agent && ./scripts/build-dmg.sh",
+    "agent:kill": "pkill -15 -f 'OpenTypeAgent' 2>/dev/null || pkill -9 -f 'OpenTypeAgent' 2>/dev/null; echo 'OpenTypeAgent killed'",
+    "agent:restart": "npm run agent:kill && sleep 1 && npm run build:agent:dev"
   },
   "keywords": [
     "dictation",
