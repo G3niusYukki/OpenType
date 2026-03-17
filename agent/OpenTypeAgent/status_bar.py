@@ -225,15 +225,8 @@ class StatusBarController(NSObject):
     def set_icon(self, icon_name):
         """Set the status bar icon"""
         try:
-            # Try to load from bundle resources first
-            bundle = NSBundle.mainBundle()
-            image_path = bundle.pathForResource_ofType_(icon_name, "pdf")
-
-            if image_path:
-                image = NSImage.alloc().initWithContentsOfFile_(image_path)
-            else:
-                # Fallback: create a simple colored circle
-                image = self._create_fallback_icon(icon_name)
+            # Create icon programmatically (SVG/PDF loading is complex in PyObjC)
+            image = self._create_icon(icon_name)
 
             if image:
                 image.setTemplate_(True)  # Support dark mode
@@ -241,7 +234,7 @@ class StatusBarController(NSObject):
         except Exception as e:
             print(f"Error setting icon: {e}")
 
-    def _create_fallback_icon(self, icon_name):
+    def _create_icon(self, icon_name):
         """Create a fallback icon if resource files are not available"""
         size = AppKit.NSSize(16, 16)
         image = NSImage.alloc().initWithSize_(size)

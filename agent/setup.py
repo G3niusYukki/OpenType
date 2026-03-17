@@ -16,8 +16,9 @@ VERSION = '0.1.0'
 APP = ['OpenTypeAgent/__main__.py']
 
 # Data files to include (icons, etc.)
+# Note: Using SVG files which will be rendered by the app
 DATA_FILES = [
-    ('resources', ['resources/IconTemplate.pdf', 'resources/IconRunning.pdf', 'resources/IconError.pdf']),
+    ('resources', ['resources/IconTemplate.svg', 'resources/IconRunning.svg', 'resources/IconError.svg']),
 ]
 
 # py2app options
