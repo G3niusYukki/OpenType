@@ -69,11 +69,8 @@ setup(
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
     setup_requires=['py2app>=0.28.0'],
-    install_requires=[
-        'pyobjc-core>=10.0',
-        'pyobjc-framework-Cocoa>=10.0',
-        'pyobjc-framework-Foundation>=10.0',
-    ],
+    # Note: install_requires is not supported by py2app with newer setuptools
+    # Dependencies should be installed via pip install -r requirements.txt first
     python_requires='>=3.9',
     classifiers=[
         'Development Status :: 3 - Alpha',
