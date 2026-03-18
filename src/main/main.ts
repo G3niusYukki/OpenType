@@ -16,6 +16,7 @@ import { ProfileManager } from './profile-manager';
 import { TranscriptionStream } from './transcription-stream';
 import { agentCommunication } from './agent-communication';
 import { parseVoiceInput, removeLastSentence } from './voice-commands';
+import { initAutoUpdater, checkForUpdates, setupAutoUpdaterIpc } from './auto-updater';
 
 type RecordingMode = 'default' | 'handsfree' | 'translate' | 'edit';
 
@@ -133,6 +134,7 @@ export class OpenTypeApp {
 
     this.createMainWindow();
     this.createTray();
+    setupAutoUpdaterIpc();
     this.registerGlobalShortcuts();
     this.setupIpcHandlers();
     this.setupSignalHandlers();
@@ -269,6 +271,14 @@ export class OpenTypeApp {
     } else {
       this.mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
     }
+
+    // Auto-update: check for updates after window is ready (skip in development)
+    this.mainWindow.webContents.on('did-finish-load', () => {
+      if (process.env.NODE_ENV !== 'development') {
+        initAutoUpdater(this.mainWindow!);
+        checkForUpdates();
+      }
+    });
 
     this.mainWindow.on('unresponsive', () => {
       console.error('[OpenType] Main window became unresponsive');
