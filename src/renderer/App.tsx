@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { MainLayout } from './components/MainLayout';
+import { UpdateModal } from './components/UpdateModal';
 import { HomePage } from './pages/HomePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { HistoryPage } from './pages/HistoryPage';
@@ -42,8 +43,11 @@ export function App() {
   };
 
   return (
+    <>
     <MainLayout currentPage={currentPage} onNavigate={setCurrentPage}>
       {renderPage()}
     </MainLayout>
+    <UpdateModal />
+    </>
   );
 }
