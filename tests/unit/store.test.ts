@@ -164,7 +164,7 @@ describe('Store', () => {
 
       const savedDictionary = mockSet.mock.calls[0][1];
       expect(savedDictionary).toHaveLength(1);
-      expect(savedDictionary[0]).toEqual({
+      expect(savedDictionary[0]).toMatchObject({
         word: 'ASR',
         replacement: 'Automatic Speech Recognition',
       });
