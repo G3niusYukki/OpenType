@@ -159,6 +159,20 @@ export interface Translations {
     insertFailed: string;
     permissionDenied: string;
   };
+  // Update
+  update: {
+    checking: string;
+    available: string;
+    downloading: string;
+    downloaded: string;
+    error: string;
+    downloadNow: string;
+    installNow: string;
+    later: string;
+    restartLater: string;
+    restartNow: string;
+    dismissed: string;
+  };
 }
 
 export const en: Translations = {
@@ -313,6 +327,19 @@ export const en: Translations = {
     transcriptionFailed: 'Transcription failed',
     insertFailed: 'Failed to insert text',
     permissionDenied: 'Permission denied',
+  },
+  update: {
+    checking: 'Checking for updates...',
+    available: 'Update Available',
+    downloading: 'Downloading update...',
+    downloaded: 'Update Ready!',
+    error: 'Update Error',
+    downloadNow: 'Download & Install',
+    installNow: 'Restart Now',
+    later: 'Later',
+    restartLater: 'Restart Later',
+    restartNow: 'Restart Now',
+    dismissed: 'Dismiss',
   },
 };
 
@@ -469,6 +496,19 @@ export const zh: Translations = {
     insertFailed: '插入文本失败',
     permissionDenied: '权限被拒绝',
   },
+  update: {
+    checking: '正在检查更新...',
+    available: '有可用更新',
+    downloading: '正在下载更新...',
+    downloaded: '更新就绪！',
+    error: '更新错误',
+    downloadNow: '下载并安装',
+    installNow: '立即重启',
+    later: '稍后',
+    restartLater: '稍后重启',
+    restartNow: '立即重启',
+    dismissed: '关闭',
+  },
 };
 
 export const ja: Translations = {
@@ -624,6 +664,19 @@ export const ja: Translations = {
     insertFailed: 'テキストの挿入に失敗しました',
     permissionDenied: '権限が拒否されました',
   },
+  update: {
+    checking: 'アップデートを確認中...',
+    available: 'アップデートあり',
+    downloading: 'アップデートをダウンロード中...',
+    downloaded: 'アップデート準備完了！',
+    error: 'アップデートエラー',
+    downloadNow: 'ダウンロードしてインストール',
+    installNow: '今すぐ再起動',
+    later: '後で',
+    restartLater: '後で再起動',
+    restartNow: '今すぐ再起動',
+    dismissed: '閉じる',
+  },
 };
 
 export const ko: Translations = {
@@ -778,6 +831,19 @@ export const ko: Translations = {
     transcriptionFailed: '전사 실패',
     insertFailed: '텍스트 삽입 실패',
     permissionDenied: '권한 거부됨',
+  },
+  update: {
+    checking: '업데이트 확인 중...',
+    available: '업데이트 가능',
+    downloading: '업데이트 다운로드 중...',
+    downloaded: '업데이트 준비 완료!',
+    error: '업데이트 오류',
+    downloadNow: '다운로드 및 설치',
+    installNow: '지금 다시 시작',
+    later: '나중에',
+    restartLater: '나중에 다시 시작',
+    restartNow: '지금 다시 시작',
+    dismissed: '닫기',
   },
 };
 
