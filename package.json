@@ -120,6 +120,12 @@
       "hardenedRuntime": true,
       "entitlements": "resources/entitlements.mac.plist",
       "entitlementsInherit": "resources/entitlements.mac.plist"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "G3niusYukki",
+      "repo": "OpenType",
+      "releaseType": "release"
     }
   }
 }
