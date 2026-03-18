@@ -22,6 +22,7 @@ export default defineConfig({
         '**/*.d.ts',
         '**/types.ts',
         '**/voice-commands.ts',
+        '**/auto-updater.ts',
       ],
       thresholds: {
         statements: 35,
