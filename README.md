@@ -504,16 +504,16 @@ OpenType follows a versioned release strategy. Below is our planned roadmap from
 
 **Success criteria:** ✅ Chinese users can achieve stable transcription without local whisper.cpp; default output readability significantly improved; users can clearly manage local data
 
-### 🚀 v0.3 Productivity Features
+### ✅ v0.3 Productivity Features (Completed)
 
 **Goal**: Transform OpenType from "voice input" to "voice editing tool".
 
-- [ ] 🎤 Voice command recognition (support commands like "new line", "delete last sentence", "undo", "add heading", "translate to English"; distinguish between "input content" and "editing commands")
-- [ ] 🌐 Extended multilingual translation mode (beyond Chinese-to-English; support more language pairs such as Chinese-Japanese, Chinese-Korean, English-Chinese)
-- [ ] 📚 Enhanced custom dictionary (batch import/export, categorized management of professional terms and proper nouns)
-- [ ] 🗂️ Local model/cache management optimization (clearer display of model status, size, path, and deletable items)
+- [x] 🎤 Voice command recognition (support commands like "new line", "delete last sentence", "undo", "add heading", "translate to English"; distinguish between "input content" and "editing commands")
+- [x] 🌐 Extended multilingual translation mode (beyond Chinese-to-English; support more language pairs such as Chinese-Japanese, Chinese-Korean, English-Chinese)
+- [x] 📚 Enhanced custom dictionary (batch import/export, categorized management of professional terms and proper nouns)
+- [x] 🗂️ Local model/cache management optimization (clearer display of model status, size, path, and deletable items)
 
-**Success criteria:** High-frequency text editing scenarios can be completed via voice; translation mode becomes a standalone usable feature; dictionary and model management no longer require manual operations
+**Success criteria:** ✅ High-frequency text editing scenarios can be completed via voice; translation mode becomes a standalone usable feature; dictionary and model management no longer require manual operations
 
 ### ⚡ v0.4 Performance and Streaming
 
