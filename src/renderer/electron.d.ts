@@ -164,6 +164,19 @@ declare global {
 
       transcriptionStartStream: () => Promise<{ success: boolean; error?: string }>;
       transcriptionStopStream: () => Promise<{ success: boolean }>;
+
+      // Auto Update
+      updateCheck: () => Promise<void>;
+      updateDownload: () => Promise<void>;
+      updateInstall: () => Promise<void>;
+      updateGetState: () => Promise<{
+        status: 'idle' | 'checking' | 'available' | 'downloading' | 'downloaded' | 'error';
+        version?: string;
+        releaseNotes?: string;
+        progress?: number;
+        error?: string;
+      }>;
+      onUpdateState: (callback: (state: any) => void) => () => void;
     };
   }
 }

@@ -168,6 +168,19 @@ export interface ElectronAPI {
 
   transcriptionStartStream: () => Promise<{ success: boolean; error?: string }>;
   transcriptionStopStream: () => Promise<{ success: boolean }>;
+
+  // Auto Update
+  updateCheck: () => Promise<void>;
+  updateDownload: () => Promise<void>;
+  updateInstall: () => Promise<void>;
+  updateGetState: () => Promise<{
+    status: 'idle' | 'checking' | 'available' | 'downloading' | 'downloaded' | 'error';
+    version?: string;
+    releaseNotes?: string;
+    progress?: number;
+    error?: string;
+  }>;
+  onUpdateState: (callback: (state: any) => void) => () => void;
 }
 
 const api: ElectronAPI = {
@@ -291,6 +304,17 @@ const api: ElectronAPI = {
 
   transcriptionStartStream: () => ipcRenderer.invoke('transcription:start-stream'),
   transcriptionStopStream: () => ipcRenderer.invoke('transcription:stop-stream'),
+
+  // Auto Update
+  updateCheck: () => ipcRenderer.invoke('update:check'),
+  updateDownload: () => ipcRenderer.invoke('update:download'),
+  updateInstall: () => ipcRenderer.invoke('update:install'),
+  updateGetState: () => ipcRenderer.invoke('update:state'),
+  onUpdateState: (callback: (state: any) => void) => {
+    const handler = (_: unknown, state: any) => callback(state);
+    ipcRenderer.on('update:state', handler);
+    return () => ipcRenderer.off('update:state', handler);
+  },
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);
