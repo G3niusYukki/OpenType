@@ -23,6 +23,14 @@ export interface HistoryItem {
 export interface DictionaryEntry {
   word: string;
   replacement: string;
+  category?: string;   // 'general' | 'technical' | 'names' | 'custom'
+  createdAt?: number;
+}
+
+export interface DictionaryCategory {
+  id: string;
+  name: string;
+  color: string;
 }
 
 export interface ProviderConfig {
@@ -93,6 +101,7 @@ export interface AppSettings {
 type ExtraStoreData = {
   history?: HistoryItem[];
   dictionary?: DictionaryEntry[];
+  dictionaryCategories?: DictionaryCategory[];
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -193,13 +202,14 @@ export class Store {
     return this.getAny<ExtraStoreData['dictionary']>('dictionary') || [];
   }
 
-  addDictionaryEntry(word: string, replacement: string): void {
+  addDictionaryEntry(word: string, replacement: string, category?: string): void {
     const dictionary = this.getDictionary();
     const existingIndex = dictionary.findIndex(e => e.word === word);
     if (existingIndex >= 0) {
       dictionary[existingIndex].replacement = replacement;
+      if (category !== undefined) dictionary[existingIndex].category = category;
     } else {
-      dictionary.push({ word, replacement });
+      dictionary.push({ word, replacement, category, createdAt: Date.now() });
     }
     this.setAny('dictionary', dictionary);
   }
@@ -207,6 +217,142 @@ export class Store {
   removeDictionaryEntry(word: string): void {
     const dictionary = this.getDictionary();
     this.setAny('dictionary', dictionary.filter(e => e.word !== word));
+  }
+
+  // ==================== Dictionary Categories ====================
+
+  getDictionaryCategories(): DictionaryCategory[] {
+    const defaults: DictionaryCategory[] = [
+      { id: 'general', name: 'General', color: '#6366f1' },
+      { id: 'technical', name: 'Technical', color: '#10b981' },
+      { id: 'names', name: 'Names', color: '#f59e0b' },
+      { id: 'custom', name: 'Custom', color: '#8b5cf6' },
+    ];
+    return this.getAny<DictionaryCategory[]>('dictionaryCategories') || defaults;
+  }
+
+  addDictionaryCategory(name: string, color: string): void {
+    const categories = this.getDictionaryCategories();
+    const id = name.toLowerCase().replace(/\s+/g, '-');
+    if (!categories.find(c => c.id === id)) {
+      categories.push({ id, name, color });
+      this.setAny('dictionaryCategories', categories);
+    }
+  }
+
+  removeDictionaryCategory(id: string): void {
+    const categories = this.getDictionaryCategories();
+    const filtered = categories.filter(c => c.id !== id);
+    this.setAny('dictionaryCategories', filtered);
+    // Move entries in this category to uncategorized
+    const dictionary = this.getDictionary();
+    const updated = dictionary.map(e =>
+      e.category === id ? { ...e, category: undefined } : e
+    );
+    this.setAny('dictionary', updated);
+  }
+
+  // ==================== Dictionary Import/Export ====================
+
+  /**
+   * Import dictionary entries from JSON string.
+   */
+  importDictionaryFromJSON(json: string): { imported: number; skipped: number; errors: string[] } {
+    const errors: string[] = [];
+    let imported = 0;
+    let skipped = 0;
+    const existing = this.getDictionary();
+    const existingWords = new Set(existing.map(e => e.word.toLowerCase()));
+
+    try {
+      const data = JSON.parse(json);
+      const entries = Array.isArray(data) ? data : data.entries || [];
+
+      for (const entry of entries) {
+        if (!entry.word || !entry.replacement) {
+          errors.push(`Skipped entry: missing word or replacement`);
+          skipped++;
+          continue;
+        }
+        if (existingWords.has(entry.word.toLowerCase())) {
+          skipped++;
+          continue;
+        }
+        const newEntry: DictionaryEntry = {
+          word: String(entry.word),
+          replacement: String(entry.replacement),
+          category: entry.category,
+          createdAt: Date.now(),
+        };
+        existing.push(newEntry);
+        existingWords.add(entry.word.toLowerCase());
+        imported++;
+      }
+
+      this.setAny('dictionary', existing);
+    } catch (e: any) {
+      errors.push(`JSON parse error: ${e?.message}`);
+    }
+
+    return { imported, skipped, errors };
+  }
+
+  /**
+   * Import dictionary entries from CSV string.
+   * Format: word,replacement[,category]
+   */
+  importDictionaryFromCSV(csv: string): { imported: number; skipped: number; errors: string[] } {
+    const errors: string[] = [];
+    let imported = 0;
+    let skipped = 0;
+    const existing = this.getDictionary();
+    const existingWords = new Set(existing.map(e => e.word.toLowerCase()));
+    const lines = csv.split('\n').filter(l => l.trim());
+
+    // Skip header row if it looks like a header
+    const dataLines = lines[0]?.toLowerCase().includes('word') ? lines.slice(1) : lines;
+
+    for (const line of dataLines) {
+      const parts = line.split(',').map(p => p.trim().replace(/^"|"$/g, ''));
+      if (parts.length < 2 || !parts[0] || !parts[1]) {
+        errors.push(`Skipped line: ${line.substring(0, 50)}`);
+        skipped++;
+        continue;
+      }
+      if (existingWords.has(parts[0].toLowerCase())) {
+        skipped++;
+        continue;
+      }
+      const newEntry: DictionaryEntry = {
+        word: parts[0],
+        replacement: parts[1],
+        category: parts[2] || undefined,
+        createdAt: Date.now(),
+      };
+      existing.push(newEntry);
+      existingWords.add(parts[0].toLowerCase());
+      imported++;
+    }
+
+    this.setAny('dictionary', existing);
+    return { imported, skipped, errors };
+  }
+
+  /**
+   * Export dictionary to CSV format.
+   */
+  exportDictionaryToCSV(): string {
+    const dictionary = this.getDictionary();
+    if (dictionary.length === 0) {
+      return 'word,replacement,category\n';
+    }
+    const rows = dictionary.map(e => {
+      const word = `"${e.word.replace(/"/g, '""')}"`;
+      const replacement = `"${e.replacement.replace(/"/g, '""')}"`;
+      const category = e.category || '';
+      return `${word},${replacement},${category}`;
+    });
+    return ['word,replacement,category', ...rows].join('\n');
   }
 
   applyDictionary(text: string): string {
@@ -260,7 +406,12 @@ export class Store {
    * Export dictionary to JSON format
    */
   exportDictionaryToJSON(): DictionaryEntry[] {
-    return this.getDictionary();
+    return this.getDictionary().map(e => ({
+      word: e.word,
+      replacement: e.replacement,
+      ...(e.category ? { category: e.category } : {}),
+      ...(e.createdAt ? { createdAt: e.createdAt } : {}),
+    }));
   }
 
   /**

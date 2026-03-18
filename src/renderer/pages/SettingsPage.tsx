@@ -72,6 +72,9 @@ export function SettingsPage() {
     translateToEnglish: true,
     editSelectedText: true,
   });
+  const [translatePair, setTranslatePair] = useState('zh→en');
+  const [localModels, setLocalModels] = useState<Array<{ name: string; path: string; size: number; exists: boolean }>>([]);
+  const [deletingModel, setDeletingModel] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [audioDevices, setAudioDevices] = useState<Array<{ index: string; name: string }>>([]);
   const [selectedDevice, setSelectedDevice] = useState<string>('0');
@@ -83,6 +86,14 @@ export function SettingsPage() {
     setTimeout(() => setSaveStatus('idle'), 1500);
   };
 
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   useEffect(() => {
     loadSettings();
     loadProviders();
@@ -91,7 +102,7 @@ export function SettingsPage() {
   }, []);
 
   const loadSettings = async () => {
-    const [savedHotkey, savedLanguage, savedPunctuation, savedPreferredProvider, savedAiSettings, savedVoiceModes, savedFallbackSettings] = await Promise.all([
+    const [savedHotkey, savedLanguage, savedPunctuation, savedPreferredProvider, savedAiSettings, savedVoiceModes, savedFallbackSettings, savedTranslateSettings] = await Promise.all([
       window.electronAPI.storeGet('hotkey'),
       window.electronAPI.storeGet('language'),
       window.electronAPI.storeGet('autoPunctuation'),
@@ -99,6 +110,7 @@ export function SettingsPage() {
       window.electronAPI.aiGetSettings(),
       window.electronAPI.storeGet('voiceInputModes'),
       window.electronAPI.storeGet('fallbackSettings'),
+      window.electronAPI.storeGet('translateSettings'),
     ]);
 
     if (savedHotkey) setHotkey(savedHotkey as string);
@@ -115,6 +127,16 @@ export function SettingsPage() {
     if (savedFallbackSettings) {
       setFallbackEnabled((savedFallbackSettings as { enabled: boolean }).enabled ?? true);
     }
+    if (savedTranslateSettings) {
+      const ts = savedTranslateSettings as { sourceLang: string; targetLang: string };
+      setTranslatePair(`${ts.sourceLang}→${ts.targetLang}`);
+    }
+
+    // Load local models
+    try {
+      const models = await window.electronAPI.modelsList();
+      setLocalModels(models);
+    } catch {}
   };
 
   const checkAiAvailability = async (settings?: typeof aiSettings) => {
@@ -1592,6 +1614,40 @@ export function SettingsPage() {
             </label>
           </div>
 
+          {/* Translation Language Pair */}
+          {voiceInputModes.translateToEnglish && (
+            <div style={{ marginBottom: '16px', paddingLeft: '16px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '13px', color: '#888' }}>Language pair:</span>
+                <select
+                  value={translatePair}
+                  onChange={async (e) => {
+                    const [source, target] = e.target.value.split('→');
+                    setTranslatePair(e.target.value);
+                    await window.electronAPI.storeSet('translateSettings', { sourceLang: source, targetLang: target });
+                  }}
+                  style={{
+                    padding: '6px 12px',
+                    background: '#0f0f0f',
+                    border: '1px solid #2a2a2a',
+                    borderRadius: '6px',
+                    color: '#ccc',
+                    fontSize: '13px',
+                  }}
+                >
+                  <option value="zh→en">CN → EN</option>
+                  <option value="en→zh">EN → CN</option>
+                  <option value="zh→ja">CN → JP</option>
+                  <option value="ja→zh">JP → CN</option>
+                  <option value="zh→ko">CN → KR</option>
+                  <option value="ko→zh">KR → CN</option>
+                  <option value="en→ja">EN → JP</option>
+                  <option value="en→ko">EN → KR</option>
+                </select>
+              </label>
+            </div>
+          )}
+
           {/* Edit Selected Text */}
           <div>
             <label style={{
@@ -1632,6 +1688,85 @@ export function SettingsPage() {
               />
             </label>
           </div>
+        </div>
+      </section>
+
+      {/* Local Models Section */}
+      <section style={{ marginTop: '32px' }}>
+        <h2 style={{
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#666',
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          marginBottom: '20px',
+        }}>
+          Local Models
+        </h2>
+
+        <div style={{
+          background: '#161616',
+          border: '1px solid #222',
+          borderRadius: '12px',
+          padding: '20px',
+          marginBottom: '16px',
+        }}>
+          <p style={{ fontSize: '13px', color: '#888', marginBottom: '16px' }}>
+            Manage locally downloaded whisper.cpp transcription models.
+          </p>
+
+          {localModels.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '24px', color: '#444', fontSize: '13px' }}>
+              <p style={{ margin: '0 0 8px 0' }}>No local whisper.cpp models found</p>
+              <p style={{ margin: 0, color: '#333' }}>
+                Download models from{' '}
+                <a href="https://huggingface.co/ggerganov/whisper.cpp" target="_blank" rel="noopener" style={{ color: '#818cf8' }}>
+                  huggingface.co/ggerganov/whisper.cpp
+                </a>
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {localModels.map(model => (
+                <div key={model.path} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#0f0f0f', borderRadius: '8px' }}>
+                  <div>
+                    <p style={{ fontSize: '13px', color: '#ccc', margin: '0 0 2px 0', fontFamily: 'monospace' }}>{model.name}</p>
+                    <p style={{ fontSize: '11px', color: '#555', margin: 0 }}>{model.path}</p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '12px', color: '#666' }}>{formatBytes(model.size)}</span>
+                    <button
+                      onClick={async () => {
+                        if (!confirm(`Delete ${model.name}?`)) return;
+                        setDeletingModel(model.path);
+                        const deleted = await window.electronAPI.modelsDelete(model.path);
+                        setDeletingModel(null);
+                        if (deleted) {
+                          setLocalModels(prev => prev.filter(m => m.path !== model.path));
+                        }
+                      }}
+                      disabled={deletingModel === model.path}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: '4px',
+                        border: '1px solid #333',
+                        background: '#1a1a1a',
+                        color: deletingModel === model.path ? '#555' : '#ef4444',
+                        fontSize: '12px',
+                        cursor: deletingModel === model.path ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      {deletingModel === model.path ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <p style={{ fontSize: '12px', color: '#555', marginTop: '12px' }}>
+            Model files are stored in <code style={{ color: '#666' }}>~/Library/Application Support/OpenType/models/</code>
+          </p>
         </div>
       </section>
 

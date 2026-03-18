@@ -104,6 +104,13 @@ export interface Translations {
     edit: string;
     save: string;
     cancel: string;
+    category: string;
+    import: string;
+    export: string;
+    importSuccess: string;
+    exportSuccess: string;
+    all: string;
+    none: string;
   };
   // System Status
   status: {
@@ -255,6 +262,13 @@ export const en: Translations = {
     edit: 'Edit',
     save: 'Save',
     cancel: 'Cancel',
+    category: 'Category',
+    import: 'Import',
+    export: 'Export',
+    importSuccess: 'Imported {imported}, skipped {skipped}',
+    exportSuccess: 'Exported successfully',
+    all: 'All',
+    none: 'None',
   },
   status: {
     title: 'System Status',
@@ -403,6 +417,13 @@ export const zh: Translations = {
     edit: '编辑',
     save: '保存',
     cancel: '取消',
+    category: '分类',
+    import: '导入',
+    export: '导出',
+    importSuccess: '已导入 {imported}，跳过 {skipped}',
+    exportSuccess: '导出成功',
+    all: '全部',
+    none: '无',
   },
   status: {
     title: '系统状态',
@@ -551,6 +572,13 @@ export const ja: Translations = {
     edit: '編集',
     save: '保存',
     cancel: 'キャンセル',
+    category: 'カテゴリ',
+    import: 'インポート',
+    export: 'エクスポート',
+    importSuccess: '{imported}件インポート、{skipped}件スキップ',
+    exportSuccess: 'エクスポート成功',
+    all: 'すべて',
+    none: 'なし',
   },
   status: {
     title: 'システム状態',
@@ -699,6 +727,13 @@ export const ko: Translations = {
     edit: '편집',
     save: '저장',
     cancel: '취소',
+    category: '카테고리',
+    import: '가져오기',
+    export: '내보내기',
+    importSuccess: '{imported}개 가져옴, {skipped}개 건너뜀',
+    exportSuccess: '내보내기 성공',
+    all: '전체',
+    none: '없음',
   },
   status: {
     title: '시스템 상태',

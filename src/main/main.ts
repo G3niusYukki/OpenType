@@ -15,6 +15,7 @@ import { secureStorage } from './secure-storage';
 import { ProfileManager } from './profile-manager';
 import { TranscriptionStream } from './transcription-stream';
 import { agentCommunication } from './agent-communication';
+import { parseVoiceInput, removeLastSentence } from './voice-commands';
 
 type RecordingMode = 'default' | 'handsfree' | 'translate' | 'edit';
 
@@ -569,10 +570,31 @@ export class OpenTypeApp {
 
     // Dictionary
     ipcMain.handle('dictionary:get', () => this.store.getDictionary());
-    ipcMain.handle('dictionary:add', (_, word: string, replacement: string) => 
-      this.store.addDictionaryEntry(word, replacement));
-    ipcMain.handle('dictionary:remove', (_, word: string) => 
+    ipcMain.handle('dictionary:add', (_, word: string, replacement: string, category?: string) =>
+      this.store.addDictionaryEntry(word, replacement, category));
+    ipcMain.handle('dictionary:remove', (_, word: string) =>
       this.store.removeDictionaryEntry(word));
+    ipcMain.handle('dictionary:get-categories', () => this.store.getDictionaryCategories());
+    ipcMain.handle('dictionary:add-category', (_, name: string, color: string) =>
+      this.store.addDictionaryCategory(name, color));
+    ipcMain.handle('dictionary:remove-category', (_, id: string) =>
+      this.store.removeDictionaryCategory(id));
+    ipcMain.handle('dictionary:import', (_, format: 'json' | 'csv', data: string) => {
+      if (format === 'json') return this.store.importDictionaryFromJSON(data);
+      return this.store.importDictionaryFromCSV(data);
+    });
+    ipcMain.handle('dictionary:export', (_, format: 'json' | 'csv') => {
+      if (format === 'json') return JSON.stringify(this.store.exportDictionaryToJSON(), null, 2);
+      return this.store.exportDictionaryToCSV();
+    });
+
+    // Local Models
+    ipcMain.handle('models:list', () => {
+      return this.transcriptionService?.listLocalModels() || [];
+    });
+    ipcMain.handle('models:delete', (_, path: string) => {
+      return this.transcriptionService?.deleteModel(path) || false;
+    });
 
     // Window control
     ipcMain.handle('window:hide', () => this.mainWindow?.hide());
@@ -859,11 +881,12 @@ export class OpenTypeApp {
 
       if (result.success && rawText) {
         if (mode === 'translate') {
-          // CN to EN translation mode
+          // Translation mode — use configured language pair
+          const translateSettings = this.store.getAny<{ sourceLang: string; targetLang: string }>('translateSettings') || { sourceLang: 'zh', targetLang: 'en' };
           if (this.aiPostProcessor.isAvailable()) {
             try {
-              console.log('[OpenType] Starting CN→EN translation...');
-              aiResult = await this.aiPostProcessor.translate(rawText, 'zh', 'en');
+              console.log(`[OpenType] Starting ${translateSettings.sourceLang}→${translateSettings.targetLang} translation...`);
+              aiResult = await this.aiPostProcessor.translate(rawText, translateSettings.sourceLang, translateSettings.targetLang);
               if (aiResult.success) {
                 processedText = aiResult.processedText;
                 console.log(`[OpenType] Translation complete in ${aiResult.latencyMs}ms`);
@@ -873,17 +896,92 @@ export class OpenTypeApp {
             }
           }
         } else if (mode === 'edit') {
-          // Edit selected text mode
-          if (this.aiPostProcessor.isAvailable() && this.selectedTextBeforeRecording) {
-            try {
-              console.log('[OpenType] Starting text editing with command:', rawText);
-              aiResult = await this.aiPostProcessor.editText(this.selectedTextBeforeRecording, rawText);
-              if (aiResult.success) {
-                processedText = aiResult.processedText;
-                console.log(`[OpenType] Text editing complete in ${aiResult.latencyMs}ms`);
+          // Edit selected text mode - parse voice commands
+          const parsed = parseVoiceInput(rawText, mode);
+          console.log('[OpenType] Parsed voice input:', parsed.type, parsed.command || parsed.content);
+
+          switch (parsed.type) {
+            case 'translate': {
+              if (this.aiPostProcessor.isAvailable()) {
+                const targetLang = parsed.targetLang || 'en';
+                // Source lang is the inverse of target (if target is en, source is zh, etc.)
+                const sourceLang = targetLang === 'en' ? 'zh' : targetLang === 'zh' ? 'en' : 'auto';
+                try {
+                  aiResult = await this.aiPostProcessor.translate(this.selectedTextBeforeRecording, sourceLang, targetLang);
+                  if (aiResult.success) {
+                    processedText = aiResult.processedText;
+                    console.log(`[OpenType] Translation complete in ${aiResult.latencyMs}ms`);
+                  }
+                } catch (aiError) {
+                  console.error('[OpenType] Translation error:', aiError);
+                }
               }
-            } catch (aiError) {
-              console.error('[OpenType] Text editing error:', aiError);
+              break;
+            }
+            case 'insert-line': {
+              processedText = this.selectedTextBeforeRecording + '\n';
+              break;
+            }
+            case 'delete-sentence': {
+              processedText = removeLastSentence(this.selectedTextBeforeRecording);
+              break;
+            }
+            case 'undo': {
+              console.warn('[OpenType] Undo command requires history state - not yet implemented');
+              // Fall through: treat as content
+              processedText = rawText;
+              break;
+            }
+            case 'add-heading': {
+              if (this.aiPostProcessor.isAvailable()) {
+                try {
+                  aiResult = await this.aiPostProcessor.editText(this.selectedTextBeforeRecording, 'add a heading/title to the text');
+                  if (aiResult.success) processedText = aiResult.processedText;
+                } catch (aiError) {
+                  console.error('[OpenType] Add heading error:', aiError);
+                }
+              }
+              break;
+            }
+            case 'summarize': {
+              if (this.aiPostProcessor.isAvailable()) {
+                try {
+                  aiResult = await this.aiPostProcessor.editText(this.selectedTextBeforeRecording, 'summarize this text');
+                  if (aiResult.success) processedText = aiResult.processedText;
+                } catch (aiError) {
+                  console.error('[OpenType] Summarize error:', aiError);
+                }
+              }
+              break;
+            }
+            case 'make-formal': {
+              if (this.aiPostProcessor.isAvailable()) {
+                try {
+                  aiResult = await this.aiPostProcessor.editText(this.selectedTextBeforeRecording, 'make the tone more formal and professional');
+                  if (aiResult.success) processedText = aiResult.processedText;
+                } catch (aiError) {
+                  console.error('[OpenType] Make formal error:', aiError);
+                }
+              }
+              break;
+            }
+            case 'make-casual': {
+              if (this.aiPostProcessor.isAvailable()) {
+                try {
+                  aiResult = await this.aiPostProcessor.editText(this.selectedTextBeforeRecording, 'make the tone more casual and conversational');
+                  if (aiResult.success) processedText = aiResult.processedText;
+                } catch (aiError) {
+                  console.error('[OpenType] Make casual error:', aiError);
+                }
+              }
+              break;
+            }
+            default: {
+              // content type — insert transcribed text as new content after the selected text
+              processedText = this.selectedTextBeforeRecording
+                ? this.selectedTextBeforeRecording + ' ' + rawText
+                : rawText;
+              break;
             }
           }
         } else {

@@ -108,8 +108,17 @@ declare global {
 
       // Dictionary
       dictionaryGet: () => Promise<unknown[]>;
-      dictionaryAdd: (word: string, replacement: string) => Promise<void>;
+      dictionaryAdd: (word: string, replacement: string, category?: string) => Promise<void>;
       dictionaryRemove: (word: string) => Promise<void>;
+      dictionaryGetCategories: () => Promise<Array<{ id: string; name: string; color: string }>>;
+      dictionaryAddCategory: (name: string, color: string) => Promise<void>;
+      dictionaryRemoveCategory: (id: string) => Promise<void>;
+      dictionaryImport: (format: 'json' | 'csv', data: string) => Promise<{ imported: number; skipped: number; errors: string[] }>;
+      dictionaryExport: (format: 'json' | 'csv') => Promise<string>;
+
+      // Models
+      modelsList: () => Promise<Array<{ name: string; path: string; size: number; exists: boolean }>>;
+      modelsDelete: (path: string) => Promise<boolean>;
 
       // Window
       windowHide: () => Promise<void>;

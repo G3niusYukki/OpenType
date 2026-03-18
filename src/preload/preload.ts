@@ -111,8 +111,17 @@ export interface ElectronAPI {
 
   // Dictionary
   dictionaryGet: () => Promise<unknown[]>;
-  dictionaryAdd: (word: string, replacement: string) => Promise<void>;
+  dictionaryAdd: (word: string, replacement: string, category?: string) => Promise<void>;
   dictionaryRemove: (word: string) => Promise<void>;
+  dictionaryGetCategories: () => Promise<Array<{ id: string; name: string; color: string }>>;
+  dictionaryAddCategory: (name: string, color: string) => Promise<void>;
+  dictionaryRemoveCategory: (id: string) => Promise<void>;
+  dictionaryImport: (format: 'json' | 'csv', data: string) => Promise<{ imported: number; skipped: number; errors: string[] }>;
+  dictionaryExport: (format: 'json' | 'csv') => Promise<string>;
+
+  // Models
+  modelsList: () => Promise<Array<{ name: string; path: string; size: number; exists: boolean }>>;
+  modelsDelete: (path: string) => Promise<boolean>;
 
   // Window
   windowHide: () => Promise<void>;
@@ -212,8 +221,18 @@ const api: ElectronAPI = {
 
   // Dictionary
   dictionaryGet: () => ipcRenderer.invoke('dictionary:get'),
-  dictionaryAdd: (word: string, replacement: string) => ipcRenderer.invoke('dictionary:add', word, replacement),
+  dictionaryAdd: (word: string, replacement: string, category?: string) =>
+    ipcRenderer.invoke('dictionary:add', word, replacement, category),
   dictionaryRemove: (word: string) => ipcRenderer.invoke('dictionary:remove', word),
+  dictionaryGetCategories: () => ipcRenderer.invoke('dictionary:get-categories'),
+  dictionaryAddCategory: (name: string, color: string) => ipcRenderer.invoke('dictionary:add-category', name, color),
+  dictionaryRemoveCategory: (id: string) => ipcRenderer.invoke('dictionary:remove-category', id),
+  dictionaryImport: (format: 'json' | 'csv', data: string) => ipcRenderer.invoke('dictionary:import', format, data),
+  dictionaryExport: (format: 'json' | 'csv') => ipcRenderer.invoke('dictionary:export', format),
+
+  // Models
+  modelsList: () => ipcRenderer.invoke('models:list'),
+  modelsDelete: (path: string) => ipcRenderer.invoke('models:delete', path),
 
   // Window
   windowHide: () => ipcRenderer.invoke('window:hide'),

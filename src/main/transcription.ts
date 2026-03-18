@@ -32,6 +32,13 @@ export interface TranscriptionStatus {
   cloudProviderType?: CloudProviderType;
 }
 
+export interface ModelInfo {
+  name: string;
+  path: string;
+  size: number;
+  exists: boolean;
+}
+
 export interface TranscriptionResult {
   success: boolean;
   text?: string;
@@ -840,6 +847,83 @@ export class TranscriptionService {
       whisperInstalled: !!this.findWhisperPath(),
       modelAvailable: !!this.findModelPath()
     };
+  }
+
+  /**
+   * List all whisper.cpp models found in common locations.
+   */
+  listLocalModels(): ModelInfo[] {
+    const modelDirs = [
+      path.join(app.getPath('userData'), 'models'),
+      path.join(process.env.HOME || '', 'Library', 'Application Support', 'OpenType', 'models'),
+      '/opt/homebrew/share/whisper.cpp',
+      '/usr/local/share/whisper.cpp',
+      path.join(process.env.HOME || '', '.local', 'share', 'whisper.cpp'),
+    ];
+
+    const results: ModelInfo[] = [];
+    const seen = new Set<string>();
+
+    for (const dir of modelDirs) {
+      if (!fs.existsSync(dir)) continue;
+
+      try {
+        const files = fs.readdirSync(dir);
+        for (const file of files) {
+          if (!file.startsWith('ggml-') || !file.endsWith('.bin')) continue;
+          const fullPath = path.join(dir, file);
+          if (seen.has(fullPath)) continue;
+          seen.add(fullPath);
+
+          let size = 0;
+          let exists = false;
+          try {
+            const stats = fs.statSync(fullPath);
+            size = stats.size;
+            exists = true;
+          } catch {
+            exists = false;
+          }
+
+          results.push({
+            name: file,
+            path: fullPath,
+            size,
+            exists,
+          });
+        }
+      } catch {
+        // Ignore errors reading directories
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Delete a whisper model file.
+   */
+  deleteModel(modelPath: string): boolean {
+    try {
+      if (!fs.existsSync(modelPath)) return false;
+      fs.unlinkSync(modelPath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Get the size of a model file in bytes.
+   */
+  getModelSize(modelPath: string): number {
+    try {
+      if (!fs.existsSync(modelPath)) return 0;
+      const stats = fs.statSync(modelPath);
+      return stats.size;
+    } catch {
+      return 0;
+    }
   }
 
   /**

@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-03-18
+
+### Added
+
+- **Voice Command Recognition**: In Edit mode, voice commands are now parsed by prefix:
+  - `翻译成英文` / `translate to English` → translate selected text to English
+  - `翻译成中文` / `translate to Chinese` → translate selected text to Chinese
+  - `翻译成日文` / `translate to Japanese` → translate selected text to Japanese
+  - `翻译成韩文` / `translate to Korean` → translate selected text to Korean
+  - `新行` / `new line` → insert a newline after selected text
+  - `删除最后一句` / `delete last sentence` → remove the last sentence
+  - `撤销` / `undo` → undo (logged, not yet implemented)
+  - `加标题` / `add heading` → format selected text with a heading
+  - `总结` / `summarize` → summarize selected text
+  - `改正式` / `make formal` → make tone more formal
+  - `改口语` / `make casual` → make tone more casual
+  - No prefix → insert transcribed text as content after selected text
+
+- **Extended Multilingual Translation**: Translation mode now supports configurable language pairs: CN↔EN, CN↔JP, CN↔KR, EN↔JP, EN↔KR. Selected via dropdown in Settings under Voice Input Modes.
+
+- **Enhanced Dictionary**:
+  - Dictionary entries now support categories: General, Technical, Names, Custom
+  - Category filter tabs and color-coded chips in the UI
+  - Batch import from JSON or CSV files
+  - Export dictionary to JSON or CSV
+  - Search/filter entries
+
+- **Model Management UI**: New "Local Models" section in Settings shows all downloaded whisper.cpp models with file size and a delete button.
+
+### Changed
+
+- Translation mode now uses configurable language pairs instead of hardcoded CN→EN
+
 ## [0.1.1] - 2024-03-14
 
 ### Fixed
