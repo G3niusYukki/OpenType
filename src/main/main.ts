@@ -111,6 +111,11 @@ export class OpenTypeApp {
   async initialize(): Promise<void> {
     await app.whenReady();
 
+    // Hide Dock icon on macOS to make the app feel like a pure menu-bar app
+    if (process.platform === 'darwin') {
+      app.dock?.hide();
+    }
+
     // Store app version for renderer to read
     this.store.setAny('appVersion', app.getVersion());
 
