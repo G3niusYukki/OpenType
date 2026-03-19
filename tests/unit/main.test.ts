@@ -55,7 +55,7 @@ vi.mock('../../src/main/audio-capture', () => ({
 }));
 
 vi.mock('../../src/main/transcription', () => ({
-  TranscriptionService: class { async transcribe() { return { success: true, text: 'Test', provider: 'whisper.cpp' }; } async getStatus() { return { whisperInstalled: true, modelAvailable: true, recommendations: [] }; } updateConfig() {} },
+  TranscriptionService: class { async transcribe() { return { success: true, text: 'Test', provider: 'whisper.cpp' }; } async getStatus() { return { whisperInstalled: true, modelAvailable: true, recommendations: [] }; } updateConfig() {} getModelName() { return 'Default'; } },
 }));
 
 vi.mock('../../src/main/aiPostProcessor', () => ({
