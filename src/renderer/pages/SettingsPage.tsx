@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import { Keyboard, Globe, Zap, Check, CheckCircle, AlertCircle, Terminal, ExternalLink, Mic } from 'lucide-react';
 import { AudioDeviceSelector } from '../components/AudioDeviceSelector';
 import { useI18n } from '../i18n';
-
-// Module-level version display (updated via store init in main process)
-let _versionDisplay = '...';
+import { useUpdate } from '../contexts/UpdateContext';
 
 interface Provider {
   id: string;
@@ -102,11 +100,6 @@ export function SettingsPage() {
     loadProviders();
     loadSystemStatus();
     loadAudioDevices();
-    window.electronAPI.appVersion().then((v: string) => { _versionDisplay = v; });
-    const unsub = window.electronAPI.onUpdateState((s: any) => {
-      if (s.version) _versionDisplay = s.version;
-    });
-    return unsub;
   }, []);
 
   const loadSettings = async () => {
@@ -1990,44 +1983,7 @@ function DataManagementSection() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Version & Updates */}
-      <div style={{
-        background: '#161616',
-        border: '1px solid #222',
-        borderRadius: '12px',
-        padding: '20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '12px',
-      }}>
-        <div>
-          <div style={{ fontSize: '13px', color: '#666', marginBottom: '4px' }}>OpenType</div>
-          <div style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>
-            <span>v{_versionDisplay}</span>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <span style={{ fontSize: '12px', color: '#22c55e', background: 'rgba(34,197,94,0.1)', padding: '4px 10px', borderRadius: '20px' }}>
-            Auto-update enabled
-          </span>
-          <button
-            onClick={() => window.electronAPI.updateCheck()}
-            style={{
-              padding: '8px 16px',
-              background: '#6366f1',
-              border: 'none',
-              borderRadius: '8px',
-              color: '#fff',
-              fontSize: '13px',
-              fontWeight: 500,
-              cursor: 'pointer',
-            }}
-          >
-            Check for Updates
-          </button>
-        </div>
-      </div>
+      <UpdateSettings />
 
       {/* Storage Stats */}
       <div style={{
@@ -2270,6 +2226,59 @@ function DataManagementSection() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Version & Updates UI — uses UpdateContext (must be inside UpdateProvider)
+function UpdateSettings() {
+  const { updateInfo, isChecking, checkUpdate } = useUpdate();
+  const [appVersion, setAppVersion] = useState<string | null>(null);
+
+  useEffect(() => {
+    window.electronAPI.appVersion().then((v: string) => setAppVersion(v));
+  }, []);
+
+  return (
+    <div style={{
+      background: '#161616',
+      border: '1px solid #222',
+      borderRadius: '12px',
+      padding: '20px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: '12px',
+    }}>
+      <div>
+        <div style={{ fontSize: '13px', color: '#666', marginBottom: '4px' }}>OpenType</div>
+        <div style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>
+          <span>v{updateInfo?.version ?? appVersion ?? '...'}</span>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <span style={{ fontSize: '12px', color: '#22c55e', background: 'rgba(34,197,94,0.1)', padding: '4px 10px', borderRadius: '20px' }}>
+          Auto-update enabled
+        </span>
+        <button
+          onClick={() => checkUpdate()}
+          disabled={isChecking}
+          style={{
+            padding: '8px 16px',
+            background: '#6366f1',
+            border: 'none',
+            borderRadius: '8px',
+            color: '#fff',
+            fontSize: '13px',
+            fontWeight: 500,
+            cursor: isChecking ? 'not-allowed' : 'pointer',
+            opacity: isChecking ? 0.6 : 1,
+          }}
+        >
+          {isChecking ? 'Checking...' : 'Check for Updates'}
+        </button>
+      </div>
     </div>
   );
 }

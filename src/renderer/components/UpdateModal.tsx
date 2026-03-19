@@ -1,42 +1,19 @@
-import { useState, useEffect } from 'react';
-
-interface UpdateState {
-  status: 'idle' | 'checking' | 'available' | 'downloading' | 'downloaded' | 'error';
-  version?: string;
-  releaseNotes?: string;
-  progress?: number;
-  error?: string;
-}
+import { useUpdate } from '../contexts/UpdateContext';
 
 export function UpdateModal() {
-  const [state, setState] = useState<UpdateState>({ status: 'idle' });
-  const [visible, setVisible] = useState(false);
+  const { updateInfo, isDismissed } = useUpdate();
 
-  useEffect(() => {
-    // Get initial state
-    window.electronAPI.updateGetState().then(s => {
-      setState(s);
-      if (s.status === 'available' || s.status === 'downloading' || s.status === 'downloaded') {
-        setVisible(true);
-      }
-    });
+  // Use a getter so TypeScript cannot narrow `status` based on the `shouldShow` guard below.
+  const getStatus = () => updateInfo?.status ?? 'idle';
+  const shouldShow =
+    !isDismissed &&
+    (getStatus() === 'available' || getStatus() === 'downloading' || getStatus() === 'downloaded');
 
-    // Subscribe to updates
-    const unsub = window.electronAPI.onUpdateState((s: UpdateState) => {
-      setState(s);
-      if (s.status === 'available' || s.status === 'downloading' || s.status === 'downloaded') {
-        setVisible(true);
-      }
-    });
+  if (!shouldShow) return null;
 
-    return unsub;
-  }, []);
-
-  if (!visible) return null;
-
+  const status = getStatus();
   const handleDownload = () => window.electronAPI.updateDownload();
   const handleInstall = () => window.electronAPI.updateInstall();
-  const handleDismiss = () => setVisible(false);
 
   return (
     <div style={{
@@ -57,14 +34,14 @@ export function UpdateModal() {
         width: '90%',
         boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
       }}>
-        {state.status === 'checking' && (
+        {status === 'checking' && (
           <>
             <h2 style={{ color: '#fff', marginTop: 0 }}>Checking for updates...</h2>
             <div style={{ color: '#666', fontSize: '14px' }}>Please wait</div>
           </>
         )}
 
-        {state.status === 'available' && (
+        {status === 'available' && (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
               <span style={{
@@ -77,14 +54,14 @@ export function UpdateModal() {
               }}>
                 Update Available
               </span>
-              <span style={{ color: '#818cf8', fontSize: '14px' }}>v{state.version}</span>
+              <span style={{ color: '#818cf8', fontSize: '14px' }}>v{updateInfo!.version}</span>
             </div>
-            <h2 style={{ color: '#fff', marginTop: 0 }}>OpenType {state.version} is ready!</h2>
+            <h2 style={{ color: '#fff', marginTop: 0 }}>OpenType {updateInfo!.version} is ready!</h2>
             <div style={{ color: '#888', fontSize: '14px', marginBottom: '20px', maxHeight: '200px', overflowY: 'auto', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
-              {state.releaseNotes || 'New version with improvements.'}
+              {updateInfo!.releaseNotes || 'New version with improvements.'}
             </div>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button onClick={handleDismiss} style={{
+              <button onClick={() => window.electronAPI.updateCheck()} style={{
                 padding: '10px 20px',
                 borderRadius: '8px',
                 border: '1px solid #333',
@@ -111,7 +88,7 @@ export function UpdateModal() {
           </>
         )}
 
-        {state.status === 'downloading' && (
+        {status === 'downloading' && (
           <>
             <h2 style={{ color: '#fff', marginTop: 0 }}>Downloading update...</h2>
             <div style={{ margin: '20px 0' }}>
@@ -123,20 +100,20 @@ export function UpdateModal() {
               }}>
                 <div style={{
                   height: '100%',
-                  width: `${state.progress || 0}%`,
+                  width: `${updateInfo!.progress || 0}%`,
                   background: 'linear-gradient(90deg, #6366f1, #8b5cf6)',
                   borderRadius: '4px',
                   transition: 'width 0.3s ease',
                 }} />
               </div>
               <div style={{ color: '#666', fontSize: '13px', marginTop: '8px', textAlign: 'center' }}>
-                {state.progress}% downloaded
+                {updateInfo!.progress}% downloaded
               </div>
             </div>
           </>
         )}
 
-        {state.status === 'downloaded' && (
+        {status === 'downloaded' && (
           <>
             <div style={{
               width: '48px',
@@ -157,7 +134,7 @@ export function UpdateModal() {
               OpenType will restart to apply the update.
             </p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button onClick={handleDismiss} style={{
+              <button onClick={() => window.electronAPI.updateCheck()} style={{
                 padding: '10px 20px',
                 borderRadius: '8px',
                 border: '1px solid #333',
@@ -184,14 +161,14 @@ export function UpdateModal() {
           </>
         )}
 
-        {state.status === 'error' && (
+        {status === 'error' && (
           <>
             <h2 style={{ color: '#ef4444', marginTop: 0 }}>Update Error</h2>
             <p style={{ color: '#888', fontSize: '14px', marginBottom: '20px' }}>
-              {state.error || 'Failed to check for updates.'}
+              {updateInfo!.error || 'Failed to check for updates.'}
             </p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button onClick={handleDismiss} style={{
+              <button onClick={() => window.electronAPI.updateCheck()} style={{
                 padding: '10px 20px',
                 borderRadius: '8px',
                 border: '1px solid #333',

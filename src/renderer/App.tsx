@@ -7,6 +7,7 @@ import { HistoryPage } from './pages/HistoryPage';
 import { DictionaryPage } from './pages/DictionaryPage';
 import { ProfilesPage } from './pages/ProfilesPage';
 import { DiagnosticsPage } from './pages/DiagnosticsPage';
+import { UpdateProvider } from './contexts/UpdateContext';
 
 type Page = 'home' | 'settings' | 'history' | 'dictionary' | 'diagnostics' | 'profiles';
 
@@ -43,11 +44,11 @@ export function App() {
   };
 
   return (
-    <>
+    <UpdateProvider>
     <MainLayout currentPage={currentPage} onNavigate={setCurrentPage}>
       {renderPage()}
     </MainLayout>
     <UpdateModal />
-    </>
+    </UpdateProvider>
   );
 }
