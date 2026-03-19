@@ -130,10 +130,7 @@ export const createElectronAPIMock = (): ElectronAPIMockHelpers => {
   const unsubscribe = (): void => {};
 
   const electronAPI: ElectronAPIMock = {
-    storeGet: vi.fn<(key: string) => Promise<unknown>>().mockImplementation((key: string) => {
-      if (key === 'appVersion') return Promise.resolve('0.3.0');
-      return Promise.resolve(undefined);
-    }),
+    storeGet: vi.fn<(key: string) => Promise<unknown>>().mockResolvedValue(undefined),
     storeSet: vi.fn<(key: string, value: unknown) => Promise<void>>().mockResolvedValue(),
     recordingStart: vi.fn<() => Promise<void>>().mockResolvedValue(),
     recordingStop: vi.fn<() => Promise<void>>().mockResolvedValue(),
@@ -196,10 +193,7 @@ export const createElectronAPIMock = (): ElectronAPIMockHelpers => {
 
   const resetElectronAPIMock = (): void => {
     electronAPI.storeGet.mockReset();
-    electronAPI.storeGet.mockImplementation((key: string) => {
-      if (key === 'appVersion') return Promise.resolve('0.3.0');
-      return Promise.resolve(undefined);
-    });
+    electronAPI.storeGet.mockResolvedValue(undefined);
     electronAPI.storeSet.mockReset();
     electronAPI.storeSet.mockResolvedValue();
     electronAPI.recordingStart.mockReset();

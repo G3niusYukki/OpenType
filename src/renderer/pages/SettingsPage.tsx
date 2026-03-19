@@ -102,7 +102,7 @@ export function SettingsPage() {
     loadProviders();
     loadSystemStatus();
     loadAudioDevices();
-    window.electronAPI.storeGet('appVersion').then((v: any) => { if (v) _versionDisplay = v as string; });
+    window.electronAPI.appVersion().then((v: string) => { _versionDisplay = v; });
     const unsub = window.electronAPI.onUpdateState((s: any) => {
       if (s.version) _versionDisplay = s.version;
     });
