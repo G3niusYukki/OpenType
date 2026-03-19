@@ -71,6 +71,8 @@ jobs:
     needs: build-agent
     runs-on: macos-latest
     if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
 
     steps:
       - name: Download Agent Artifact
