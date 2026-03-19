@@ -184,4 +184,87 @@ describe('UpdateContext', () => {
     expect(screen.getByTestId('status').textContent).toBe('available');
     expect(screen.getByTestId('version').textContent).toBe('0.6.0');
   });
+
+  it('auto-check fires updateCheck() 1 second after mount', async () => {
+    electronAPI.updateGetState.mockResolvedValue({ status: 'idle' });
+    electronAPI.onUpdateState.mockReturnValue(() => {});
+
+    render(
+      <UpdateProvider>
+        <TestConsumer />
+      </UpdateProvider>
+    );
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    // updateCheck should not have been called yet (timer is 1s, not 0)
+    expect(electronAPI.updateCheck).not.toHaveBeenCalled();
+
+    // Advance past the 1-second auto-check timer
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+
+    expect(electronAPI.updateCheck).toHaveBeenCalledTimes(1);
+  });
+
+  it('checkUpdate() rejects and sets error when updateCheck fails', async () => {
+    electronAPI.updateGetState.mockResolvedValue({ status: 'idle' });
+    electronAPI.onUpdateState.mockReturnValue(() => {});
+    electronAPI.updateCheck.mockRejectedValue(new Error('Network failure'));
+
+    render(
+      <UpdateProvider>
+        <TestConsumer />
+      </UpdateProvider>
+    );
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1100); // wait past auto-check so it doesn't interfere
+    });
+
+    // Trigger checkUpdate via the button
+    await act(async () => {
+      screen.getByTestId('checkBtn').click();
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300); // rejection settles + 200ms settle delay
+    });
+
+    expect(screen.getByTestId('error').textContent).toBe('Network failure');
+    expect(screen.getByTestId('isChecking').textContent).toBe('false');
+  });
+
+  it('isDismissed re-reads localStorage when updateInfo.version changes', async () => {
+    // Pre-mark version "1.0.0" as dismissed in localStorage
+    localStorage.setItem('opentype:update:dismissedVersion', '1.0.0');
+
+    electronAPI.updateGetState.mockResolvedValue({ status: 'idle' });
+    let emitState: (s: { status: string; version?: string }) => void;
+    electronAPI.onUpdateState.mockImplementation((cb) => {
+      emitState = cb;
+      return () => {};
+    });
+
+    render(
+      <UpdateProvider>
+        <TestConsumer />
+      </UpdateProvider>
+    );
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    // Emit a new available update for "2.0.0" (never dismissed)
+    await act(async () => {
+      emitState!({ status: 'available', version: '2.0.0' });
+    });
+
+    // isDismissed should be false because "2.0.0" was never dismissed
+    expect(screen.getByTestId('isDismissed').textContent).toBe('false');
+  });
 });

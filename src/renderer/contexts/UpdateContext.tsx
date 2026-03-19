@@ -74,8 +74,14 @@ export function UpdateProvider({ children }: { children: React.ReactNode }) {
     setIsChecking(true);
     setError(null);
 
-    // Start the check; the onUpdateState listener above will update state as events arrive.
-    await window.electronAPI.updateCheck();
+    try {
+      // Start the check; the onUpdateState listener above will update state as events arrive.
+      await window.electronAPI.updateCheck();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setIsChecking(false);
+      return;
+    }
 
     // Wait briefly for the event stream to settle so callers see a stable result.
     await new Promise((resolve) => setTimeout(resolve, 200));
@@ -99,7 +105,7 @@ export function UpdateProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(DISMISSED_VERSION_KEY, version);
     }
     setIsDismissed(true);
-  }, [updateInfo?.status, updateInfo?.version]);
+  }, [updateInfo]);
 
   const value: UpdateContextValue = {
     hasUpdate,
