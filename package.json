@@ -1,6 +1,6 @@
 {
   "name": "opentype",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "description": "AI-Powered Voice-to-Text for macOS. Type with your voice anywhere with 4 input modes, multi-provider AI processing, and privacy-first design.",
   "main": "dist/main/main.js",
   "private": true,

@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Auto-Update**: Automatically checks for updates from GitHub Releases on launch. Shows download progress and release notes, installs on restart.
 
+## [0.3.2] - 2026-03-19
+
+### Added
+
+- **Dynamic Tray Menu**: Right-click tray icon now shows live status (provider, language, model, recording indicator). Menu rebuilds fresh on each right-click.
+
+## [0.3.1] - 2026-03-19
+
 ## [0.3.0] - 2026-03-18
 
 ### Added
