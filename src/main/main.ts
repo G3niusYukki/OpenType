@@ -319,17 +319,33 @@ export class OpenTypeApp {
     return this.trayIcons;
   }
 
-  private createTray(): void {
-    const icons = this.createTrayIcons();
-    this.tray = new Tray(icons.idle);
-    this.tray.setToolTip('OpenType - Click to dictate');
+  private buildTrayMenu(): Menu {
+    const hotkey = this.store.get('hotkey') || 'CommandOrControl+Shift+D';
+    const preferredProvider = this.store.get('preferredProvider') || 'auto';
+    const language = this.store.get('language') || 'en-US';
 
-    const contextMenu = Menu.buildFromTemplate([
+    let providerLabel = 'Auto';
+    if (preferredProvider === 'local') providerLabel = 'whisper.cpp';
+    else if (preferredProvider === 'cloud') providerLabel = 'Cloud';
+
+    const modelPath = this.transcriptionService?.config?.whisperModelPath;
+    const modelName = modelPath ? path.basename(modelPath) : 'Default';
+
+    const dictationLabel = this.isRecording ? 'Stop Dictation' : 'Start Dictation';
+    const recordingNote = this.isRecording ? 'Recording...' : undefined;
+
+    const menuTemplate: Electron.MenuItemConstructorOptions[] = [
       {
-        label: 'Start Dictation',
-        accelerator: this.store.get('hotkey') || 'CommandOrControl+Shift+D',
+        label: dictationLabel,
+        accelerator: hotkey,
         click: () => this.toggleRecording(),
       },
+      ...(recordingNote ? [{ label: recordingNote, enabled: false }] : []),
+      { type: 'separator' },
+      { label: 'STATUS', enabled: false },
+      { label: `Provider: ${providerLabel}`, enabled: false },
+      { label: `Language: ${language}`, enabled: false },
+      { label: `Model: ${modelName}`, enabled: false },
       { type: 'separator' },
       {
         label: 'Show Window',
@@ -339,6 +355,7 @@ export class OpenTypeApp {
         label: 'Settings',
         click: () => this.showSettings(),
       },
+      { type: 'separator' },
       {
         label: 'Check for Updates',
         click: () => {
@@ -347,21 +364,35 @@ export class OpenTypeApp {
           }
         },
       },
+      {
+        label: `About OpenType v${app.getVersion()}`,
+        click: () => this.showWindow(),
+      },
       { type: 'separator' },
       {
-        label: `Quit OpenType v${app.getVersion()}`,
+        label: 'Quit OpenType',
         click: () => this.quit(),
       },
-    ]);
+    ];
 
-    this.tray.setContextMenu(contextMenu);
+    return Menu.buildFromTemplate(menuTemplate);
+  }
+
+  private createTray(): void {
+    const icons = this.createTrayIcons();
+    this.tray = new Tray(icons.idle);
+    this.tray.setToolTip('OpenType - Click to dictate');
+
+    this.tray.setContextMenu(this.buildTrayMenu());
 
     this.tray.on('click', () => {
       this.toggleRecording();
     });
 
     this.tray.on('right-click', () => {
-      this.tray?.popUpContextMenu(contextMenu);
+      const freshMenu = this.buildTrayMenu();
+      this.tray?.setContextMenu(freshMenu);
+      this.tray?.popUpContextMenu(freshMenu);
     });
   }
 
