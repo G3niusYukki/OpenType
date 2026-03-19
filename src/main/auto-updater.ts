@@ -1,5 +1,7 @@
 import { autoUpdater, UpdateInfo, ProgressInfo } from 'electron-updater';
-import { BrowserWindow, ipcMain } from 'electron';
+import { BrowserWindow, ipcMain, dialog, app } from 'electron';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export type UpdateStatus =
   | 'idle'
@@ -27,6 +29,17 @@ function sendToRenderer(state: UpdateState) {
 function setState(partial: Partial<UpdateState>) {
   state = { ...state, ...partial };
   sendToRenderer(state);
+}
+
+function isAppPathWritable(): boolean {
+  try {
+    const testFile = path.join(app.getAppPath(), `.opetype-updater-test-${Date.now()}`);
+    fs.writeFileSync(testFile, 'test');
+    fs.unlinkSync(testFile);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function initAutoUpdater(window: BrowserWindow) {
@@ -84,7 +97,8 @@ export async function checkForUpdates(): Promise<void> {
 
 export async function downloadUpdate(): Promise<void> {
   try {
-    await autoUpdater.downloadUpdate();
+    const result = await autoUpdater.downloadUpdate();
+    console.log('[AutoUpdater] Download result:', result);
   } catch (error: any) {
     console.error('[AutoUpdater] Download failed:', error);
     setState({ status: 'error', error: error?.message });
@@ -92,7 +106,20 @@ export async function downloadUpdate(): Promise<void> {
 }
 
 export function installUpdate(): void {
-  autoUpdater.quitAndInstall(false, true);
+  if (!isAppPathWritable()) {
+    const msg = 'OpenType 无法自动更新，因为它正从 DMG 直接运行。请先将 OpenType 拖到「应用程序」(Applications) 文件夹中，然后再试。';
+    console.error('[AutoUpdater]', msg);
+    setState({ status: 'error', error: msg });
+    dialog.showErrorBox('无法更新', msg);
+    return;
+  }
+
+  try {
+    autoUpdater.quitAndInstall(false, true);
+  } catch (error: any) {
+    console.error('[AutoUpdater] Install failed:', error);
+    setState({ status: 'error', error: error?.message });
+  }
 }
 
 export function getUpdateState(): UpdateState {

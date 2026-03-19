@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.4] - 2026-03-19
+
+### Fixed
+
+- **Auto-Update**: Fixed "Download & Install" not responding when running directly from DMG (read-only volume). Now detects read-only app path and shows a helpful error message directing users to install to /Applications first.
+
 ## [0.3.3] - 2026-03-19
 
 ### Added
