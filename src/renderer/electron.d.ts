@@ -177,6 +177,10 @@ declare global {
         error?: string;
       }>;
       onUpdateState: (callback: (state: any) => void) => () => void;
+
+      // App info
+      appVersion: () => Promise<string>;
+      appName: () => Promise<string>;
     };
   }
 }

@@ -77,6 +77,15 @@ export interface ElectronAPIMock {
   audioGetDevices: MockFn<() => Promise<Array<{ index: string; name: string }>>>;
   audioGetSelectedDevice: MockFn<() => Promise<{ index: string; name: string; selectedAt: number } | undefined>>;
   audioSetSelectedDevice: MockFn<(device: { index: string; name: string; selectedAt: number }) => Promise<void>>;
+  // App info
+  appVersion: MockFn<() => Promise<string>>;
+  appName: MockFn<() => Promise<string>>;
+  // Auto-update
+  updateCheck: MockFn<() => Promise<void>>;
+  updateDownload: MockFn<() => Promise<void>>;
+  updateInstall: MockFn<() => Promise<void>>;
+  updateGetState: MockFn<() => Promise<{ status: string; version?: string; releaseNotes?: string; progress?: number; error?: string }>>;
+  onUpdateState: MockFn<(callback: (state: any) => void) => () => void>;
 }
 
 export interface ElectronAPIMockHelpers {
@@ -121,7 +130,10 @@ export const createElectronAPIMock = (): ElectronAPIMockHelpers => {
   const unsubscribe = (): void => {};
 
   const electronAPI: ElectronAPIMock = {
-    storeGet: vi.fn<(key: string) => Promise<unknown>>().mockResolvedValue(undefined),
+    storeGet: vi.fn<(key: string) => Promise<unknown>>().mockImplementation((key: string) => {
+      if (key === 'appVersion') return Promise.resolve('0.3.0');
+      return Promise.resolve(undefined);
+    }),
     storeSet: vi.fn<(key: string, value: unknown) => Promise<void>>().mockResolvedValue(),
     recordingStart: vi.fn<() => Promise<void>>().mockResolvedValue(),
     recordingStop: vi.fn<() => Promise<void>>().mockResolvedValue(),
@@ -164,6 +176,15 @@ export const createElectronAPIMock = (): ElectronAPIMockHelpers => {
     audioGetDevices: vi.fn<() => Promise<Array<{ index: string; name: string }>>>().mockResolvedValue([{ index: '0', name: 'Mock Microphone' }]),
     audioGetSelectedDevice: vi.fn<() => Promise<{ index: string; name: string; selectedAt: number } | undefined>>().mockResolvedValue({ index: '0', name: 'Mock Microphone', selectedAt: Date.now() }),
     audioSetSelectedDevice: vi.fn<(device: { index: string; name: string; selectedAt: number }) => Promise<void>>().mockResolvedValue(),
+    // App info
+    appVersion: vi.fn<() => Promise<string>>().mockResolvedValue('0.3.0'),
+    appName: vi.fn<() => Promise<string>>().mockResolvedValue('OpenType'),
+    // Auto-update
+    updateCheck: vi.fn<() => Promise<void>>().mockResolvedValue(),
+    updateDownload: vi.fn<() => Promise<void>>().mockResolvedValue(),
+    updateInstall: vi.fn<() => Promise<void>>().mockResolvedValue(),
+    updateGetState: vi.fn<() => Promise<{ status: string; version?: string; releaseNotes?: string; progress?: number; error?: string }>>().mockResolvedValue({ status: 'idle', version: '0.3.0' }),
+    onUpdateState: vi.fn<(callback: (state: any) => void) => () => void>().mockReturnValue(unsubscribe),
   };
 
   const assignToWindow = (): ElectronAPIMock => {
@@ -175,7 +196,10 @@ export const createElectronAPIMock = (): ElectronAPIMockHelpers => {
 
   const resetElectronAPIMock = (): void => {
     electronAPI.storeGet.mockReset();
-    electronAPI.storeGet.mockResolvedValue(undefined);
+    electronAPI.storeGet.mockImplementation((key: string) => {
+      if (key === 'appVersion') return Promise.resolve('0.3.0');
+      return Promise.resolve(undefined);
+    });
     electronAPI.storeSet.mockReset();
     electronAPI.storeSet.mockResolvedValue();
     electronAPI.recordingStart.mockReset();
@@ -255,6 +279,22 @@ export const createElectronAPIMock = (): ElectronAPIMockHelpers => {
     electronAPI.audioGetSelectedDevice.mockResolvedValue({ index: '0', name: 'Mock Microphone', selectedAt: Date.now() });
     electronAPI.audioSetSelectedDevice.mockReset();
     electronAPI.audioSetSelectedDevice.mockResolvedValue();
+    // App info
+    electronAPI.appVersion.mockReset();
+    electronAPI.appVersion.mockResolvedValue('0.3.0');
+    electronAPI.appName.mockReset();
+    electronAPI.appName.mockResolvedValue('OpenType');
+    // Auto-update
+    electronAPI.updateCheck.mockReset();
+    electronAPI.updateCheck.mockResolvedValue();
+    electronAPI.updateDownload.mockReset();
+    electronAPI.updateDownload.mockResolvedValue();
+    electronAPI.updateInstall.mockReset();
+    electronAPI.updateInstall.mockResolvedValue();
+    electronAPI.updateGetState.mockReset();
+    electronAPI.updateGetState.mockResolvedValue({ status: 'idle', version: '0.3.0' });
+    electronAPI.onUpdateState.mockReset();
+    electronAPI.onUpdateState.mockReturnValue(unsubscribe);
   };
 
   return {

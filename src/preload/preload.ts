@@ -181,6 +181,10 @@ export interface ElectronAPI {
     error?: string;
   }>;
   onUpdateState: (callback: (state: any) => void) => () => void;
+
+  // App info
+  appVersion: () => Promise<string>;
+  appName: () => Promise<string>;
 }
 
 const api: ElectronAPI = {
@@ -315,6 +319,10 @@ const api: ElectronAPI = {
     ipcRenderer.on('update:state', handler);
     return () => ipcRenderer.off('update:state', handler);
   },
+
+  // App info
+  appVersion: () => ipcRenderer.invoke('app:version'),
+  appName: () => ipcRenderer.invoke('app:name'),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);

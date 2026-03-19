@@ -110,7 +110,10 @@ export class OpenTypeApp {
 
   async initialize(): Promise<void> {
     await app.whenReady();
-    
+
+    // Store app version for renderer to read
+    this.store.setAny('appVersion', app.getVersion());
+
     // Initialize secure storage
     await secureStorage.initialize();
 
@@ -331,9 +334,17 @@ export class OpenTypeApp {
         label: 'Settings',
         click: () => this.showSettings(),
       },
+      {
+        label: 'Check for Updates',
+        click: () => {
+          if (process.env.NODE_ENV !== 'development') {
+            checkForUpdates();
+          }
+        },
+      },
       { type: 'separator' },
       {
-        label: 'Quit',
+        label: `Quit OpenType v${app.getVersion()}`,
         click: () => this.quit(),
       },
     ]);
@@ -474,6 +485,15 @@ export class OpenTypeApp {
   }
 
   private setupIpcHandlers(): void {
+    // App info
+    ipcMain.handle('app:version', () => app.getVersion());
+    ipcMain.handle('app:name', () => app.getName());
+    ipcMain.handle('update:check-from-tray', () => {
+      if (process.env.NODE_ENV !== 'development') {
+        checkForUpdates();
+      }
+    });
+
     // Settings
     ipcMain.handle('store:get', (_, key: string) => this.store.getAny(key));
     ipcMain.handle('store:set', (_, key: string, value: unknown) => {
