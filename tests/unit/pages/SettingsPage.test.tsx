@@ -722,9 +722,12 @@ describe('SettingsPage', () => {
         expect(screen.getByText('Translate to English')).toBeInTheDocument();
       });
 
-      const translateSection = screen.getByText('Translate to English').closest('label');
-      const checkbox = translateSection?.querySelector('input[type="checkbox"]');
-      expect(checkbox).not.toBeChecked();
+      // Wait for loadSettings() to complete so voiceInputModes state reflects the mock
+      await waitFor(() => {
+        const translateSection = screen.getByText('Translate to English').closest('label');
+        const checkbox = translateSection?.querySelector('input[type="checkbox"]');
+        expect(checkbox).not.toBeChecked();
+      });
     });
 
     it('should toggle edit selected text', async () => {
