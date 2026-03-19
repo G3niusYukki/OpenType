@@ -39,3 +39,4 @@ coverage/
 
 # OpenSpec
 openspec/
+.worktrees/
