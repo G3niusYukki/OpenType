@@ -850,6 +850,14 @@ export class TranscriptionService {
   }
 
   /**
+   * Get the current whisper model name (for tray menu display)
+   */
+  getModelName(): string {
+    const modelPath = this.findModelPath();
+    return modelPath ? path.basename(modelPath) : 'Default';
+  }
+
+  /**
    * List all whisper.cpp models found in common locations.
    */
   listLocalModels(): ModelInfo[] {

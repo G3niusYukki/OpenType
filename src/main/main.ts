@@ -328,8 +328,7 @@ export class OpenTypeApp {
     if (preferredProvider === 'local') providerLabel = 'whisper.cpp';
     else if (preferredProvider === 'cloud') providerLabel = 'Cloud';
 
-    const modelPath = this.transcriptionService?.config?.whisperModelPath;
-    const modelName = modelPath ? path.basename(modelPath) : 'Default';
+    const modelName = this.transcriptionService?.getModelName() || 'Default';
 
     const dictationLabel = this.isRecording ? 'Stop Dictation' : 'Start Dictation';
     const recordingNote = this.isRecording ? 'Recording...' : undefined;
