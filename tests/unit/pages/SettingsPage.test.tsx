@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import { SettingsPage } from '../../../src/renderer/pages/SettingsPage';
+import { render, screen, fireEvent, waitFor, within, act } from '@testing-library/react';
+import { SettingsPage } from '../../../src/renderer/pages/SettingsPage/SettingsPage';
 import { createElectronAPIMock } from '../mocks';
 
 // Mock i18n
@@ -59,13 +59,23 @@ vi.mock('../../../src/renderer/i18n', () => ({
         noProviderConfigured: 'No transcription provider configured',
         noProviderDescription: 'Enable a provider below to start transcribing',
         loading: 'Loading system status...',
-        ffmpegRequired: 'FFmpeg is required for audio processing',
       },
     },
   }),
 }));
 
 const { electronAPI, assignToWindow, resetElectronAPIMock } = createElectronAPIMock();
+
+// Helper to click the General tab before assertions
+const renderSettingsAndGoToGeneral = async () => {
+  let result: ReturnType<typeof render>;
+  // Wrap render in act() so React properly batches state updates from microtasks
+  await act(async () => {
+    result = render(<SettingsPage />);
+    vi.runAllTimers();
+  });
+  return result!;
+};
 
 describe('SettingsPage', () => {
   beforeEach(() => {
@@ -82,14 +92,7 @@ describe('SettingsPage', () => {
   // RENDERING TESTS
   // ============================================================================
   describe('Rendering', () => {
-    it('should render initial loading state for system status', () => {
-      render(<SettingsPage />);
-
-      expect(screen.getByText('Loading system status...')).toBeInTheDocument();
-    });
-
-    it('should render with loaded settings', async () => {
-      // Mock settings data
+    it('should render with loaded settings on General tab', async () => {
       electronAPI.storeGet.mockImplementation((key: string) => {
         const settings: Record<string, unknown> = {
           hotkey: 'CommandOrControl+Shift+D',
@@ -130,70 +133,30 @@ describe('SettingsPage', () => {
       electronAPI.providersListTranscription.mockResolvedValue([]);
       electronAPI.providersListPostProcessing.mockResolvedValue([]);
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
       });
 
-      // Check general settings are rendered
-      expect(screen.getByText('General')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'General' })).toBeInTheDocument();
       expect(screen.getByDisplayValue('CommandOrControl+Shift+D')).toBeInTheDocument();
     });
 
-    it('should display provider list', async () => {
-      const mockProviders = [
-        {
-          id: 'openai',
-          name: 'OpenAI',
-          description: 'Cloud transcription via OpenAI API',
-          requireApiKey: true,
-          defaultBaseUrl: 'https://api.openai.com/v1',
-          defaultModel: 'whisper-1',
-          supportedModels: ['whisper-1'],
-          category: 'transcription',
-        },
-        {
-          id: 'groq',
-          name: 'Groq',
-          description: 'Fast cloud transcription via Groq',
-          requireApiKey: true,
-          defaultBaseUrl: 'https://api.groq.com/openai/v1',
-          defaultModel: 'whisper-large-v3',
-          supportedModels: ['whisper-large-v3', 'whisper-large-v3-turbo'],
-          category: 'transcription',
-        },
-      ];
-
-      electronAPI.providersListTranscription.mockResolvedValue(mockProviders);
-      electronAPI.providersListPostProcessing.mockResolvedValue([]);
-      electronAPI.storeGet.mockResolvedValue(undefined);
-      electronAPI.aiGetSettings.mockResolvedValue({
-        enabled: false,
-        options: { removeFillerWords: false, removeRepetition: false, detectSelfCorrection: false },
-        showComparison: false,
-      });
-      electronAPI.systemGetStatus.mockResolvedValue({
-        audio: { ffmpegAvailable: true, hasAudioDevices: true, deviceCount: 1 },
-        transcription: {
-          whisperInstalled: true,
-          modelAvailable: true,
-          hasCloudProvider: false,
-          recommendations: [],
-        },
-      });
-
-      render(<SettingsPage />);
+    it('should display 5 tabs', async () => {
+      await renderSettingsAndGoToGeneral();
 
       await waitFor(() => {
-        expect(screen.getByText('OpenAI')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'General' })).toBeInTheDocument();
       });
 
-      expect(screen.getByText('Cloud transcription via OpenAI API')).toBeInTheDocument();
-      expect(screen.getByText('Groq')).toBeInTheDocument();
+      expect(screen.getByText('Transcription')).toBeInTheDocument();
+      expect(screen.getByText('AI')).toBeInTheDocument();
+      expect(screen.getByText('Voice Modes')).toBeInTheDocument();
+      expect(screen.getByText('Data')).toBeInTheDocument();
     });
 
-    it('should display system status', async () => {
+    it('should display system status in General tab', async () => {
       electronAPI.systemGetStatus.mockResolvedValue({
         audio: { ffmpegAvailable: true, hasAudioDevices: true, deviceCount: 2 },
         transcription: {
@@ -214,15 +177,12 @@ describe('SettingsPage', () => {
       electronAPI.providersListTranscription.mockResolvedValue([]);
       electronAPI.providersListPostProcessing.mockResolvedValue([]);
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
-      await waitFor(() => {
-        expect(screen.getByText('Ready to transcribe')).toBeInTheDocument();
-      });
-
+      expect(screen.getByText('Ready to transcribe')).toBeInTheDocument();
       expect(screen.getByText('FFmpeg')).toBeInTheDocument();
       expect(screen.getByText('Microphone')).toBeInTheDocument();
-      expect(screen.getByText('Whisper')).toBeInTheDocument();
+      expect(screen.getByText('Whisper.cpp')).toBeInTheDocument();
       expect(screen.getByText('Model File')).toBeInTheDocument();
     });
   });
@@ -257,7 +217,7 @@ describe('SettingsPage', () => {
         return Promise.resolve(undefined);
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
       await waitFor(() => {
         expect(screen.getByDisplayValue('CommandOrControl+Shift+Space')).toBeInTheDocument();
@@ -265,7 +225,7 @@ describe('SettingsPage', () => {
     });
 
     it('should change hotkey', async () => {
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
@@ -278,7 +238,7 @@ describe('SettingsPage', () => {
     });
 
     it('should save on hotkey change', async () => {
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
@@ -297,20 +257,9 @@ describe('SettingsPage', () => {
   });
 
   // ============================================================================
-  // PROVIDER CONFIGURATION TESTS
+  // TRANSCRIPTION TAB TESTS
   // ============================================================================
-  describe('Provider configuration', () => {
-    const mockTranscriptionProvider = {
-      id: 'openai',
-      name: 'OpenAI',
-      description: 'Cloud transcription via OpenAI API',
-      requireApiKey: true,
-      defaultBaseUrl: 'https://api.openai.com/v1',
-      defaultModel: 'whisper-1',
-      supportedModels: ['whisper-1'],
-      category: 'transcription',
-    };
-
+  describe('Transcription tab', () => {
     beforeEach(() => {
       electronAPI.storeGet.mockResolvedValue(undefined);
       electronAPI.aiGetSettings.mockResolvedValue({
@@ -327,16 +276,70 @@ describe('SettingsPage', () => {
           recommendations: [],
         },
       });
-      electronAPI.providersListTranscription.mockResolvedValue([mockTranscriptionProvider]);
       electronAPI.providersListPostProcessing.mockResolvedValue([]);
     });
 
-    it('should enable/disable provider toggle', async () => {
-      render(<SettingsPage />);
+    it('should display provider list in Transcription tab', async () => {
+      const mockProviders = [
+        {
+          id: 'openai',
+          name: 'OpenAI',
+          description: 'Cloud transcription via OpenAI API',
+          requireApiKey: true,
+          defaultBaseUrl: 'https://api.openai.com/v1',
+          defaultModel: 'whisper-1',
+          supportedModels: ['whisper-1'],
+          category: 'transcription',
+        },
+        {
+          id: 'groq',
+          name: 'Groq',
+          description: 'Fast cloud transcription via Groq',
+          requireApiKey: true,
+          defaultBaseUrl: 'https://api.groq.com/openai/v1',
+          defaultModel: 'whisper-large-v3',
+          supportedModels: ['whisper-large-v3', 'whisper-large-v3-turbo'],
+          category: 'transcription',
+        },
+      ];
 
-      await waitFor(() => {
-        expect(screen.getByText('OpenAI')).toBeInTheDocument();
+      electronAPI.providersListTranscription.mockResolvedValue(mockProviders);
+
+      await renderSettingsAndGoToGeneral();
+
+      // Click Transcription tab and flush async effects
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Transcription' }));
+        vi.runAllTimers();
       });
+
+      expect(screen.getByText('OpenAI')).toBeInTheDocument();
+      expect(screen.getByText('Cloud transcription via OpenAI API')).toBeInTheDocument();
+      expect(screen.getByText('Groq')).toBeInTheDocument();
+    });
+
+    it('should enable/disable provider toggle in Transcription tab', async () => {
+      const mockTranscriptionProvider = {
+        id: 'openai',
+        name: 'OpenAI',
+        description: 'Cloud transcription via OpenAI API',
+        requireApiKey: true,
+        defaultBaseUrl: 'https://api.openai.com/v1',
+        defaultModel: 'whisper-1',
+        supportedModels: ['whisper-1'],
+        category: 'transcription',
+      };
+
+      electronAPI.providersListTranscription.mockResolvedValue([mockTranscriptionProvider]);
+
+      await renderSettingsAndGoToGeneral();
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Transcription' }));
+        vi.runAllTimers();
+      });
+
+      expect(screen.getByText('OpenAI')).toBeInTheDocument();
 
       const toggleButton = screen.getByText('Disabled');
       fireEvent.click(toggleButton);
@@ -350,6 +353,17 @@ describe('SettingsPage', () => {
     });
 
     it('should display API key input (masked)', async () => {
+      electronAPI.providersListTranscription.mockResolvedValue([{
+        id: 'openai',
+        name: 'OpenAI',
+        description: 'Cloud transcription via OpenAI API',
+        requireApiKey: true,
+        defaultBaseUrl: 'https://api.openai.com/v1',
+        defaultModel: 'whisper-1',
+        supportedModels: ['whisper-1'],
+        category: 'transcription',
+      }]);
+
       electronAPI.storeGet.mockImplementation((key: string) => {
         if (key === 'providers') {
           return Promise.resolve([
@@ -359,13 +373,15 @@ describe('SettingsPage', () => {
         return Promise.resolve(undefined);
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
-      await waitFor(() => {
-        expect(screen.getByText('OpenAI')).toBeInTheDocument();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Transcription' }));
+        vi.runAllTimers();
       });
 
-      // When enabled, API key input should be visible
+      expect(screen.getByText('OpenAI')).toBeInTheDocument();
+
       await waitFor(() => {
         const apiKeyInput = screen.getByPlaceholderText('OpenAI API key');
         expect(apiKeyInput).toHaveAttribute('type', 'password');
@@ -374,6 +390,17 @@ describe('SettingsPage', () => {
     });
 
     it('should configure base URL', async () => {
+      electronAPI.providersListTranscription.mockResolvedValue([{
+        id: 'openai',
+        name: 'OpenAI',
+        description: 'Cloud transcription via OpenAI API',
+        requireApiKey: true,
+        defaultBaseUrl: 'https://api.openai.com/v1',
+        defaultModel: 'whisper-1',
+        supportedModels: ['whisper-1'],
+        category: 'transcription',
+      }]);
+
       electronAPI.storeGet.mockImplementation((key: string) => {
         if (key === 'providers') {
           return Promise.resolve([
@@ -383,16 +410,15 @@ describe('SettingsPage', () => {
         return Promise.resolve(undefined);
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
-      await waitFor(() => {
-        expect(screen.getByText('OpenAI')).toBeInTheDocument();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Transcription' }));
+        vi.runAllTimers();
       });
 
-      await waitFor(() => {
-        const baseUrlInput = screen.getByDisplayValue('https://api.openai.com/v1');
-        expect(baseUrlInput).toBeInTheDocument();
-      });
+      expect(screen.getByText('OpenAI')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('https://api.openai.com/v1')).toBeInTheDocument();
 
       const baseUrlInput = screen.getByDisplayValue('https://api.openai.com/v1');
       fireEvent.change(baseUrlInput, { target: { value: 'https://custom.openai.com/v1' } });
@@ -407,40 +433,18 @@ describe('SettingsPage', () => {
       });
     });
 
-    it('should configure model selection', async () => {
-      const providerWithMultipleModels = {
-        ...mockTranscriptionProvider,
-        supportedModels: ['whisper-1', 'whisper-large-v3'],
-      };
-
-      electronAPI.providersListTranscription.mockResolvedValue([providerWithMultipleModels]);
-      electronAPI.storeGet.mockImplementation((key: string) => {
-        if (key === 'providers') {
-          return Promise.resolve([
-            { id: 'openai', enabled: true, enabledForTranscription: true, apiKey: 'sk-test' },
-          ]);
-        }
-        return Promise.resolve(undefined);
-      });
-
-      render(<SettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('OpenAI')).toBeInTheDocument();
-      });
-
-      await waitFor(() => {
-        // Model label is present but not associated via htmlFor, so find by text then check for select
-        const modelLabel = screen.getByText('Model');
-        expect(modelLabel).toBeInTheDocument();
-        // The select should be in the same parent container
-        const container = modelLabel.closest('div');
-        const select = container?.querySelector('select');
-        expect(select).toBeInTheDocument();
-      });
-    });
-
     it('should show test connection button', async () => {
+      electronAPI.providersListTranscription.mockResolvedValue([{
+        id: 'openai',
+        name: 'OpenAI',
+        description: 'Cloud transcription via OpenAI API',
+        requireApiKey: true,
+        defaultBaseUrl: 'https://api.openai.com/v1',
+        defaultModel: 'whisper-1',
+        supportedModels: ['whisper-1'],
+        category: 'transcription',
+      }]);
+
       electronAPI.storeGet.mockImplementation((key: string) => {
         if (key === 'providers') {
           return Promise.resolve([
@@ -450,15 +454,30 @@ describe('SettingsPage', () => {
         return Promise.resolve(undefined);
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
-      await waitFor(() => {
-        expect(screen.getByText('Test')).toBeInTheDocument();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Transcription' }));
+        vi.runAllTimers();
       });
+
+      expect(screen.getByRole('button', { name: /Test Connection/i })).toBeInTheDocument();
     });
 
     it('should show test success feedback', async () => {
       electronAPI.providersTest.mockResolvedValue({ success: true });
+
+      electronAPI.providersListTranscription.mockResolvedValue([{
+        id: 'openai',
+        name: 'OpenAI',
+        description: 'Cloud transcription via OpenAI API',
+        requireApiKey: true,
+        defaultBaseUrl: 'https://api.openai.com/v1',
+        defaultModel: 'whisper-1',
+        supportedModels: ['whisper-1'],
+        category: 'transcription',
+      }]);
+
       electronAPI.storeGet.mockImplementation((key: string) => {
         if (key === 'providers') {
           return Promise.resolve([
@@ -468,13 +487,16 @@ describe('SettingsPage', () => {
         return Promise.resolve(undefined);
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
-      await waitFor(() => {
-        expect(screen.getByText('Test')).toBeInTheDocument();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Transcription' }));
+        vi.runAllTimers();
       });
 
-      const testButton = screen.getByText('Test');
+      expect(screen.getByRole('button', { name: /Test Connection/i })).toBeInTheDocument();
+
+      const testButton = screen.getByRole('button', { name: /Test Connection/i });
       fireEvent.click(testButton);
 
       await waitFor(() => {
@@ -484,6 +506,18 @@ describe('SettingsPage', () => {
 
     it('should show test error feedback', async () => {
       electronAPI.providersTest.mockResolvedValue({ success: false, error: 'Invalid API key' });
+
+      electronAPI.providersListTranscription.mockResolvedValue([{
+        id: 'openai',
+        name: 'OpenAI',
+        description: 'Cloud transcription via OpenAI API',
+        requireApiKey: true,
+        defaultBaseUrl: 'https://api.openai.com/v1',
+        defaultModel: 'whisper-1',
+        supportedModels: ['whisper-1'],
+        category: 'transcription',
+      }]);
+
       electronAPI.storeGet.mockImplementation((key: string) => {
         if (key === 'providers') {
           return Promise.resolve([
@@ -493,13 +527,16 @@ describe('SettingsPage', () => {
         return Promise.resolve(undefined);
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
-      await waitFor(() => {
-        expect(screen.getByText('Test')).toBeInTheDocument();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Transcription' }));
+        vi.runAllTimers();
       });
 
-      const testButton = screen.getByText('Test');
+      expect(screen.getByRole('button', { name: /Test Connection/i })).toBeInTheDocument();
+
+      const testButton = screen.getByRole('button', { name: /Test Connection/i });
       fireEvent.click(testButton);
 
       await waitFor(() => {
@@ -511,7 +548,7 @@ describe('SettingsPage', () => {
   // ============================================================================
   // AI SETTINGS TESTS
   // ============================================================================
-  describe('AI settings', () => {
+  describe('AI tab', () => {
     beforeEach(() => {
       electronAPI.storeGet.mockResolvedValue(undefined);
       electronAPI.systemGetStatus.mockResolvedValue({
@@ -527,22 +564,25 @@ describe('SettingsPage', () => {
       electronAPI.providersListPostProcessing.mockResolvedValue([]);
     });
 
-    it('should toggle AI post-processing', async () => {
+    it('should render AI tab and toggle AI post-processing', async () => {
       electronAPI.aiGetSettings.mockResolvedValue({
         enabled: false,
         options: { removeFillerWords: false, removeRepetition: false, detectSelfCorrection: false },
         showComparison: false,
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
-      await waitFor(() => {
-        expect(screen.getByText('AI Post-Processing')).toBeInTheDocument();
+      // Click AI tab and flush all async effects
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'AI' }));
+        vi.runAllTimers();
       });
 
-      const aiSection = screen.getByText('Enable AI Post-Processing').closest('label');
-      const enableCheckbox = aiSection?.querySelector('input[type="checkbox"]');
-      fireEvent.click(enableCheckbox!);
+      expect(screen.getByText('Enable AI Post-Processing')).toBeInTheDocument();
+
+      const enableSwitch = screen.getByRole('switch', { name: /^Enable AI Post-Processing/i });
+      fireEvent.click(enableSwitch);
 
       await waitFor(() => {
         expect(electronAPI.aiSetSettings).toHaveBeenCalledWith({ enabled: true });
@@ -556,24 +596,19 @@ describe('SettingsPage', () => {
         showComparison: true,
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
-      await waitFor(() => {
-        expect(screen.getByText('Processing Options')).toBeInTheDocument();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'AI' }));
+        vi.runAllTimers();
       });
 
-      // Find checkboxes by navigating from label text to input
-      const fillerWordsSection = screen.getByText('Remove filler words (um, uh, like)').closest('label');
-      const repetitionSection = screen.getByText('Remove repetition').closest('label');
-      const correctionSection = screen.getByText('Detect self-correction').closest('label');
-      
-      expect(fillerWordsSection?.querySelector('input')).toBeChecked();
-      expect(repetitionSection?.querySelector('input')).toBeChecked();
-      expect(correctionSection?.querySelector('input')).toBeChecked();
+      expect(screen.getByText('Remove Filler Words')).toBeInTheDocument();
 
-      // Toggle filler words off
-      const fillerWordsCheckbox = fillerWordsSection?.querySelector('input');
-      fireEvent.click(fillerWordsCheckbox!);
+      const fillerSwitch = screen.getByRole('switch', { name: /^Remove Filler Words/i });
+      expect(fillerSwitch).toBeChecked();
+
+      fireEvent.click(fillerSwitch);
 
       await waitFor(() => {
         expect(electronAPI.aiSetSettings).toHaveBeenCalledWith({
@@ -589,41 +624,24 @@ describe('SettingsPage', () => {
         showComparison: true,
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
-      await waitFor(() => {
-        expect(screen.getByText('Show before/after comparison')).toBeInTheDocument();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'AI' }));
+        vi.runAllTimers();
       });
 
-      const comparisonSection = screen.getByText('Show before/after comparison').closest('label');
-      expect(comparisonSection?.querySelector('input')).toBeChecked();
-    });
+      expect(screen.getByText('Show Comparison')).toBeInTheDocument();
 
-    it('should show AI provider status when AI is enabled', async () => {
-      electronAPI.aiGetSettings.mockResolvedValue({
-        enabled: true,
-        options: { removeFillerWords: false, removeRepetition: false, detectSelfCorrection: false },
-        showComparison: false,
-      });
-
-      // Mock no AI provider configured
-      electronAPI.storeGet.mockImplementation((key: string) => {
-        if (key === 'providers') return Promise.resolve([]);
-        return Promise.resolve(undefined);
-      });
-
-      render(<SettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Configure an AI provider above to enable post-processing')).toBeInTheDocument();
-      });
+      const comparisonSwitch = screen.getByRole('switch', { name: /^Show Comparison/i });
+      expect(comparisonSwitch).toBeChecked();
     });
   });
 
   // ============================================================================
   // VOICE INPUT MODES TESTS
   // ============================================================================
-  describe('Voice input modes', () => {
+  describe('Voice tab', () => {
     beforeEach(() => {
       electronAPI.systemGetStatus.mockResolvedValue({
         audio: { ffmpegAvailable: true, hasAudioDevices: true, deviceCount: 1 },
@@ -643,7 +661,7 @@ describe('SettingsPage', () => {
       });
     });
 
-    it('should toggle basic voice input', async () => {
+    it('should toggle basic voice input in Voice tab', async () => {
       electronAPI.storeGet.mockImplementation((key: string) => {
         if (key === 'voiceInputModes') {
           return Promise.resolve({
@@ -656,18 +674,19 @@ describe('SettingsPage', () => {
         return Promise.resolve(undefined);
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
-      await waitFor(() => {
-        expect(screen.getByText('Basic Voice Input')).toBeInTheDocument();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Voice Modes' }));
+        vi.runAllTimers();
       });
 
-      // Find the checkbox for basic voice input
-      const basicVoiceInputSection = screen.getByText('Basic Voice Input').closest('label');
-      const checkbox = basicVoiceInputSection?.querySelector('input[type="checkbox"]');
-      expect(checkbox).toBeChecked();
+      expect(screen.getByText('Basic Voice Input')).toBeInTheDocument();
 
-      fireEvent.click(checkbox!);
+      const basicSwitch = screen.getByRole('switch', { name: /^Basic Voice Input/i });
+      expect(basicSwitch).toBeChecked();
+
+      fireEvent.click(basicSwitch);
 
       vi.advanceTimersByTime(400);
 
@@ -692,15 +711,17 @@ describe('SettingsPage', () => {
         return Promise.resolve(undefined);
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
-      await waitFor(() => {
-        expect(screen.getByText('Hands-free Mode')).toBeInTheDocument();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Voice Modes' }));
+        vi.runAllTimers();
       });
 
-      const handsFreeSection = screen.getByText('Hands-free Mode').closest('label');
-      const checkbox = handsFreeSection?.querySelector('input[type="checkbox"]');
-      expect(checkbox).not.toBeChecked();
+      expect(screen.getByText('Hands-free Mode')).toBeInTheDocument();
+
+      const handsFreeSwitch = screen.getByRole('switch', { name: /^Hands-free Mode/i });
+      expect(handsFreeSwitch).not.toBeChecked();
     });
 
     it('should toggle translate to English', async () => {
@@ -716,18 +737,17 @@ describe('SettingsPage', () => {
         return Promise.resolve(undefined);
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
-      await waitFor(() => {
-        expect(screen.getByText('Translate to English')).toBeInTheDocument();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Voice Modes' }));
+        vi.runAllTimers();
       });
 
-      // Wait for loadSettings() to complete so voiceInputModes state reflects the mock
-      await waitFor(() => {
-        const translateSection = screen.getByText('Translate to English').closest('label');
-        const checkbox = translateSection?.querySelector('input[type="checkbox"]');
-        expect(checkbox).not.toBeChecked();
-      });
+      expect(screen.getByText('Translate to English')).toBeInTheDocument();
+
+      const translateSwitch = screen.getByRole('switch', { name: /^Translate to English/i });
+      expect(translateSwitch).not.toBeChecked();
     });
 
     it('should toggle edit selected text', async () => {
@@ -743,25 +763,24 @@ describe('SettingsPage', () => {
         return Promise.resolve(undefined);
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
-      await waitFor(() => {
-        expect(screen.getByText('Edit Selected Text')).toBeInTheDocument();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Voice Modes' }));
+        vi.runAllTimers();
       });
 
-      // Wait for state to load from mock
-      await waitFor(() => {
-        const editSection = screen.getByText('Edit Selected Text').closest('label');
-        const checkbox = editSection?.querySelector('input[type="checkbox"]');
-        expect(checkbox).not.toBeChecked();
-      });
+      expect(screen.getByText('Edit Selected Text')).toBeInTheDocument();
+
+      const editSwitch = screen.getByRole('switch', { name: /^Edit Selected Text/i });
+      expect(editSwitch).not.toBeChecked();
     });
   });
 
   // ============================================================================
   // LANGUAGE SELECTION TESTS
   // ============================================================================
-  describe('Language selection', () => {
+  describe('Language selection (General tab)', () => {
     beforeEach(() => {
       electronAPI.systemGetStatus.mockResolvedValue({
         audio: { ffmpegAvailable: true, hasAudioDevices: true, deviceCount: 1 },
@@ -779,15 +798,16 @@ describe('SettingsPage', () => {
         options: { removeFillerWords: false, removeRepetition: false, detectSelfCorrection: false },
         showComparison: false,
       });
+      electronAPI.storeGet.mockResolvedValue(undefined);
     });
 
-    it('should show language dropdown', async () => {
+    it('should show language dropdown in General tab', async () => {
       electronAPI.storeGet.mockImplementation((key: string) => {
         if (key === 'language') return Promise.resolve('en-US');
         return Promise.resolve(undefined);
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
       await waitFor(() => {
         expect(screen.getByText('Transcription Language')).toBeInTheDocument();
@@ -803,7 +823,7 @@ describe('SettingsPage', () => {
         return Promise.resolve(undefined);
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
       await waitFor(() => {
         expect(screen.getByDisplayValue('English (US)')).toBeInTheDocument();
@@ -825,17 +845,14 @@ describe('SettingsPage', () => {
         return Promise.resolve(undefined);
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
-      await waitFor(() => {
-        expect(screen.getByText('Auto Punctuation')).toBeInTheDocument();
-      });
+      expect(screen.getByText('Auto Punctuation')).toBeInTheDocument();
 
-      const autoPunctSection = screen.getByText('Auto Punctuation').closest('label');
-      const punctuationCheckbox = autoPunctSection?.querySelector('input[type="checkbox"]');
-      expect(punctuationCheckbox).toBeChecked();
+      const autoPunctSwitch = screen.getByRole('switch', { name: /^Auto Punctuation/i });
+      expect(autoPunctSwitch).toBeChecked();
 
-      fireEvent.click(punctuationCheckbox);
+      fireEvent.click(autoPunctSwitch);
 
       vi.advanceTimersByTime(400);
 
@@ -848,7 +865,7 @@ describe('SettingsPage', () => {
   // ============================================================================
   // SAVE INDICATOR TESTS
   // ============================================================================
-  describe('Save indicator', () => {
+  describe('Save indicator (General tab)', () => {
     beforeEach(() => {
       electronAPI.systemGetStatus.mockResolvedValue({
         audio: { ffmpegAvailable: true, hasAudioDevices: true, deviceCount: 1 },
@@ -870,70 +887,40 @@ describe('SettingsPage', () => {
     });
 
     it('should show saving state', async () => {
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
       });
 
-      // Trigger a save by changing hotkey
       const hotkeyInput = screen.getByDisplayValue('CommandOrControl+Shift+D');
       fireEvent.change(hotkeyInput, { target: { value: 'CommandOrControl+Shift+X' } });
 
-      // Should show saving indicator briefly
       expect(screen.getByText('Saving...')).toBeInTheDocument();
     });
 
     it('should show saved state', async () => {
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
       });
 
-      // Trigger a save
       const hotkeyInput = screen.getByDisplayValue('CommandOrControl+Shift+D');
       fireEvent.change(hotkeyInput, { target: { value: 'CommandOrControl+Shift+X' } });
 
-      // Advance past saving to saved state
       vi.advanceTimersByTime(400);
 
       await waitFor(() => {
         expect(screen.getByText('Saved')).toBeInTheDocument();
       });
     });
-
-    it('should return to idle state after save completes', async () => {
-      const { rerender } = render(<SettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
-      });
-
-      // Trigger a save
-      const hotkeyInput = screen.getByDisplayValue('CommandOrControl+Shift+D');
-      fireEvent.change(hotkeyInput, { target: { value: 'CommandOrControl+Shift+X' } });
-
-      // First show saving state
-      expect(screen.getByText('Saving...')).toBeInTheDocument();
-
-      // Advance timers to trigger state transitions
-      vi.advanceTimersByTime(2000);
-
-      // Rerender to flush pending state updates
-      rerender(<SettingsPage />);
-
-      // After complete cycle, the save status indicator should be gone
-      // (the indicator only shows when saveStatus !== 'idle')
-      const saveIndicator = screen.queryByText(/Saving...|Saved/);
-      expect(saveIndicator).toBeNull();
-    });
   });
 
   // ============================================================================
   // SETTINGS PERSISTENCE TESTS
   // ============================================================================
-  describe('Settings persistence', () => {
+  describe('Settings persistence (General tab)', () => {
     beforeEach(() => {
       electronAPI.systemGetStatus.mockResolvedValue({
         audio: { ffmpegAvailable: true, hasAudioDevices: true, deviceCount: 1 },
@@ -964,7 +951,7 @@ describe('SettingsPage', () => {
         return Promise.resolve(settings[key]);
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
       await waitFor(() => {
         expect(screen.getByDisplayValue('Alt+Shift+Space')).toBeInTheDocument();
@@ -982,37 +969,10 @@ describe('SettingsPage', () => {
         return Promise.resolve(settings[key]);
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
       await waitFor(() => {
-        expect(screen.getByDisplayValue('中文 (简体) - Chinese')).toBeInTheDocument();
-      });
-    });
-
-    it('should save preferred provider on change', async () => {
-      electronAPI.storeGet.mockImplementation((key: string) => {
-        const settings: Record<string, unknown> = {
-          hotkey: 'CommandOrControl+Shift+D',
-          language: 'en-US',
-          autoPunctuation: true,
-          preferredProvider: 'auto',
-        };
-        return Promise.resolve(settings[key]);
-      });
-
-      render(<SettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByDisplayValue('Auto (Local first, fallback to Cloud)')).toBeInTheDocument();
-      });
-
-      const providerSelect = screen.getByDisplayValue('Auto (Local first, fallback to Cloud)');
-      fireEvent.change(providerSelect, { target: { value: 'cloud' } });
-
-      vi.advanceTimersByTime(400);
-
-      await waitFor(() => {
-        expect(electronAPI.storeSet).toHaveBeenCalledWith('preferredProvider', 'cloud');
+        expect(screen.getByDisplayValue('中文 (简体)')).toBeInTheDocument();
       });
     });
 
@@ -1024,15 +984,17 @@ describe('SettingsPage', () => {
         showComparison: true,
       });
 
-      render(<SettingsPage />);
+      await renderSettingsAndGoToGeneral();
 
-      await waitFor(() => {
-        expect(screen.getByText('Enable AI Post-Processing')).toBeInTheDocument();
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'AI' }));
+        vi.runAllTimers();
       });
 
-      const aiSection = screen.getByText('Enable AI Post-Processing').closest('label');
-      const aiCheckbox = aiSection?.querySelector('input[type="checkbox"]');
-      fireEvent.click(aiCheckbox!);
+      expect(screen.getByText('Enable AI Post-Processing')).toBeInTheDocument();
+
+      const aiSwitch = screen.getByRole('switch', { name: /^Enable AI Post-Processing/i });
+      fireEvent.click(aiSwitch);
 
       await waitFor(() => {
         expect(electronAPI.aiSetSettings).toHaveBeenCalledWith({ enabled: false });

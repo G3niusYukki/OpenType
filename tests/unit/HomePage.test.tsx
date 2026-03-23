@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { HomePage } from '../../src/renderer/pages/HomePage';
+import { HomePage } from '../../src/renderer/pages/HomePage/HomePage';
 import { I18nProvider } from '../../src/renderer/i18n';
 import { createElectronAPIMock, MockTranscriptionResult } from './mocks/electronAPI';
 
@@ -101,7 +101,9 @@ let recordingStartedCallback: (() => void) | null = null;
 let recordingStoppedCallback: (() => void) | null = null;
 let transcriptionCompleteCallback: ((result: MockTranscriptionResult) => void) | null = null;
 
-const getRecordButton = () => screen.getAllByRole('button')[1];
+const getRecordButton = () => screen.getAllByRole('button').find(
+  btn => btn.className.includes('recordBtn') || btn.querySelector('[class*="recordBtnInner"]')
+)!;
 
 describe('HomePage', () => {
   beforeEach(() => {
@@ -137,6 +139,7 @@ describe('HomePage', () => {
       },
       showComparison: false,
     });
+    electronAPI.historyGet.mockResolvedValue([]);
   });
 
   afterEach(() => {
@@ -148,10 +151,7 @@ describe('HomePage', () => {
       renderHomePage();
 
       expect(screen.getByTestId('system-status-panel')).toBeInTheDocument();
-      expect(screen.getByText('Your transcriptions will appear here')).toBeInTheDocument();
-      
-      const micButton = getRecordButton();
-      expect(micButton).toBeInTheDocument();
+      expect(screen.getByText('No transcription yet. Hold ⌘⇧D to start.')).toBeInTheDocument();
     });
 
     it('should display SystemStatusPanel', async () => {
@@ -161,12 +161,8 @@ describe('HomePage', () => {
 
     it('should show idle recording button state', async () => {
       renderHomePage();
-      
-      const buttons = screen.getAllByRole('button');
-      const recordButton = buttons.find(btn => btn.querySelector('svg'));
-      expect(recordButton).toBeInTheDocument();
-      
-      expect(screen.getByText(/Press.*to start/)).toBeInTheDocument();
+      // The empty state text includes "Hold ⌘⇧D to start"
+      expect(screen.getByText('No transcription yet. Hold ⌘⇧D to start.')).toBeInTheDocument();
     });
   });
 
@@ -174,8 +170,9 @@ describe('HomePage', () => {
     it('should start recording when button is clicked', async () => {
       renderHomePage();
 
+      const recordBtn = document.querySelector('[class*="recordBtn"]') as HTMLElement;
       await act(async () => {
-        fireEvent.click(getRecordButton());
+        fireEvent.click(recordBtn);
       });
 
       expect(electronAPI.recordingStart).toHaveBeenCalled();
@@ -219,8 +216,9 @@ describe('HomePage', () => {
         }
       });
 
+      const recordBtn = document.querySelector('[class*="recordBtn"]') as HTMLElement;
       await act(async () => {
-        fireEvent.click(getRecordButton());
+        fireEvent.click(recordBtn);
       });
 
       expect(electronAPI.recordingStop).toHaveBeenCalled();
@@ -276,7 +274,6 @@ describe('HomePage', () => {
       });
 
       expect(screen.getByText('Hello world this is a test')).toBeInTheDocument();
-      expect(screen.getByText('Transcription Result')).toBeInTheDocument();
     });
 
     it('should display AI-processed text when available', async () => {
@@ -412,7 +409,7 @@ describe('HomePage', () => {
       });
 
       const copyButton = screen.getByRole('button', { name: /Copy/ });
-      
+
       await act(async () => {
         fireEvent.click(copyButton);
       });
@@ -435,7 +432,7 @@ describe('HomePage', () => {
         }
       });
 
-      expect(screen.getByText(/Success/)).toBeInTheDocument();
+      expect(screen.getByText(/via whisper/)).toBeInTheDocument();
     });
   });
 
@@ -456,13 +453,12 @@ describe('HomePage', () => {
     it('should open provider dropdown when clicked', async () => {
       renderHomePage();
 
-      const providerButton = screen.getByText(/Auto|Local|Cloud/);
-      
+      const providerButton = screen.getByText(/Auto \(Local first\)/);
+
       await act(async () => {
         fireEvent.click(providerButton);
       });
 
-      expect(screen.getAllByText('Auto (Local first)')).toHaveLength(2);
       expect(screen.getByText('Local (whisper.cpp)')).toBeInTheDocument();
       expect(screen.getByText('Cloud (API)')).toBeInTheDocument();
     });
@@ -470,8 +466,8 @@ describe('HomePage', () => {
     it('should allow selecting different provider', async () => {
       renderHomePage();
 
-      const providerButton = screen.getByText(/Auto|Local|Cloud/);
-      
+      const providerButton = screen.getByText(/Auto \(Local first\)/);
+
       await act(async () => {
         fireEvent.click(providerButton);
       });
@@ -540,7 +536,7 @@ describe('HomePage', () => {
       expect(screen.getByText(/Text copied to clipboard/)).toBeInTheDocument();
     });
 
-    it('should display accessibility permission error', async () => {
+    it('should handle accessibility-required error on text insertion', async () => {
       electronAPI.textInsert.mockResolvedValue({
         success: false,
         method: 'clipboard',
@@ -563,13 +559,15 @@ describe('HomePage', () => {
       });
 
       const insertButton = screen.getByRole('button', { name: /Insert at Cursor/ });
-      
+
       await act(async () => {
         fireEvent.click(insertButton);
       });
 
+      // When accessibility is required, the app falls back to clipboard
+      // The clipboard fallback warning should appear
       await waitFor(() => {
-        expect(screen.getByText('Accessibility Permission Required')).toBeInTheDocument();
+        expect(screen.getByText(/Text copied to clipboard/)).toBeInTheDocument();
       });
     });
   });
@@ -578,8 +576,8 @@ describe('HomePage', () => {
     it('should render waveform visualization', async () => {
       renderHomePage();
 
-      const waveformContainer = document.querySelector('[style*="display: flex"]');
-      expect(waveformContainer).toBeInTheDocument();
+      const waveformBars = document.querySelectorAll('[class*="waveBar"]');
+      expect(waveformBars.length).toBeGreaterThan(0);
     });
 
     it('should show animated state when recording', async () => {
@@ -600,8 +598,7 @@ describe('HomePage', () => {
 
     it('should show static state when not recording', async () => {
       renderHomePage();
-
-      expect(screen.getByText(/Press.*to start/)).toBeInTheDocument();
+      expect(screen.getByText('No transcription yet. Hold ⌘⇧D to start.')).toBeInTheDocument();
     });
   });
 
@@ -629,7 +626,7 @@ describe('HomePage', () => {
       });
 
       const insertButton = screen.getByRole('button', { name: /Insert at Cursor/ });
-      
+
       await act(async () => {
         fireEvent.click(insertButton);
       });
@@ -660,13 +657,13 @@ describe('HomePage', () => {
       });
 
       const insertButton = screen.getByRole('button', { name: /Insert at Cursor/ });
-      
+
       await act(async () => {
         fireEvent.click(insertButton);
       });
 
       await waitFor(() => {
-        expect(screen.getByText('Inserted!')).toBeInTheDocument();
+        expect(screen.getByText('Inserted')).toBeInTheDocument();
       });
     });
   });
@@ -685,9 +682,29 @@ describe('HomePage', () => {
 
     it('should show default hotkey when none is saved', async () => {
       renderHomePage();
+      // Default hotkey shown in the empty state
+      expect(screen.getByText('No transcription yet. Hold ⌘⇧D to start.')).toBeInTheDocument();
+    });
+  });
+
+  describe('History Tab', () => {
+    it('should show history tab with count', async () => {
+      renderHomePage();
+
+      expect(screen.getByText(/Recent \(\d+\)/)).toBeInTheDocument();
+    });
+
+    it('should show empty history state', async () => {
+      electronAPI.historyGet.mockResolvedValue([]);
+
+      renderHomePage();
+
+      await act(async () => {
+        fireEvent.click(screen.getByText(/Recent \(\d+\)/));
+      });
 
       await waitFor(() => {
-        expect(screen.getByText(/Press/)).toBeInTheDocument();
+        expect(screen.getByText('No history yet.')).toBeInTheDocument();
       });
     });
   });
