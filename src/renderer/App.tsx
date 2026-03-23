@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MainLayout } from './components/MainLayout';
 import { UpdateModal } from './components/UpdateModal';
-import { HomePage } from './pages/HomePage';
+import { HomePage } from './pages/HomePage/HomePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { DictionaryPage } from './pages/DictionaryPage';
