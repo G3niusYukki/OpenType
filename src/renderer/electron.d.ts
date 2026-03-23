@@ -123,6 +123,7 @@ declare global {
       // Window
       windowHide: () => Promise<void>;
       windowShow: () => Promise<void>;
+      openExternal: (url: string) => Promise<void>;
 
       // Text insertion with detailed result
       textInsert: (text: string) => Promise<{

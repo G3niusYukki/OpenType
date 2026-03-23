@@ -49,18 +49,19 @@ export function App() {
 
   return (
     <UpdateProvider>
-    {showOnboarding && (
+    {showOnboarding ? (
       <OnboardingWizard onComplete={() => {
         localStorage.setItem('onboardingCompleted', 'true');
         setShowOnboarding(false);
       }} />
+    ) : (
+      <>
+        <MainLayout currentPage={currentPage} onNavigate={setCurrentPage}>
+          {renderPage()}
+        </MainLayout>
+        <UpdateModal />
+      </>
     )}
-    {!showOnboarding && (
-    <MainLayout currentPage={currentPage} onNavigate={setCurrentPage}>
-      {renderPage()}
-    </MainLayout>
-    )}
-    <UpdateModal />
     </UpdateProvider>
   );
 }

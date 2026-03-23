@@ -59,7 +59,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
   };
 
   return (
-    <div className={styles.overlay}>
+    <div className={styles.overlay} role="dialog" aria-modal="true" aria-label="OpenType setup wizard">
       <div className={styles.container}>
         {/* Progress bar */}
         <div className={styles.progress}>
