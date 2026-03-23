@@ -69,6 +69,9 @@ export interface ElectronAPI {
   diagnosticsRequestPermission: (permissionType: 'microphone' | 'accessibility' | 'automation') => Promise<boolean>;
   diagnosticsOpenSettings: (permissionType: 'microphone' | 'accessibility' | 'automation') => Promise<void>;
 
+  // System
+  openExternal: (url: string) => Promise<void>;
+
   // Providers
   providersList: () => Promise<unknown[]>;
   providersListTranscription: () => Promise<unknown[]>;
@@ -207,6 +210,9 @@ const api: ElectronAPI = {
   diagnosticsGetLastFailure: () => ipcRenderer.invoke('diagnostics:get-last-failure'),
   diagnosticsRequestPermission: (permissionType) => ipcRenderer.invoke('diagnostics:request-permission', permissionType),
   diagnosticsOpenSettings: (permissionType) => ipcRenderer.invoke('diagnostics:open-settings', permissionType),
+
+  // System
+  openExternal: (url: string) => ipcRenderer.invoke('open:external', url),
 
   // Providers
   providersList: () => ipcRenderer.invoke('providers:list'),

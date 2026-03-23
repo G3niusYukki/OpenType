@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, clipboard, nativeImage, dialog, Notification } from 'electron';
+import { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, clipboard, nativeImage, dialog, Notification, shell } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { Store, ProviderConfig } from './store';
@@ -528,6 +528,7 @@ export class OpenTypeApp {
         checkForUpdates();
       }
     });
+    ipcMain.handle('open:external', (_, url: string) => shell.openExternal(url));
 
     // Settings
     ipcMain.handle('store:get', (_, key: string) => this.store.getAny(key));
