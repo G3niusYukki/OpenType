@@ -1,7 +1,7 @@
 import { useUpdate } from '../contexts/UpdateContext';
 
 export function UpdateModal() {
-  const { updateInfo, isDismissed } = useUpdate();
+  const { updateInfo, isDismissed, dismissUpdate } = useUpdate();
 
   // Use a getter so TypeScript cannot narrow `status` based on the `shouldShow` guard below.
   const getStatus = () => updateInfo?.status ?? 'idle';
@@ -61,7 +61,7 @@ export function UpdateModal() {
               {updateInfo!.releaseNotes || 'New version with improvements.'}
             </div>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button onClick={() => window.electronAPI.updateCheck()} style={{
+              <button onClick={dismissUpdate} style={{
                 padding: '10px 20px',
                 borderRadius: '8px',
                 border: '1px solid #333',
@@ -134,7 +134,7 @@ export function UpdateModal() {
               OpenType will restart to apply the update.
             </p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button onClick={() => window.electronAPI.updateCheck()} style={{
+              <button onClick={dismissUpdate} style={{
                 padding: '10px 20px',
                 borderRadius: '8px',
                 border: '1px solid #333',
@@ -168,7 +168,7 @@ export function UpdateModal() {
               {updateInfo!.error || 'Failed to check for updates.'}
             </p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button onClick={() => window.electronAPI.updateCheck()} style={{
+              <button onClick={dismissUpdate} style={{
                 padding: '10px 20px',
                 borderRadius: '8px',
                 border: '1px solid #333',
