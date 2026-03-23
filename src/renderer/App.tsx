@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MainLayout } from './components/MainLayout';
 import { UpdateModal } from './components/UpdateModal';
+import { OnboardingWizard } from './components/OnboardingWizard/OnboardingWizard';
 import { HomePage } from './pages/HomePage/HomePage';
 import { SettingsPage } from './pages/SettingsPage/SettingsPage';
 import { HistoryPage } from './pages/HistoryPage/HistoryPage';
@@ -13,6 +14,9 @@ type Page = 'home' | 'settings' | 'history' | 'dictionary' | 'diagnostics' | 'pr
 
 export function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
+  const [showOnboarding, setShowOnboarding] = useState(
+    localStorage.getItem('onboardingCompleted') !== 'true'
+  );
 
   useEffect(() => {
     // Listen for navigation from main process
@@ -45,9 +49,17 @@ export function App() {
 
   return (
     <UpdateProvider>
+    {showOnboarding && (
+      <OnboardingWizard onComplete={() => {
+        localStorage.setItem('onboardingCompleted', 'true');
+        setShowOnboarding(false);
+      }} />
+    )}
+    {!showOnboarding && (
     <MainLayout currentPage={currentPage} onNavigate={setCurrentPage}>
       {renderPage()}
     </MainLayout>
+    )}
     <UpdateModal />
     </UpdateProvider>
   );
