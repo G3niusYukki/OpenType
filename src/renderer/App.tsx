@@ -3,7 +3,7 @@ import { MainLayout } from './components/MainLayout';
 import { UpdateModal } from './components/UpdateModal';
 import { HomePage } from './pages/HomePage/HomePage';
 import { SettingsPage } from './pages/SettingsPage/SettingsPage';
-import { HistoryPage } from './pages/HistoryPage';
+import { HistoryPage } from './pages/HistoryPage/HistoryPage';
 import { DictionaryPage } from './pages/DictionaryPage';
 import { ProfilesPage } from './pages/ProfilesPage/ProfilesPage';
 import { DiagnosticsPage } from './pages/DiagnosticsPage';
