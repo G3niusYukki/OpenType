@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.5] - 2026-03-23
+
+### Added
+
+- **Design System**: Complete UI redesign with glass morphism (frosted glass) visual style, CSS Modules architecture, and comprehensive design tokens (`tokens.css`)
+- **UI Components**: New shared component library — Button, Card, Modal, Badge, Toggle, StatusRow, ConfirmDialog, Tooltip, Input, Select
+- **HomePage**: New split-panel layout (40% record control / 60% results), audio waveform animation, recording timer, provider dropdown (Auto/Local/Cloud), transcription history tab
+- **SettingsPage**: Refactored into 5-tab navigation — General, Transcription, AI, Voice Modes, Data
+- **OnboardingWizard**: New 4-step first-run wizard — Microphone permission, Accessibility permission, Provider selection, Ready screen
+- **HistoryPage**: Added audio playback with native audio controls
+- **ProfilesPage**: Modal-based profile editing instead of inline form
+
+### Fixed
+
+- **HomePage**: Fixed `handleImport` misnamed as export function → renamed to `handleExport`; fixed hardcoded hotkey in empty state; fixed provider constants recreating on every render
+- **UpdateModal**: "Later" button now correctly dismisses the update instead of re-checking
+- **DictionaryPage**: Fixed misnamed `handleImport` function that performed export logic
+- **Global CSS**: Added missing `animate-spin` keyframe (previously caused silent failures in SystemStatusPanel)
+
+### Changed
+
+- **MainLayout**: Refactored from inline styles to CSS Module; added icon + tooltip navigation
+- **Test suite**: Updated all tests for redesigned UI, added CSS module type declarations (`vite-env.d.ts`)
+
 ## [0.3.4] - 2026-03-19
 
 ### Fixed
