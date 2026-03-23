@@ -34,6 +34,9 @@ coverage/
 # Claude Code
 .claude/
 
+# Superpowers
+.superpowers/
+
 # OpenCode
 .opencode/
 
