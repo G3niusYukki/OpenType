@@ -1581,21 +1581,20 @@ git commit -m "refactor(ui): MainLayout to CSS Module + tooltip navigation"
 
 ---
 
-### Task 2.2: 修复 SystemStatusPanel animate-spin
+### Task 2.2: 验证 SystemStatusPanel animate-spin
 
-**Files:**
-- Modify: `src/renderer/components/SystemStatusPanel.tsx`（移除内联 animate-spin 定义，使用全局类）
+**状态**: 无需修改任何文件
 
-- [ ] **Step 1: 检查当前文件中是否有内联 spin 定义，如有则移除**
+`SystemStatusPanel.tsx` 第 37 行使用 `className="animate-spin"`。`animations.css`（Task 1.2）已定义全局 `.animate-spin` 样式，覆盖此用法。无需对 `SystemStatusPanel.tsx` 做任何修改。
 
-在 `SystemStatusPanel.tsx` 中搜索 `animate-spin` 相关内容 — 确认 `animations.css` 中的 `.animate-spin` 已经覆盖（已在 Task 1.2 中添加），此组件应已正常工作。
+- [ ] **Step 1: 验证 `SystemStatusPanel.tsx` 使用 `className="animate-spin"`**
 
-如果组件中使用 `className="animate-spin"` 但从未定义，CSS 已经存在于 `animations.css`，无需修改。
+确认该组件存在且使用了 `className="animate-spin"`，但无需修改。动画将由 `animations.css` 提供。
 
 - [ ] **Step 2: 提交**
 
 ```bash
-git commit -m "fix(ui): verify animate-spin global style coverage"
+git commit -m "fix(ui): animate-spin now provided by global animations.css"
 ```
 
 ---
@@ -1768,9 +1767,76 @@ git commit -m "fix(ui): verify animate-spin global style coverage"
   transition: all var(--transition-fast);
 }
 
-.tab.active {
+.activeTab {
   background: var(--color-primary-subtle);
   color: var(--color-accent);
+}
+
+.timer {
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.providerBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.providerBtn:hover {
+  border-color: var(--color-primary-border);
+  background: var(--color-primary-subtle);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  min-width: 180px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  overflow: hidden;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.dropdownItem {
+  display: block;
+  width: 100%;
+  padding: var(--space-2) var(--space-4);
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.dropdownItem:hover {
+  background: var(--color-primary-subtle);
+  color: var(--color-text-primary);
+}
+
+.dropdownActive {
+  color: var(--color-accent);
+  background: var(--color-primary-subtle);
 }
 
 .resultCard {
@@ -1874,20 +1940,207 @@ git commit -m "fix(ui): verify animate-spin global style coverage"
 
 - [ ] **Step 2: 重写 HomePage.tsx（分栏布局）**
 
-完全重写 `HomePage.tsx`，使用 CSS Module 类，移除所有 inline styles。主要结构：
-
 ```tsx
 // src/renderer/pages/HomePage/HomePage.tsx
-// 关键变更：
-// 1. 使用 CSS Module classes（styles.recordPanel / styles.resultPanel / styles.split）
-// 2. 左栏：provider dropdown + waveform + record button + hint
-// 3. 右栏：Tab [当前结果 | 最近历史] + 结果卡片
-// 4. AudioWaveform: 移除 Math.random()，使用固定高度数组
-// 5. RecordingTimer: 保留
-// 6. 所有 button/input 使用 styles.xxx className
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Mic, Square, Copy, Type, AlertCircle, CheckCircle, Activity, Sparkles, FileText, ChevronDown, Server, Cloud, Cpu } from 'lucide-react';
+import { SystemStatusPanel } from '../../components/SystemStatusPanel';
+import { Card, Badge, Button } from '../../components/ui';
+import styles from './HomePage.module.css';
+
+const WAVE_HEIGHTS = [12, 20, 32, 18, 26, 14]; // 固定高度数组，替代 Math.random()
+
+function AudioWaveform({ isRecording }: { isRecording: boolean }) {
+  return (
+    <div className={`${styles.waveform} ${isRecording ? styles.active : ''}`}>
+      {WAVE_HEIGHTS.map((h, i) => (
+        <div
+          key={i}
+          className={styles.waveBar}
+          style={{ animationDelay: `${i * 80}ms` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function RecordingTimer({ isRecording }: { isRecording: boolean }) {
+  const [seconds, setSeconds] = useState(0);
+  const ref = useRef<NodeJS.Timeout | null>(null);
+  useEffect(() => {
+    if (isRecording) {
+      setSeconds(0);
+      ref.current = setInterval(() => setSeconds(s => s + 1), 1000);
+    } else {
+      clearInterval(ref.current!);
+      setSeconds(0);
+    }
+    return () => clearInterval(ref.current!);
+  }, [isRecording]);
+  const fmt = (n: number) => `${Math.floor(n/60).toString().padStart(2,'0')}:${(n%60).toString().padStart(2,'0')}`;
+  if (!isRecording) return null;
+  return (
+    <div className={styles.timer}>
+      <span className="animate-pulse" style={{ color: 'var(--color-error)' }}>●</span>
+      <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-error)' }}>{fmt(seconds)}</span>
+      <Activity size={14} color="var(--color-error)" />
+    </div>
+  );
+}
+
+export function HomePage() {
+  const [isRecording, setIsRecording] = useState(false);
+  const [lastTranscription, setLastTranscription] = useState('');
+  const [lastResult, setLastResult] = useState<any>(null);
+  const [hotkey, setHotkey] = useState('⌘⇧D');
+  const [insertionStatus, setInsertionStatus] = useState<any>(null);
+  const [showRawText, setShowRawText] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(false);
+  const [preferredProvider, setPreferredProvider] = useState<'local' | 'cloud' | 'auto'>('auto');
+  const [showProviderDropdown, setShowProviderDropdown] = useState(false);
+  const [rightTab, setRightTab] = useState<'current' | 'history'>('current');
+  const [history, setHistory] = useState<any[]>([]);
+
+  useEffect(() => {
+    window.electronAPI.aiGetSettings().then(s => setAiEnabled(s.enabled));
+    window.electronAPI.storeGet('preferredProvider').then(p => p && setPreferredProvider(p));
+    window.electronAPI.storeGet('hotkey').then(k => k && setHotkey(formatHotkey(k)));
+    window.electronAPI.historyGet(5).then(h => setHistory(h));
+  }, []);
+
+  useEffect(() => {
+    const u1 = window.electronAPI.onRecordingStarted(() => { setIsRecording(true); setInsertionStatus(null); });
+    const u2 = window.electronAPI.onRecordingStopped(() => setIsRecording(false));
+    const u3 = window.electronAPI.onTranscriptionComplete(r => { setLastTranscription(r.text); setLastResult(r); if (r.fallbackToClipboard) setInsertionStatus({ method: 'clipboard' }); });
+    return () => { u1(); u2(); u3(); };
+  }, []);
+
+  const formatHotkey = (k: string) => k.replace('CommandOrControl+','⌘').replace('Control+','⌃').replace('Alt+','⌥').replace('Shift+','⇧').replace('Command','⌘');
+
+  const toggleRecording = useCallback(async () => {
+    if (isRecording) await window.electronAPI.recordingStop();
+    else { setLastResult(null); setInsertionStatus(null); await window.electronAPI.recordingStart(); }
+  }, [isRecording]);
+
+  const PROVIDER_ICONS = { auto: Server, local: Cpu, cloud: Cloud };
+  const PROVIDER_LABELS = { auto: 'Auto (Local first)', local: 'Local (whisper.cpp)', cloud: 'Cloud (API)' };
+  const ProviderIcon = PROVIDER_ICONS[preferredProvider];
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.header}>
+        <SystemStatusPanel />
+        <div style={{ position: 'relative' }}>
+          <button className={styles.providerBtn} onClick={() => setShowProviderDropdown(d => !d)}>
+            <ProviderIcon size={14} />
+            <span>{PROVIDER_LABELS[preferredProvider]}</span>
+            <ChevronDown size={14} />
+          </button>
+          {showProviderDropdown && (
+            <div className={styles.dropdown}>
+              {(['auto','local','cloud'] as const).map(id => {
+                const Icon = PROVIDER_ICONS[id];
+                return (
+                  <button key={id} className={`${styles.dropdownItem} ${preferredProvider===id?styles.dropdownActive:''}`}
+                    onClick={async () => { setPreferredProvider(id); await window.electronAPI.storeSet('preferredProvider',id); setShowProviderDropdown(false); }}>
+                    <Icon size={14} />
+                    <span>{PROVIDER_LABELS[id]}</span>
+                    {preferredProvider===id && <CheckCircle size={14} style={{marginLeft:'auto'}} />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className={styles.split}>
+        {/* 左栏：录音控制 */}
+        <div className={styles.recordPanel}>
+          <AudioWaveform isRecording={isRecording} />
+          <button className={`${styles.recordBtn} ${isRecording ? styles.recording : ''}`} onClick={toggleRecording}>
+            <div className={styles.recordBtnInner} />
+          </button>
+          <p className={`${styles.hint} ${isRecording ? styles.active : ''}`}>
+            {isRecording ? 'Recording...' : `Hold ${hotkey} to start`}
+          </p>
+          <RecordingTimer isRecording={isRecording} />
+        </div>
+
+        {/* 右栏：转写结果 */}
+        <div className={styles.resultPanel}>
+          <div className={styles.tabs}>
+            <button className={`${styles.tab} ${rightTab==='current'?styles.activeTab:''}`} onClick={()=>setRightTab('current')}>Current</button>
+            <button className={`${styles.tab} ${rightTab==='history'?styles.activeTab:''}`} onClick={()=>setRightTab('history')}>Recent ({history.length})</button>
+          </div>
+
+          {rightTab === 'current' && (
+            <>
+              {lastTranscription ? (
+                <Card glass padding="lg" className={styles.resultCard}>
+                  <div className={styles.resultMeta}>
+                    <Badge variant={lastResult?.success ? 'success' : 'error'}>
+                      {lastResult?.provider && `via ${lastResult.provider}`}
+                    </Badge>
+                    {lastResult?.aiProcessed && <Badge variant="info">+ AI polish</Badge>}
+                    {lastResult?.aiLatency && <span style={{fontSize:'var(--text-xs)',color:'var(--color-text-muted)'}}>{lastResult.aiLatency}ms</span>}
+                  </div>
+                  {lastResult?.aiProcessed && (
+                    <div className={styles.tabs} style={{marginBottom:'var(--space-3)'}}>
+                      <button className={`${styles.tab} ${!showRawText?styles.activeTab:''}`} onClick={()=>setShowRawText(false)}>Polished</button>
+                      <button className={`${styles.tab} ${showRawText?styles.activeTab:''}`} onClick={()=>setShowRawText(true)}>Original</button>
+                    </div>
+                  )}
+                  <p className={styles.resultText}>
+                    {showRawText && lastResult?.rawText ? lastResult.rawText : lastTranscription}
+                  </p>
+                  {insertionStatus?.method === 'clipboard' && (
+                    <div className={styles.fallbackWarning}>
+                      <AlertCircle size={14} />
+                      <span>Text copied to clipboard</span>
+                    </div>
+                  )}
+                  <div className={styles.resultActions}>
+                    <Button variant="secondary" icon={<Copy size={14} />} onClick={async () => { await navigator.clipboard.writeText(lastTranscription); setInsertionStatus({ method: 'clipboard' }); }}>
+                      {insertionStatus?.method === 'clipboard' ? 'Copied' : 'Copy'}
+                    </Button>
+                    <Button variant="primary" icon={<Type size={14} />} onClick={async () => { const r = await window.electronAPI.textInsert(lastTranscription); setInsertionStatus({ method: r.method }); }}>
+                      {insertionStatus?.method === 'paste' ? 'Inserted' : 'Insert at Cursor'}
+                    </Button>
+                  </div>
+                </Card>
+              ) : (
+                <div className={styles.emptyState}>No transcription yet. Hold ⌘⇧D to start.</div>
+              )}
+            </>
+          )}
+
+          {rightTab === 'history' && (
+            <div className={styles.historyList}>
+              {history.length === 0 ? (
+                <div className={styles.emptyState}>No history yet.</div>
+              ) : history.map((item: any) => (
+                <button key={item.id} className={styles.historyItem}
+                  onClick={() => { setLastTranscription(item.text); setLastResult(item); setRightTab('current'); }}>
+                  <div className={styles.historyText}>{item.text?.slice(0,80) || 'No text'}</div>
+                  <div className={styles.historyTime}>{new Date(item.timestamp).toLocaleString()}</div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 ```
 
-具体代码需要完整重写整个文件以使用 CSS Module。
+**关键实现细节**：
+- 波形动画用固定数组 `WAVE_HEIGHTS = [12, 20, 32, 18, 26, 14]`，通过 `animationDelay` 错开，无 `Math.random()`
+- `<style>` 内联标签全部移除
+- 分栏用 `grid-template-columns: 2fr 3fr`
+- 右栏 Tab 切换状态（`'current' | 'history'`）
+- `history` 数据通过 `window.electronAPI.historyGet(5)` 获取最近 5 条
 
 - [ ] **Step 3: 更新 App.tsx 的导入路径**
 
@@ -2039,31 +2292,133 @@ export function SettingsPage() {
 
 - [ ] **Step 2: 拆分 SettingsGeneral.tsx**
 
-将原 SettingsPage 中的 General 部分（Hotkey、语言、Auto Punctuation、Preferred Provider）提取到此文件。每部分用 `<Card>` 包装，使用共享 UI 组件。
+将原 SettingsPage 第 542-773 行的 General section 提取为此文件（约 230 行 JSX）：
+
+- Hotkey 输入框（`<input type="text">`）
+- Transcription Language Select（9 种语言选项）
+- Auto Punctuation Toggle
+- Preferred Provider Select（Local/Cloud/Auto）
+- Enable Provider Fallback Toggle
+
+每个子部分用 `<Card glass padding="md">` 包装，使用共享组件：`Input`、`Select`、`Toggle`、`Button`。不需要从容器传入 state——本组件内部 `useState` + `useEffect` 加载，保存时直接调 `window.electronAPI`。
 
 ```tsx
 // SettingsGeneral.tsx
-// 包含: Hotkey 设置 / 语言选择 / Auto Punctuation / Preferred Provider / Fallback 设置
-// 使用: Input, Select, Toggle, Card, Button 共享组件
+import { Card, Input, Select, Toggle } from '../../components/ui';
+
+export function SettingsGeneral() {
+  const [hotkey, setHotkey] = useState('CommandOrControl+Shift+D');
+  const [language, setLanguage] = useState('en-US');
+  const [autoPunctuation, setAutoPunctuation] = useState(true);
+  const [preferredProvider, setPreferredProvider] = useState<'local' | 'cloud' | 'auto'>('auto');
+  const [fallbackEnabled, setFallbackEnabled] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      window.electronAPI.storeGet('hotkey'),
+      window.electronAPI.storeGet('language'),
+      window.electronAPI.storeGet('autoPunctuation'),
+      window.electronAPI.storeGet('preferredProvider'),
+      window.electronAPI.storeGet('fallbackSettings'),
+    ]).then(([h, l, p, pp, fb]) => {
+      if (h) setHotkey(h);
+      if (l) setLanguage(l);
+      if (p !== undefined) setAutoPunctuation(p);
+      if (pp) setPreferredProvider(pp);
+      if (fb) setFallbackEnabled(fb?.enabled ?? true);
+    });
+  }, []);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <Card glass padding="lg">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+          <Input label="Hotkey" value={hotkey} onChange={e => { setHotkey(e.target.value); window.electronAPI.storeSet('hotkey', e.target.value); }} />
+          <Select label="Language" value={language}
+            options={[{value:'en-US',label:'English (US)'},{value:'zh-CN',label:'中文 (简体)'},...]}
+            onChange={e => { setLanguage(e.target.value); window.electronAPI.storeSet('language', e.target.value); }} />
+          <Toggle label="Auto Punctuation" description="Automatically add punctuation to transcription" checked={autoPunctuation} onChange={v => { setAutoPunctuation(v); window.electronAPI.storeSet('autoPunctuation', v); }} />
+          <Select label="Preferred Provider" value={preferredProvider}
+            options={[{value:'auto',label:'Auto (Local first)'},{value:'local',label:'Local (whisper.cpp)'},{value:'cloud',label:'Cloud (API)'}]}
+            onChange={e => { setPreferredProvider(e.target.value as any); window.electronAPI.storeSet('preferredProvider', e.target.value); }} />
+          <Toggle label="Enable Provider Fallback" description="Automatically try alternative providers if primary fails" checked={fallbackEnabled} onChange={async v => { setFallbackEnabled(v); const fb = await window.electronAPI.storeGet('fallbackSettings'); window.electronAPI.storeSet('fallbackSettings', {...fb, enabled: v}); }} />
+        </div>
+      </Card>
+    </div>
+  );
+}
 ```
+
+**注意**：`AudioDeviceSelector` 组件从 General section 删除（已重复），确保仅保留一个麦克风设备选择入口。
 
 - [ ] **Step 3: 拆分 SettingsTranscription.tsx**
 
-将原 SettingsPage 中的 Transcription Providers + Post-Processing Providers 部分提取到此文件。
+将原 SettingsPage 第 775-1260 行的 Transcription/Provider section 提取为此文件（约 485 行 JSX）。
+
+**分割点识别**（在原文件中）：
+- 第 775-850 行：Transcription Providers section header + description
+- 第 851-1028 行：transcriptionProviders.map 循环（每个 Provider 卡片含 enable toggle、API key input、model select、base URL、test button）
+- 第 1030-1260 行：Post-Processing Providers section + postProcessingProviders.map 循环
+- 第 910-916 行：`AliyunCredentialInputs` 组件（保留在本文件或提取为 `AliyunCredentials.tsx`）
+
+```tsx
+// SettingsTranscription.tsx
+interface SettingsTranscriptionProps {
+  // 可选：作为容器统一加载后传入；或本组件自行加载
+}
+export function SettingsTranscription() {
+  const [transcriptionProviders, setTranscriptionProviders] = useState<Provider[]>([]);
+  const [postProcessingProviders, setPostProcessingProviders] = useState<Provider[]>([]);
+  const [providerConfigs, setProviderConfigs] = useState<Record<string, ProviderConfig>>({});
+  // ... loadProviders() / testProvider() / updateConfig() 逻辑保留
+  // 使用 <Card glass> + <Button> + <Input type="password"> + <Select> + <Badge>
+}
+```
 
 - [ ] **Step 4: 拆分 SettingsAI.tsx**
 
-将原 SettingsPage 中的 AI Post-Processing 部分提取到此文件。
+将原 SettingsPage 第 1261-1463 行的 AI Post-Processing section 提取为此文件（约 200 行 JSX）：
+
+```tsx
+// SettingsAI.tsx
+export function SettingsAI() {
+  const [aiSettings, setAiSettings] = useState({ enabled: false, options: {...}, showComparison: true });
+  const [aiAvailable, setAiAvailable] = useState(false);
+  useEffect(() => { window.electronAPI.aiGetSettings().then(s => { setAiSettings(s); checkAiAvailability(s); }); }, []);
+  const update = (u: any) => { setAiSettings((s: any) => ({...s, ...u})); window.electronAPI.aiSetSettings(u); };
+  return (
+    <Card glass padding="lg">
+      <Toggle label="Enable AI Post-Processing" checked={aiSettings.enabled} onChange={v => update({ enabled: v })} />
+      {aiSettings.enabled && (
+        <div style={{ marginTop: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+          <Toggle label="Remove Filler Words" checked={aiSettings.options.removeFillerWords} onChange={v => update({ options: {...aiSettings.options, removeFillerWords: v } })} />
+          <Toggle label="Remove Repetition" checked={aiSettings.options.removeRepetition} onChange={v => update({ options: {...aiSettings.options, removeRepetition: v } })} />
+          <Toggle label="Detect Self-Correction" checked={aiSettings.options.detectSelfCorrection} onChange={v => update({ options: {...aiSettings.options, detectSelfCorrection: v } })} />
+          <Toggle label="Restore Punctuation" checked={aiSettings.options.restorePunctuation ?? true} onChange={v => update({ options: {...aiSettings.options, restorePunctuation: v } })} />
+          <Toggle label="Show Comparison" checked={aiSettings.showComparison} onChange={v => update({ showComparison: v })} />
+          <Badge variant={aiAvailable ? 'success' : 'error'}>
+            {aiAvailable ? 'AI Provider Configured' : 'No AI Provider — configure in Transcription tab'}
+          </Badge>
+        </div>
+      )}
+    </Card>
+  );
+}
+```
 
 - [ ] **Step 5: 拆分 SettingsVoiceModes.tsx**
 
-将原 SettingsPage 中的 Voice Input Modes 部分提取到此文件。
+将原 SettingsPage 第 1465-1694 行的 Voice Input Modes section 提取为此文件（约 230 行 JSX）：
+- Basic Voice Input Toggle
+- Hands-Free Mode Toggle
+- Translate to English Toggle + Language Pair Select
+- Edit Selected Text Toggle
 
 - [ ] **Step 6: 拆分 SettingsData.tsx**
 
-将原 SettingsPage 中的 Local Models + Data Management（UpdateSettings / StatCard / ExportRow / CleanupRow / ConfirmDialog）提取到此文件。
+将原 SettingsPage 第 1695-2560 行的 Local Models + Data Management section 提取为此文件（约 865 行 JSX）。
 
-**关键**: 删除重复的麦克风设备选择器（原生 `<select>` + `<AudioDeviceSelector>`），仅保留 `<AudioDeviceSelector>` 组件。
+**状态共享策略（推荐方案 A）**：每个 Tab 组件内部 `useState` + `useEffect` 自行加载，保存时直接调 `window.electronAPI`。这样各 Tab 完全独立，无需跨组件状态传递。SettingsPage 容器仅负责 Tab 切换，不持有业务 state。
 
 - [ ] **Step 7: 更新 App.tsx**
 
@@ -2107,9 +2462,101 @@ git commit -m "refactor(ui): SettingsPage split into 5 tab components"
 
 使用 `<Modal>` + `<Card>` + `<Input>` + `<Select>` + `<Toggle>` + `<Button>` 共享组件。
 
-- [ ] **Step 2: 重构 ProfilesPage.tsx**
+- [ ] **Step 2: 创建 ProfilesPage.module.css**
 
-移除 Edit 按钮的空操作，点击 Edit 打开 `<ProfileEditModal>`。使用 CSS Module。
+```css
+/* src/renderer/pages/ProfilesPage/ProfilesPage.module.css */
+
+.page {
+  flex: 1;
+  overflow: 'auto';
+  padding: var(--space-8);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.profileGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.profileCard {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  transition: all var(--transition-fast);
+}
+
+.profileCard:hover {
+  border-color: var(--color-primary-border);
+  box-shadow: var(--shadow-glow-primary);
+}
+
+.profileName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.profileMeta {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+
+.profileActions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* ProfileEditModal form layout */
+.formGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 480px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}
+```
+
+同时更新 `ProfilesPage.tsx` 使用 CSS Module，替换所有 `style={{ ... }}` 内联样式为对应的 className。点击 Edit 按钮改为 `setEditingProfile(profile)`，渲染 `<ProfileEditModal profile={editingProfile} onClose={() => setEditingProfile(null)} />`。
 
 - [ ] **Step 3: 提交**
 
@@ -2127,28 +2574,37 @@ git commit -m "feat(ui): ProfilesPage edit via Modal + CSS Module"
 
 - [ ] **Step 1: 修复 handleImport 函数 Bug**
 
-```tsx
-// 修复前（第 73 行）
-const result = await window.electronAPI.dictionaryExport(format);
+**Bug 分析**: `handleImport` 函数（line 72-81）执行的是导出操作（创建并下载文件），却调用了 `dictionaryExport` API，函数名也错误地叫 `handleImport`，与真正执行文件导入的 `handleFileImport` 混淆。
 
-// 修复后 — handleImport 不存在，export 功能由 handleFileImport 处理
-// 检查后确认：真正的问题是该函数调用了 export 而非 import
-// handleImport 应实现为"导出"功能，函数命名应改为 handleExport
-// 而 handleFileImport 才处理真正的"导入"
-```
-
-**修复策略**: 将 `handleImport` 重命名为 `handleExport`，避免与 `handleFileImport` 混淆。
+**修复策略**: 将 `handleImport` 重命名为 `handleExport`，函数逻辑（调用 `dictionaryExport` 创建下载）保留不变。
 
 ```tsx
-// 修改函数名并添加导出逻辑
-const handleExport = async (format: 'json' | 'csv') => {
-  // 调用 export API
+// 修复前（第 72-81 行）— 函数名错误，执行的是导出但叫 handleImport
+const handleImport = async (format: 'json' | 'csv') => {
   const result = await window.electronAPI.dictionaryExport(format);
-  // 创建下载...
+  const blob = new Blob([result], { type: format === 'json' ? 'application/json' : 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `dictionary.${format}`;
+  a.click();
+  URL.revokeObjectURL(url);
 };
 
-// 页面中 export dropdown 调用 handleExport(format)
+// 修复后 — 重命名为 handleExport，与实际导出行为一致
+const handleExport = async (format: 'json' | 'csv') => {
+  const result = await window.electronAPI.dictionaryExport(format);
+  const blob = new Blob([result], { type: format === 'json' ? 'application/json' : 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `dictionary.${format}`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
 ```
+
+同时将导出下拉菜单的按钮 onClick 调用从 `handleImport(format)` 改为 `handleExport(format)`。
 
 - [ ] **Step 2: 同时使用 CSS Module 重构样式**
 
@@ -2367,22 +2823,29 @@ git commit -m "feat(ui): add 4-step onboarding wizard"
 
 - [ ] **Step 1: 修复 Later 按钮逻辑**
 
+**Bug 分析**: `UpdateModal` 使用 `useUpdate()` hook，已包含 `dismissUpdate()` 函数将 `isDismissed` 设为 true 并存入 localStorage，无需新增 IPC。
+
+**修复策略**: 从 `useUpdate()` 解构 `dismissUpdate`，替换 "Later" 按钮的 `updateCheck()` 调用。
+
 ```tsx
-// 修复前：
-<button onClick={() => window.electronAPI.updateCheck()}>Later</button>
+// 修复前（第 1-5 行）：
+import { useUpdate } from '../contexts/UpdateContext';
+
+export function UpdateModal() {
+  const { updateInfo, isDismissed } = useUpdate();
 
 // 修复后：
-<button onClick={() => window.electronAPI.updateDismiss()}>Later</button>
+export function UpdateModal() {
+  const { updateInfo, isDismissed, dismissUpdate } = useUpdate();
+
+// 修复前（第 64 行）：
+<button onClick={() => window.electronAPI.updateCheck()}>Later</button>
+
+// 修复后（所有 Later 按钮）：
+<button onClick={dismissUpdate}>Later</button>
 ```
 
-如果 `updateDismiss` IPC 方法不存在，则需要在 main process 中添加：
-```ts
-// src/main/main.ts
-ipcMain.handle('update-dismiss', () => {
-  // 设置标志，下次不在自动弹出
-  // 或仅隐藏当前 Modal，让状态保持不变
-});
-```
+注意：UpdateModal 中有三处 "Later" 按钮（第 64、137、171 行），全部改为 `onClick={dismissUpdate}`。
 
 - [ ] **Step 2: 提交**
 

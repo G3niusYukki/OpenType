@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, BookOpen, Upload, Download, Tag } from 'lucide-react';
-import styles from './DictionaryPage.module.css';
+import styles from './DictionaryPage/DictionaryPage.module.css';
 
 interface DictionaryEntry {
   word: string;
