@@ -1,0 +1,60 @@
+.page {
+  flex: 1;
+  overflow: auto;
+  padding: var(--space-8);
+}
+
+.header {
+  margin-bottom: var(--space-6);
+}
+
+.title {
+  font-size: var(--text-4xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin-bottom: var(--space-6);
+}
+
+.tab {
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--text-md);
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all var(--transition-fast);
+}
+
+.tab:hover {
+  color: var(--color-text-secondary);
+}
+
+.tab.active {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-primary);
+}
+
+.content {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
