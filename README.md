@@ -63,13 +63,22 @@ OpenType provides four distinct ways to interact with voice input:
 - **Moonshot (Kimi)** - Moonshot-v1
 - **Groq** - Llama 3.1, Mixtral
 
+### 🎨 Glass Morphism UI
+
+A redesigned interface with a modern frosted-glass aesthetic:
+
+- **Split-panel HomePage** — Left panel for recording controls, right panel for live transcription results and history
+- **5-tab Settings** — General, Transcription, AI, Voice Modes, Data — organized by function
+- **4-step Onboarding Wizard** — First-launch setup for microphone, accessibility permissions, and provider selection
+- **Dark glass theme** — Consistent design tokens, CSS Modules architecture, and smooth animations throughout
+
 ### ⚡ Smart System Integration
 
 - **Global Hotkeys** - Works from any app
 - **Smart Text Insertion** - Pastes at cursor using native AppleScript
 - **Menu Bar Tray** - Always accessible from the menu bar
 - **Clipboard Fallback** - If paste fails, text is copied to clipboard
-- **Transcription History** - Browse and manage past recordings
+- **Transcription History** - Browse, playback, and manage past recordings
 
 ### 🛡️ Privacy-First Design
 
@@ -81,14 +90,13 @@ OpenType provides four distinct ways to interact with voice input:
 
 ## 📸 Screenshots
 
-> 🖼️ Screenshots coming soon! 
->
-> *Main transcription interface with before/after comparison*
->
-> *Provider configuration and voice input mode settings*
+The interface uses a frosted-glass design with dark theme throughout:
+
+- **HomePage** — Split-panel layout with a recording control area on the left and transcription results on the right. Audio waveform animation during recording, provider dropdown (Auto/Local/Cloud), and transcription history tab.
+- **Settings** — Tabbed navigation: General (hotkey, language, provider), Transcription (provider configuration with API key input and connection testing), AI (post-processing options), Voice Modes (4 input mode toggles), Data (model management, storage stats, import/export).
+- **Onboarding** — 4-step wizard on first launch: Microphone permission, Accessibility permission, Provider selection (visual cards), Ready screen.
 
 ---
-
 
 ### 🔧 System Diagnostics
 
@@ -111,12 +119,7 @@ Enhanced security for your API keys:
 - **Automatic Migration** - Seamlessly migrates existing keys from plaintext to secure storage
 - **Keychain Indicator** - Visual confirmation when keys are stored securely
 
-### 👤 Per-App Dictation Profiles *(Coming Soon)*
-
-Configure different settings for different applications:
-- **App Detection** - Automatically detects foreground application
-- **Profile Assignment** - Link profiles to specific apps (e.g., Slack, VS Code, Safari)
-- **Custom Settings per App** - Different languages, providers, and AI processing per app
+---
 
 ## 🚀 Installation
 
@@ -171,12 +174,12 @@ npm run dist:mac
 
 ### First Launch
 
-1. **Launch OpenType** - It will appear in your menu bar
-2. **Grant Permissions** - You'll be prompted for:
-   - **Microphone** - Required for recording
-   - **Accessibility** - Required for global hotkeys and text insertion
-   - **Automation** - Required for AppleScript text insertion
-3. **Configure Provider** - Open Settings and add your API key or set up local transcription
+On first launch, the **Onboarding Wizard** guides you through setup:
+
+1. **Microphone Permission** — Opens System Settings for you to grant microphone access
+2. **Accessibility Permission** — Opens System Settings for accessibility access (required for global hotkeys and text insertion)
+3. **Provider Selection** — Choose between Auto (local first, cloud fallback), Local (whisper.cpp, free & offline), or Cloud (API)
+4. **Ready** — You're all set. Press `Cmd+Shift+D` anywhere to start dictating.
 
 ### Voice Input Modes
 
@@ -216,7 +219,7 @@ npm run dist:mac
 
 Add custom word replacements for technical terms:
 
-1. Open Settings → Dictionary
+1. Open Settings → **Data** tab → Dictionary section
 2. Add entries like:
    - `ASR` → `Automatic Speech Recognition`
    - `whisper` → `Whisper (OpenAI's speech model)`
@@ -225,23 +228,17 @@ Add custom word replacements for technical terms:
 
 ## ⚙️ Configuration
 
-### Voice Input Mode Toggles
+### Settings Pages
 
-Enable or disable individual voice input modes in Settings:
+Settings are organized into 5 tabs:
 
-- **Basic Voice Input** - On/Off
-- **Hands-Free Mode** - On/Off
-- **Translate to English** - On/Off
-- **Edit Selected Text** - On/Off
-
-### AI Post-Processing Options
-
-Configure text enhancement:
-
-- **Remove Filler Words** - Remove "um", "uh", etc.
-- **Remove Repetition** - Remove repeated words
-- **Detect Self-Correction** - Apply speaker corrections
-- **Show Comparison** - Display before/after in results
+| Tab | Contents |
+|-----|----------|
+| **General** | Global hotkey, transcription language, auto-punctuation, preferred provider, audio device selector, system status |
+| **Transcription** | Transcription provider list, API key configuration, model selection, connection testing |
+| **AI** | AI post-processing toggle, filler word removal, repetition removal, self-correction detection, before/after comparison |
+| **Voice Modes** | Toggle each of the 4 voice input modes on/off, translation pair selection |
+| **Data** | Local model management, storage stats, dictionary (import/export/manage entries), history export/cleanup |
 
 ### Provider Configuration
 
@@ -249,19 +246,19 @@ Configure text enhancement:
 
 1. Install whisper.cpp: `brew install whisper.cpp`
 2. Download a model (see Installation)
-3. Select "Local" in transcription provider settings
+3. Select "Local" in Settings → General → Preferred Provider
 
 #### OpenAI Cloud (Pay-per-use)
 
 1. Get API key from [OpenAI](https://platform.openai.com/api-keys)
-2. Add key in Settings → Transcription Providers → OpenAI
-3. Select "OpenAI" in preferred provider
+2. Add key in Settings → **Transcription** tab → OpenAI provider
+3. Select "Cloud" in Settings → General → Preferred Provider
 
 #### AI Post-Processing
 
-1. Configure any supported AI provider (DeepSeek, OpenAI, etc.)
-2. Enable "AI Post-Processing" in settings
-3. Select processing options
+1. Configure any supported AI provider in Settings → **Transcription** tab
+2. Enable "AI Post-Processing" in Settings → **AI** tab
+3. Select processing options (filler words, repetition, etc.)
 
 ---
 
@@ -281,15 +278,45 @@ OpenType/
 │   ├── preload/                 # Electron preload
 │   │   └── preload.ts           # Secure IPC bridge
 │   └── renderer/                # React frontend
-│       ├── pages/
-│       │   ├── HomePage.tsx
-│       │   ├── SettingsPage.tsx
-│       │   ├── HistoryPage.tsx
-│       │   └── DictionaryPage.tsx
-│       └── components/
+│       ├── pages/               # Route-level pages
+│       │   ├── HomePage/       # Split-panel: recording + results
+│       │   ├── SettingsPage/   # 5-tab: General/Transcription/AI/Voice/Data
+│       │   ├── ProfilesPage/    # Profile management
+│       │   ├── HistoryPage/    # Recording history + playback
+│       │   ├── DictionaryPage/  # Custom dictionary
+│       │   └── DiagnosticsPage/ # System diagnostics
+│       ├── components/
+│       │   ├── ui/             # Shared UI component library
+│       │   │   ├── Button/
+│       │   │   ├── Card/
+│       │   │   ├── Modal/
+│       │   │   ├── Badge/
+│       │   │   ├── Toggle/
+│       │   │   ├── Input/
+│       │   │   ├── Select/
+│       │   │   ├── StatusRow/
+│       │   │   ├── ConfirmDialog/
+│       │   │   └── Tooltip/
+│       │   ├── MainLayout.tsx   # App shell with icon nav + tooltips
+│       │   ├── OnboardingWizard/  # First-launch setup wizard
+│       │   ├── SystemStatusPanel/  # Status display
+│       │   └── UpdateModal.tsx  # Auto-update prompt
+│       └── styles/
+│           ├── tokens.css       # Design tokens (CSS variables)
+│           ├── global.css       # Reset, scrollbar, base styles
+│           └── animations.css   # Global keyframe animations
 ├── resources/                   # Icons, entitlements
-└── dist/                        # Build output
+└── dist/                       # Build output
 ```
+
+### Design System
+
+The renderer uses a **CSS Modules** architecture with a centralized design token system:
+
+- **tokens.css** — All CSS custom properties (colors, spacing, radius, shadow, typography, glass effects)
+- **global.css** — Base reset, scrollbar styling, focus-visible, body/html
+- **animations.css** — Reusable keyframes (spin, pulse, fadeIn, slideUp, scaleIn)
+- **CSS Modules** — Each component has its own `.module.css` file with scoped class names
 
 ### Data Flow
 
@@ -333,6 +360,7 @@ OpenType/
 - **Vite** - Build tool
 - **Zustand** - State management
 - **Lucide React** - Icons
+- **CSS Modules** - Scoped component styles
 - **electron-store** - Persistence
 
 ### Scripts
@@ -348,7 +376,7 @@ npm run dev:preload      # Watch preload script
 npm run build            # Build all
 npm run build:main       # Build main process
 npm run build:preload    # Build preload script
-npm run build:renderer   # Build renderer
+npm run build:renderer    # Build renderer
 
 # Distribution
 npm run dist             # Build distributables
@@ -358,6 +386,7 @@ npm run dist:mac         # Build for macOS
 npm run kill             # Kill running instance
 npm run restart          # Kill, build, restart
 npm run typecheck        # Type check all
+npm run test             # Run test suite
 ```
 
 ### Project Structure
@@ -367,9 +396,11 @@ src/
 ├── main/              # Electron main process (Node.js)
 ├── preload/           # Preload script (secure bridge)
 └── renderer/          # React frontend (Chromium)
-    ├── pages/         # Route-level pages
+    ├── pages/         # Route-level pages (each in subdirectory)
     ├── components/    # Reusable components
-    └── i18n/          # Internationalization
+    │   ├── ui/        # Shared UI library (Button, Card, Modal...)
+    │   └── OnboardingWizard/  # First-launch wizard
+    └── styles/        # Global CSS: tokens, global, animations
 ```
 
 ---
@@ -379,7 +410,7 @@ src/
 ### Data Handling
 
 - **Voice Data**: Only stored locally during processing, deleted after transcription
-- **API Keys**: Stored in macOS Keychain via electron-store
+- **API Keys**: Stored in macOS Keychain via electron.safeStorage
 - **Transcription History**: Stored locally in `~/Library/Application Support/OpenType/`
 - **No Telemetry**: No usage data sent to developers
 
@@ -424,7 +455,7 @@ curl -L -o "~/Library/Application Support/OpenType/models/ggml-base.bin" \
 
 Either:
 1. Install whisper.cpp + model (see above), OR
-2. Add OpenAI/Groq API key in Settings
+2. Add OpenAI/Groq API key in Settings → **Transcription** tab
 
 ### Text doesn't paste
 
@@ -515,7 +546,20 @@ OpenType follows a versioned release strategy. Below is our planned roadmap from
 
 **Success criteria:** ✅ High-frequency text editing scenarios can be completed via voice; translation mode becomes a standalone usable feature; dictionary and model management no longer require manual operations
 
-### ⚡ v0.4 Performance and Streaming
+### ✅ v0.4 UI & Polish (Completed)
+
+**Goal**: Modernize the interface with a cohesive design system and improved user experience.
+
+- [x] 🎨 **Glass Morphism UI** - Frosted-glass design with CSS Modules and design tokens
+- [x] 📦 **Shared Component Library** - Button, Card, Modal, Badge, Toggle, Input, Select, StatusRow, ConfirmDialog, Tooltip
+- [x] 🔀 **5-Tab Settings** - Refactored Settings into General, Transcription, AI, Voice Modes, Data
+- [x] 🏠 **Split-Panel HomePage** - Recording controls on left, results on right
+- [x] 🪄 **Onboarding Wizard** - 4-step first-launch setup flow
+- [x] 📋 **History Playback** - Native audio controls in History page
+
+**Success criteria:** ✅ Consistent visual language across all pages; faster onboarding for new users; improved discoverability of features
+
+### ⚡ v0.5 Performance and Streaming
 
 **Goal**: Improve real-time performance and long-running experience.
 
@@ -525,7 +569,7 @@ OpenType follows a versioned release strategy. Below is our planned roadmap from
 
 **Success criteria:** Significantly reduced wait time from recording end to text appearance; more stable long-running application residency; faster first launch and invocation
 
-### 🌐 v0.5 Platform and Extensibility
+### 🌐 v0.6 Platform and Extensibility
 
 **Goal**: Evaluate and expand product boundaries.
 

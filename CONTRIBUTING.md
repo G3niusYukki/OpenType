@@ -89,10 +89,30 @@ src/
 │   └── providers.ts          # Provider management
 ├── preload/           # Preload script
 └── renderer/          # React frontend
-    ├── pages/         # Route pages
-    ├── components/    # UI components
-    └── i18n/          # Translations
+    ├── pages/         # Route pages (each in subdirectory with .tsx + .module.css)
+    │   ├── HomePage/
+    │   ├── SettingsPage/    # 5-tab container
+    │   ├── ProfilesPage/
+    │   ├── HistoryPage/
+    │   └── DictionaryPage/
+    ├── components/
+    │   ├── ui/          # Shared UI library (Button, Card, Modal...)
+    │   ├── MainLayout.tsx   # App shell with nav
+    │   └── OnboardingWizard/  # First-launch wizard
+    └── styles/          # Global CSS
+        ├── tokens.css       # Design tokens (CSS custom properties)
+        ├── global.css      # Reset, scrollbar, base styles
+        └── animations.css  # Keyframe animations
 ```
+
+### CSS Modules
+
+The renderer uses **CSS Modules** for scoped component styling. Each component has its own `.module.css` file.
+
+- **Design tokens** (`tokens.css`) — All CSS custom properties defined in `:root`
+- **Class naming** — Use `.camelCase` in CSS, `styles.camelCase` in JSX
+- **Global animations** — Keyframes in `animations.css`, used as `className="animate-fade-in"`
+- **Glass effects** — Use `var(--glass-bg)`, `var(--glass-border)`, `var(--glass-blur)`
 
 ### Coding Standards
 
@@ -196,11 +216,22 @@ try {
 
 ### Testing
 
-Currently, the project doesn't have automated tests. We welcome contributions to add:
+The project uses **Vitest** for unit testing. All tests are located in `tests/unit/`.
 
-- Unit tests for core logic
-- Integration tests for transcription flow
-- E2E tests with Playwright
+```bash
+# Run all tests
+npm run test
+
+# Run specific test file
+npm run test -- tests/unit/HomePage.test.tsx
+```
+
+**Test patterns:**
+- Renderer tests mock `window.electronAPI` via `tests/unit/mocks/electronAPI.ts`
+- Tests use `@testing-library/react` for component rendering
+- Use `vi.useFakeTimers()` for time-dependent logic (debounces, timeouts)
+
+Always run `npm run test` before submitting a PR. All existing tests must pass.
 
 ### Commit Messages
 
@@ -249,14 +280,14 @@ Update documentation for any changes:
 ### High Priority
 
 - [ ] **Chinese ASR Providers** - Implement 阿里云, 腾讯云, 百度, 科大讯飞
-- [ ] **Unit Tests** - Add comprehensive test coverage
+- [x] **Unit Tests** - Core test suite in place (365 tests); expand coverage for main process and edge cases
 - [ ] **Documentation** - Improve inline documentation
 
 ### Medium Priority
 
 - [ ] **New Voice Input Modes** - Suggest and implement new modes
 - [ ] **Performance Optimization** - Reduce memory usage, improve latency
-- [ ] **UI/UX Improvements** - Better visual feedback, animations
+- [x] **UI/UX Improvements** - Glass morphism UI, CSS Modules, 5-tab Settings, Onboarding Wizard (done in v0.4)
 - [ ] **Internationalization** - Add more languages
 
 ### Good First Issues
@@ -272,6 +303,7 @@ Before submitting a PR, ensure:
 
 - [ ] Code follows style guidelines
 - [ ] TypeScript compiles without errors (`npm run typecheck`)
+- [ ] All tests pass (`npm run test`)
 - [ ] Build succeeds (`npm run build`)
 - [ ] No `console.log` statements (use proper logging)
 - [ ] Error handling is robust
