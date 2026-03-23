@@ -3,6 +3,7 @@ export { Card } from './Card/Card';
 export { Modal } from './Modal/Modal';
 export { Toggle } from './Toggle/Toggle';
 export { Input } from './Input/Input';
+export { Select } from './Select/Select';
 export { Badge } from './Badge/Badge';
 export { StatusRow } from './StatusRow/StatusRow';
 export { ConfirmDialog } from './ConfirmDialog/ConfirmDialog';

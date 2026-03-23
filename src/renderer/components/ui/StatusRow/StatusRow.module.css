@@ -1,0 +1,31 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.label {
+  font-weight: 500;
+}
+
+.detail {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin-left: auto;
+}
+
+/* Status colors */
+.ready .label { color: var(--color-success); }
+.missing .label { color: var(--color-error); }
+.optional .label { color: var(--color-warning); }
+.loading .label { color: var(--color-text-muted); }
