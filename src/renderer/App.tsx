@@ -5,7 +5,7 @@ import { HomePage } from './pages/HomePage/HomePage';
 import { SettingsPage } from './pages/SettingsPage/SettingsPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { DictionaryPage } from './pages/DictionaryPage';
-import { ProfilesPage } from './pages/ProfilesPage';
+import { ProfilesPage } from './pages/ProfilesPage/ProfilesPage';
 import { DiagnosticsPage } from './pages/DiagnosticsPage';
 import { UpdateProvider } from './contexts/UpdateContext';
 
