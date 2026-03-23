@@ -1,0 +1,115 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Sizes */
+.sm {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+  height: 28px;
+}
+
+.md {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-md);
+  height: 36px;
+}
+
+.lg {
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--text-lg);
+  height: 44px;
+}
+
+/* Variants */
+.primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  box-shadow: var(--shadow-glow-primary);
+}
+
+.secondary {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border-default);
+  color: var(--color-text-secondary);
+}
+
+.secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-strong);
+}
+
+.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--color-text-muted);
+}
+
+.ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-secondary);
+}
+
+.danger {
+  background: var(--color-error-subtle);
+  border-color: var(--color-error-border);
+  color: var(--color-error);
+}
+
+.danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: var(--color-error);
+}
+
+.success {
+  background: var(--color-success-subtle);
+  border-color: var(--color-success-border);
+  color: var(--color-success);
+}
+
+.success:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: var(--color-success);
+}
+
+/* Loading */
+.loading {
+  cursor: wait;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
