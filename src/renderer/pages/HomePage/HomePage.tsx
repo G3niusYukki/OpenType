@@ -1,11 +1,17 @@
 // src/renderer/pages/HomePage/HomePage.tsx
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Mic, Square, Copy, Type, AlertCircle, CheckCircle, Activity, Server, Cloud, Cpu, ChevronDown } from 'lucide-react';
+import { Copy, Type, AlertCircle, CheckCircle, Activity, Server, Cloud, Cpu, ChevronDown } from 'lucide-react';
 import { SystemStatusPanel } from '../../components/SystemStatusPanel';
 import { Card, Badge, Button } from '../../components/ui';
 import styles from './HomePage.module.css';
 
 const WAVE_HEIGHTS = [12, 20, 32, 18, 26, 14]; // Fixed heights — replaces Math.random()
+
+const PROVIDER_ICONS: Record<string, typeof Server> = { auto: Server, local: Cpu, cloud: Cloud };
+const PROVIDER_LABELS: Record<string, string> = { auto: 'Auto (Local first)', local: 'Local (whisper.cpp)', cloud: 'Cloud (API)' };
+
+const formatHotkey = (k: string) =>
+  k.replace('CommandOrControl+', '⌘').replace('Control+', '⌃').replace('Alt+', '⌥').replace('Shift+', '⇧').replace('Command', '⌘');
 
 function AudioWaveform({ isRecording }: { isRecording: boolean }) {
   return (
@@ -58,10 +64,7 @@ export function HomePage() {
   const [rightTab, setRightTab] = useState<'current' | 'history'>('current');
   const [history, setHistory] = useState<any[]>([]);
 
-  // Helper: must be defined before useEffect that calls it
-  const formatHotkey = (k: string) =>
-    k.replace('CommandOrControl+', '⌘').replace('Control+', '⌃').replace('Alt+', '⌥').replace('Shift+', '⇧').replace('Command', '⌘');
-
+  // Helper function is defined outside component
   useEffect(() => {
     window.electronAPI.aiGetSettings().then((s: any) => setAiEnabled(s.enabled));
     window.electronAPI.storeGet('preferredProvider').then((p: any) => p && setPreferredProvider(p));
@@ -92,8 +95,6 @@ export function HomePage() {
     }
   }, [isRecording]);
 
-  const PROVIDER_ICONS: Record<string, typeof Server> = { auto: Server, local: Cpu, cloud: Cloud };
-  const PROVIDER_LABELS: Record<string, string> = { auto: 'Auto (Local first)', local: 'Local (whisper.cpp)', cloud: 'Cloud (API)' };
   const ProviderIcon = PROVIDER_ICONS[preferredProvider];
 
   return (
@@ -230,7 +231,7 @@ export function HomePage() {
                   </div>
                 </Card>
               ) : (
-                <div className={styles.emptyState}>No transcription yet. Hold ⌘⇧D to start.</div>
+                <div className={styles.emptyState}>No transcription yet. Hold {hotkey} to start.</div>
               )}
             </>
           )}
