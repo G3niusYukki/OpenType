@@ -38,6 +38,7 @@ let package = Package(
             name: "Data",
             dependencies: [
                 "Models",
+                "Utilities",
                 .product(name: "SQLite", package: "SQLite.swift"),
                 .product(name: "KeychainAccess", package: "KeychainAccess")
             ],

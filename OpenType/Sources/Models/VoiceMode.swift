@@ -1,6 +1,6 @@
 import Foundation
 
-public enum VoiceMode: String, CaseIterable, Identifiable {
+public enum VoiceMode: String, CaseIterable, Identifiable, Codable {
     case basic
     case handsFree
     case translate
