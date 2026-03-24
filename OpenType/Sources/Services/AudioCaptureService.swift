@@ -1,5 +1,6 @@
 import AVFoundation
 import Foundation
+import Utilities
 
 public enum AudioCaptureError: Error {
     case notPermitted
