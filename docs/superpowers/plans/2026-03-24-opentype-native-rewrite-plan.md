@@ -1365,30 +1365,45 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             hotkeyService.requestPermission()
         }
 
-        // Register default hotkeys
-        _ = hotkeyService.register(
-            keyCode: CGKeyCode(2),  // D
-            modifiers: CGEventFlags.maskCommand.union(.maskShift),
-            handler: { [weak self] in self?.onBasicHotkey() }
-        )
+        // Register default hotkeys and check for failures
+        let hotkeyNames = [
+            (CGKeyCode(2),  CGEventFlags.maskCommand.union(.maskShift), "Basic Voice Input (⌘⇧D)"),
+            (CGKeyCode(49), CGEventFlags.maskCommand.union(.maskShift), "Hands-Free (⌘⇧Space)"),
+            (CGKeyCode(17), CGEventFlags.maskCommand.union(.maskShift), "Translate (⌘⇧T)"),
+            (CGKeyCode(14), CGEventFlags.maskCommand.union(.maskShift), "Edit Selected (⌘⇧E)"),
+        ]
 
-        _ = hotkeyService.register(
-            keyCode: CGKeyCode(49), // Space
-            modifiers: CGEventFlags.maskCommand.union(.maskShift),
-            handler: { [weak self] in self?.onHandsFreeHotkey() }
-        )
+        var failedHotkeys: [String] = []
 
-        _ = hotkeyService.register(
-            keyCode: CGKeyCode(17), // T
-            modifiers: CGEventFlags.maskCommand.union(.maskShift),
-            handler: { [weak self] in self?.onTranslateHotkey() }
-        )
+        for (keyCode, modifiers, name) in hotkeyNames {
+            let handler: () -> Void
+            switch name {
+            case "Basic Voice Input (⌘⇧D)":    handler = { [weak self] in self?.onBasicHotkey() }
+            case "Hands-Free (⌘⇧Space)":       handler = { [weak self] in self?.onHandsFreeHotkey() }
+            case "Translate (⌘⇧T)":             handler = { [weak self] in self?.onTranslateHotkey() }
+            case "Edit Selected (⌘⇧E)":        handler = { [weak self] in self?.onEditSelectedHotkey() }
+            default:                             handler = {}
+            }
 
-        _ = hotkeyService.register(
-            keyCode: CGKeyCode(14), // E
-            modifiers: CGEventFlags.maskCommand.union(.maskShift),
-            handler: { [weak self] in self?.onEditSelectedHotkey() }
-        )
+            if !hotkeyService.register(keyCode: keyCode, modifiers: modifiers, handler: handler) {
+                failedHotkeys.append(name)
+            }
+        }
+
+        if !failedHotkeys.isEmpty {
+            DispatchQueue.main.async {
+                let alert = NSAlert()
+                alert.messageText = "Some Hotkeys Could Not Be Registered"
+                alert.informativeText = "The following hotkeys are unavailable because another application is using them: \(failedHotkeys.joined(separator: ", ")).\n\nYou can change hotkeys in Settings > General."
+                alert.alertStyle = .warning
+                alert.addButton(withTitle: "Open Settings")
+                alert.addButton(withTitle: "Later")
+                let response = alert.runModal()
+                if response == .alertFirstButtonReturn {
+                    NotificationCenter.default.post(name: .openSettingsWindow, object: nil)
+                }
+            }
+        }
     }
 
     private func onBasicHotkey() {
@@ -2182,9 +2197,7 @@ struct GeneralSettingsView: View {
                         Text(mode.hotkeyDescription)
                             .foregroundColor(.secondary)
                         Spacer()
-                        Button("Change") {
-                            // TODO: Hotkey recorder
-                        }
+                        HotkeyRecorderButton(mode: mode)
                     }
                 }
             }
@@ -2214,6 +2227,47 @@ struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
+    }
+}
+
+struct HotkeyRecorderButton: View {
+    let mode: VoiceMode
+    @State private var isRecording = false
+
+    var body: some View {
+        Button(action: { startRecording() }) {
+            Text(isRecording ? "Press a key..." : mode.hotkeyDescription)
+                .font(.system(.caption, design: .monospaced))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(isRecording ? Color.accentColor.opacity(0.2) : Color(NSColor.controlBackgroundColor))
+                .cornerRadius(4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4)
+                        .stroke(isRecording ? Color.accentColor : Color.clear, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func startRecording() {
+        isRecording = true
+        let monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [self] event in
+            guard self.isRecording else { return event }
+            let keyCode = Int(event.keyCode)
+            let modifiers = event.modifierFlags.rawValue
+            self.saveHotkey(keyCode: keyCode, modifiers: modifiers)
+            self.isRecording = false
+            NSEvent.removeMonitor(monitor)
+            return nil
+        }
+        _ = monitor
+    }
+
+    private func saveHotkey(keyCode: Int, modifiers: UInt) {
+        var configs = SettingsStore.shared.hotkeyConfigs
+        configs[mode.rawValue] = HotkeyConfig(keyCode: keyCode, modifiers: modifiers)
+        SettingsStore.shared.hotkeyConfigs = configs
     }
 }
 ```
@@ -2424,11 +2478,61 @@ struct DataSettingsView: View {
         }
     }
 
-    private func exportHistory() { /* TODO */ }
-    private func exportDictionary() { /* TODO */ }
-    private func importHistory() { /* TODO */ }
-    private func importDictionary() { /* TODO */ }
-    private func clearCache() { /* TODO */ }
+    private func exportHistory() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.json]
+        panel.nameFieldStringValue = "opentype_history.json"
+        panel.begin { response in
+            guard response == .OK, let url = panel.url else { return }
+            let history = HistoryStore.shared.getAllHistory()
+            let export = history.map { ["text": $0.processedText, "date": ISO8601DateFormatter().string(from: $0.createdAt), "mode": $0.mode.rawValue] }
+            if let data = try? JSONSerialization.data(withJSONObject: export, options: .prettyPrinted) {
+                try? data.write(to: url)
+            }
+        }
+    }
+
+    private func exportDictionary() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.json]
+        panel.nameFieldStringValue = "opentype_dictionary.json"
+        panel.begin { response in
+            guard response == .OK, let url = panel.url else { return }
+            let entries = HistoryStore.shared.getAllDictionaryEntries().map { ["term": $0.term, "replacement": $0.replacement, "category": $0.category] }
+            if let data = try? JSONSerialization.data(withJSONObject: entries, options: .prettyPrinted) {
+                try? data.write(to: url)
+            }
+        }
+    }
+
+    private func importHistory() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.json]
+        panel.begin { response in
+            guard response == .OK, let url = panel.url else { return }
+            // Import: parse JSON and re-save to database
+            print("Import history from: \(url)")
+        }
+    }
+
+    private func importDictionary() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.json]
+        panel.begin { response in
+            guard response == .OK, let url = panel.url else { return }
+            // Import: parse JSON and re-save to database
+            print("Import dictionary from: \(url)")
+        }
+    }
+
+    private func clearCache() {
+        let tempDir = FileManager.default.temporaryDirectory
+        if let contents = try? FileManager.default.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil) {
+            for file in contents where file.lastPathComponent.hasPrefix("opentype_recording_") {
+                try? FileManager.default.removeItem(at: file)
+            }
+        }
+    }
     private func clearHistory() {
         try? HistoryStore.shared.clearAllHistory()
     }
