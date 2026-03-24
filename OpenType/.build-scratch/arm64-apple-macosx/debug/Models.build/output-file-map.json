@@ -1,0 +1,40 @@
+{
+  "": {
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/master.swiftdeps"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/DictionaryEntry.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/DictionaryEntry.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/DictionaryEntry.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/DictionaryEntry~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/DictionaryEntry.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/DictionaryEntry.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/HistoryEntry.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/HistoryEntry.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/HistoryEntry.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/HistoryEntry~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/HistoryEntry.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/HistoryEntry.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/Profile.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/Profile.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/Profile.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/Profile~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/Profile.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/Profile.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/TranscriptionResult.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/TranscriptionResult.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/TranscriptionResult.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/TranscriptionResult~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/TranscriptionResult.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/TranscriptionResult.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/VoiceMode.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/VoiceMode.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/VoiceMode.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/VoiceMode~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/VoiceMode.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/VoiceMode.dia"
+  }
+}

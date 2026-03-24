@@ -10,7 +10,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private let hotkeyService = HotkeyService.shared
     private var settingsWindowController: SettingsWindowController?
     private var mainWindowController: MainWindowController?
-    private var updater: SUUpdater?
+    private var updaterController: SPUStandardUpdaterController?
+    private var updaterDelegate: UpdaterDelegate?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Run Electron config migration if needed
@@ -58,10 +59,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupUpdater() {
-        updater = SUUpdater.shared()
-        updater?.delegate = UpdaterDelegate()
-        updater?.automaticallyChecksForUpdates = SettingsStore.shared.notificationsEnabled
-        updater?.checkForUpdatesInBackground()
+        updaterDelegate = UpdaterDelegate()
+        updaterController = SPUStandardUpdaterController(
+            startingUpdater: true,
+            delegate: updaterDelegate,
+            showsVersionUpgrades: true
+        )
     }
 
     @objc private func openMainWindow() {

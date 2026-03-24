@@ -1,0 +1,47 @@
+{
+  "": {
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/master.swiftdeps"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/HistoryStore.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HistoryStore.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HistoryStore.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HistoryStore~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HistoryStore.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HistoryStore.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/HotkeyConfig.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HotkeyConfig.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HotkeyConfig.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HotkeyConfig~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HotkeyConfig.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HotkeyConfig.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/KeychainManager.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/KeychainManager.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/KeychainManager.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/KeychainManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/KeychainManager.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/KeychainManager.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/ProfileStore.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/ProfileStore.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/ProfileStore.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/ProfileStore~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/ProfileStore.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/ProfileStore.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/SettingsStore.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/SettingsStore.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/SettingsStore.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/SettingsStore~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/SettingsStore.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/SettingsStore.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/VoiceModeConfig.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/VoiceModeConfig.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/VoiceModeConfig.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/VoiceModeConfig~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/VoiceModeConfig.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/VoiceModeConfig.dia"
+  }
+}

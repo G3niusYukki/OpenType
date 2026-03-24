@@ -1,0 +1,103 @@
+{
+  "": {
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/master.swiftdeps"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/PopoverView.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverView.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverView.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverView~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverView.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverView.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/PopoverViewModel.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverViewModel.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverViewModel.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverViewModel~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverViewModel.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverViewModel.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/RecordingControlsView.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/RecordingControlsView.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/RecordingControlsView.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/RecordingControlsView~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/RecordingControlsView.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/RecordingControlsView.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/TranscriptionResultView.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/TranscriptionResultView.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/TranscriptionResultView.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/TranscriptionResultView~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/TranscriptionResultView.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/TranscriptionResultView.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/StatusBar/StatusBarController.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarController.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarController.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarController~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarController.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarController.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/StatusBar/StatusBarIcon.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarIcon.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarIcon.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarIcon~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarIcon.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarIcon.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/MainWindowController.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainWindowController.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainWindowController.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainWindowController~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainWindowController.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainWindowController.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/SettingsWindowController.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsWindowController.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsWindowController.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsWindowController~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsWindowController.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsWindowController.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/DictionaryView.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/DictionaryView.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/DictionaryView.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/DictionaryView~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/DictionaryView.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/DictionaryView.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/HistoryView.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/HistoryView.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/HistoryView.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/HistoryView~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/HistoryView.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/HistoryView.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/MainTabView.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainTabView.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainTabView.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainTabView~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainTabView.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainTabView.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/ProfilesView.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/ProfilesView.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/ProfilesView.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/ProfilesView~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/ProfilesView.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/ProfilesView.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/SettingsTabViews.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsTabViews.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsTabViews.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsTabViews~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsTabViews.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsTabViews.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/SettingsView.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsView.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsView.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsView~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsView.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsView.dia"
+  }
+}

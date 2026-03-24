@@ -1,0 +1,3376 @@
+{
+  "builtTestProducts" : [
+
+  ],
+  "copyCommands" : {
+    "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.swift_SQLite.bundle/PrivacyInfo.xcprivacy" : {
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/PrivacyInfo.xcprivacy"
+        }
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.swift_SQLite.bundle/PrivacyInfo.xcprivacy"
+        }
+      ]
+    },
+    "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Sparkle.framework" : {
+      "inputs" : [
+        {
+          "kind" : "directory",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework"
+        }
+      ],
+      "outputs" : [
+        {
+          "kind" : "directory",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Sparkle.framework"
+        }
+      ]
+    }
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.App-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/sources",
+      "importPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/App/AppDelegate.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/App/main.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Services.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Providers.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Models.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Data.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Utilities.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/OpenTypeUI.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/SQLite.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/KeychainAccess.swiftmodule"
+        },
+        {
+          "kind" : "directory",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Sparkle.framework"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "App",
+      "moduleOutputPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/App.swiftmodule",
+      "objects" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/AppDelegate.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/main.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx13.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-I",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64",
+        "-Xcc",
+        "-I",
+        "-Xcc",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64",
+        "-module-cache-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "App_main",
+        "-F",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "opentype"
+      ],
+      "outputFileMapPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/AppDelegate.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/main.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/App.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/App/AppDelegate.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/App/main.swift"
+      ],
+      "tempsPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.Data-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/sources",
+      "importPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/HistoryStore.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/HotkeyConfig.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/KeychainManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/ProfileStore.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/SettingsStore.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/VoiceModeConfig.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Models.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Utilities.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/SQLite.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/KeychainAccess.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "Data",
+      "moduleOutputPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Data.swiftmodule",
+      "objects" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HistoryStore.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HotkeyConfig.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/KeychainManager.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/ProfileStore.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/SettingsStore.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/VoiceModeConfig.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx13.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/include/Data-Swift.h",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "opentype"
+      ],
+      "outputFileMapPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HistoryStore.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HotkeyConfig.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/KeychainManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/ProfileStore.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/SettingsStore.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/VoiceModeConfig.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Data.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/HistoryStore.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/HotkeyConfig.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/KeychainManager.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/ProfileStore.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/SettingsStore.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/VoiceModeConfig.swift"
+      ],
+      "tempsPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.KeychainAccess-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/KeychainAccess.build/sources",
+      "importPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/KeychainAccess/Lib/KeychainAccess/Keychain.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/KeychainAccess.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "KeychainAccess",
+      "moduleOutputPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/KeychainAccess.swiftmodule",
+      "objects" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/KeychainAccess.build/Keychain.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/KeychainAccess.build/include/KeychainAccess-Swift.h",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-suppress-warnings"
+      ],
+      "outputFileMapPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/KeychainAccess.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/KeychainAccess.build/Keychain.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/KeychainAccess.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/KeychainAccess/Lib/KeychainAccess/Keychain.swift"
+      ],
+      "tempsPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/KeychainAccess.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.Models-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/sources",
+      "importPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/DictionaryEntry.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/HistoryEntry.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/Profile.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/TranscriptionResult.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/VoiceMode.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "Models",
+      "moduleOutputPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Models.swiftmodule",
+      "objects" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/DictionaryEntry.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/HistoryEntry.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/Profile.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/TranscriptionResult.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/VoiceMode.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx13.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/include/Models-Swift.h",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "opentype"
+      ],
+      "outputFileMapPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/DictionaryEntry.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/HistoryEntry.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/Profile.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/TranscriptionResult.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/VoiceMode.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Models.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/DictionaryEntry.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/HistoryEntry.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/Profile.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/TranscriptionResult.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/VoiceMode.swift"
+      ],
+      "tempsPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.OpenTypeUI-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/sources",
+      "importPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/PopoverView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/PopoverViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/RecordingControlsView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/TranscriptionResultView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/StatusBar/StatusBarController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/StatusBar/StatusBarIcon.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/MainWindowController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/SettingsWindowController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/DictionaryView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/HistoryView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/MainTabView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/ProfilesView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/SettingsTabViews.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/SettingsView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Utilities.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Models.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Data.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "OpenTypeUI",
+      "moduleOutputPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/OpenTypeUI.swiftmodule",
+      "objects" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverView.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverViewModel.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/RecordingControlsView.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/TranscriptionResultView.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarController.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarIcon.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainWindowController.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsWindowController.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/DictionaryView.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/HistoryView.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainTabView.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/ProfilesView.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsTabViews.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsView.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx13.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/include/OpenTypeUI-Swift.h",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "opentype"
+      ],
+      "outputFileMapPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverViewModel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/RecordingControlsView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/TranscriptionResultView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarIcon.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainWindowController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsWindowController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/DictionaryView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/HistoryView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainTabView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/ProfilesView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsTabViews.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/OpenTypeUI.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/PopoverView.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/PopoverViewModel.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/RecordingControlsView.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/TranscriptionResultView.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/StatusBar/StatusBarController.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/StatusBar/StatusBarIcon.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/MainWindowController.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/SettingsWindowController.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/DictionaryView.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/HistoryView.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/MainTabView.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/ProfilesView.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/SettingsTabViews.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/SettingsView.swift"
+      ],
+      "tempsPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.Providers-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/sources",
+      "importPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/AI/AIError.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/AI/AIProvider.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/AI/OpenAIProvider.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/Transcription/AppleSpeechProvider.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/Transcription/TranscriptionError.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/Transcription/TranscriptionProvider.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Models.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Utilities.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "Providers",
+      "moduleOutputPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Providers.swiftmodule",
+      "objects" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/AIError.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/AIProvider.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/OpenAIProvider.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/AppleSpeechProvider.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/TranscriptionError.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/TranscriptionProvider.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx13.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/include/Providers-Swift.h",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "opentype"
+      ],
+      "outputFileMapPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/AIError.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/AIProvider.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/OpenAIProvider.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/AppleSpeechProvider.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/TranscriptionError.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/TranscriptionProvider.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Providers.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/AI/AIError.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/AI/AIProvider.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/AI/OpenAIProvider.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/Transcription/AppleSpeechProvider.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/Transcription/TranscriptionError.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/Transcription/TranscriptionProvider.swift"
+      ],
+      "tempsPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.SQLite-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/sources",
+      "importPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Backup.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Blob.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection+Aggregation.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection+Attach.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection+Pragmas.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Errors.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Result.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/SQLiteFeature.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/SQLiteVersion.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Statement.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/URIQueryParameter.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Value.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/Cipher.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/FTS4.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/FTS5.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/RTree.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Foundation.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Helpers.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/Connection+Schema.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/SchemaChanger.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/SchemaDefinitions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/SchemaReader.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/AggregateFunctions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Coding.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Collation.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/CoreFunctions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/CustomFunctions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/DateAndTimeFunctions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Expression.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Operators.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Query+with.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Query.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Schema.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Setter.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/WindowFunctions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/DerivedSources/resource_bundle_accessor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<SQLite-arm64-apple-macosx26.0-debug.module-resources>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "SQLite",
+      "moduleOutputPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/SQLite.swiftmodule",
+      "objects" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Backup.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Blob.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Aggregation.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Attach.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Pragmas.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Errors.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Result.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SQLiteFeature.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SQLiteVersion.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Statement.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/URIQueryParameter.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Value.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Cipher.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/FTS4.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/FTS5.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/RTree.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Foundation.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Helpers.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Schema.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SchemaChanger.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SchemaDefinitions.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SchemaReader.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/AggregateFunctions.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Coding.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Collation.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/CoreFunctions.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/CustomFunctions.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/DateAndTimeFunctions.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Expression.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Operators.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Query+with.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Query.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Schema.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Setter.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/WindowFunctions.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/resource_bundle_accessor.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_AVAILABLE",
+        "-module-cache-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/include/SQLite-Swift.h",
+        "-swift-version",
+        "5",
+        "-DSystemSQLite",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-suppress-warnings",
+        "-user-module-version",
+        "0.16.0",
+        "-package-name",
+        "sqlite_swift"
+      ],
+      "outputFileMapPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Backup.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Blob.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Aggregation.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Attach.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Pragmas.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Errors.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Result.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SQLiteFeature.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SQLiteVersion.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Statement.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/URIQueryParameter.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Value.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Cipher.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/FTS4.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/FTS5.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/RTree.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Foundation.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Helpers.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Schema.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SchemaChanger.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SchemaDefinitions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SchemaReader.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/AggregateFunctions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Coding.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Collation.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/CoreFunctions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/CustomFunctions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/DateAndTimeFunctions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Expression.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Operators.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Query+with.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Query.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Schema.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Setter.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/WindowFunctions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/resource_bundle_accessor.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/SQLite.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Backup.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Blob.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection+Aggregation.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection+Attach.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection+Pragmas.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Errors.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Result.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/SQLiteFeature.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/SQLiteVersion.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Statement.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/URIQueryParameter.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Value.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/Cipher.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/FTS4.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/FTS5.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/RTree.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Foundation.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Helpers.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/Connection+Schema.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/SchemaChanger.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/SchemaDefinitions.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/SchemaReader.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/AggregateFunctions.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Coding.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Collation.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/CoreFunctions.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/CustomFunctions.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/DateAndTimeFunctions.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Expression.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Operators.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Query+with.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Query.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Schema.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Setter.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/WindowFunctions.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/DerivedSources/resource_bundle_accessor.swift"
+      ],
+      "tempsPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.Services-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/sources",
+      "importPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/AIProcessingService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/AudioCaptureService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/HotkeyService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/TextInsertionService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/TranscriptionService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Models.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Providers.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Utilities.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "Services",
+      "moduleOutputPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Services.swiftmodule",
+      "objects" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/AIProcessingService.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/AudioCaptureService.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/HotkeyService.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/TextInsertionService.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/TranscriptionService.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx13.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/include/Services-Swift.h",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "opentype"
+      ],
+      "outputFileMapPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/AIProcessingService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/AudioCaptureService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/HotkeyService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/TextInsertionService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/TranscriptionService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Services.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/AIProcessingService.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/AudioCaptureService.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/HotkeyService.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/TextInsertionService.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/TranscriptionService.swift"
+      ],
+      "tempsPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.Utilities-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/sources",
+      "importPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Utilities/Constants.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Utilities/Extensions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Utilities/PermissionService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "Utilities",
+      "moduleOutputPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Utilities.swiftmodule",
+      "objects" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/Constants.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/Extensions.swift.o",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/PermissionService.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx13.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/include/Utilities-Swift.h",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "opentype"
+      ],
+      "outputFileMapPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/Constants.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/Extensions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/PermissionService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules/Utilities.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Utilities/Constants.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Utilities/Extensions.swift",
+        "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Utilities/PermissionService.swift"
+      ],
+      "tempsPath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "App" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "App",
+      "-package-name",
+      "opentype",
+      "-c",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/App/AppDelegate.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/App/main.swift",
+      "-I",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx13.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-I",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64",
+      "-Xcc",
+      "-I",
+      "-Xcc",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64",
+      "-module-cache-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-Xfrontend",
+      "-entry-point-function-name",
+      "-Xfrontend",
+      "App_main",
+      "-F",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "opentype",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "Data" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "Data",
+      "-package-name",
+      "opentype",
+      "-c",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/HistoryStore.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/HotkeyConfig.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/KeychainManager.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/ProfileStore.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/SettingsStore.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/VoiceModeConfig.swift",
+      "-I",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx13.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/include/Data-Swift.h",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "opentype",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "KeychainAccess" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "KeychainAccess",
+      "-c",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/KeychainAccess/Lib/KeychainAccess/Keychain.swift",
+      "-I",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/KeychainAccess.build/include/KeychainAccess-Swift.h",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-suppress-warnings",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "Models" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "Models",
+      "-package-name",
+      "opentype",
+      "-c",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/DictionaryEntry.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/HistoryEntry.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/Profile.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/TranscriptionResult.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/VoiceMode.swift",
+      "-I",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx13.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/include/Models-Swift.h",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "opentype",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "OpenTypeUI" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "OpenTypeUI",
+      "-package-name",
+      "opentype",
+      "-c",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/PopoverView.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/PopoverViewModel.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/RecordingControlsView.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/TranscriptionResultView.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/StatusBar/StatusBarController.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/StatusBar/StatusBarIcon.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/MainWindowController.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/SettingsWindowController.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/DictionaryView.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/HistoryView.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/MainTabView.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/ProfilesView.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/SettingsTabViews.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/SettingsView.swift",
+      "-I",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx13.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/include/OpenTypeUI-Swift.h",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "opentype",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "Providers" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "Providers",
+      "-package-name",
+      "opentype",
+      "-c",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/AI/AIError.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/AI/AIProvider.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/AI/OpenAIProvider.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/Transcription/AppleSpeechProvider.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/Transcription/TranscriptionError.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/Transcription/TranscriptionProvider.swift",
+      "-I",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx13.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/include/Providers-Swift.h",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "opentype",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "SQLite" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "SQLite",
+      "-package-name",
+      "sqlite_swift",
+      "-c",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Backup.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Blob.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection+Aggregation.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection+Attach.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection+Pragmas.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Errors.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Result.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/SQLiteFeature.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/SQLiteVersion.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Statement.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/URIQueryParameter.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Value.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/Cipher.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/FTS4.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/FTS5.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/RTree.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Foundation.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Helpers.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/Connection+Schema.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/SchemaChanger.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/SchemaDefinitions.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/SchemaReader.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/AggregateFunctions.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Coding.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Collation.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/CoreFunctions.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/CustomFunctions.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/DateAndTimeFunctions.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Expression.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Operators.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Query+with.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Query.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Schema.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Setter.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/WindowFunctions.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/DerivedSources/resource_bundle_accessor.swift",
+      "-I",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_AVAILABLE",
+      "-module-cache-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/include/SQLite-Swift.h",
+      "-swift-version",
+      "5",
+      "-DSystemSQLite",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-suppress-warnings",
+      "-user-module-version",
+      "0.16.0",
+      "-package-name",
+      "sqlite_swift",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "Services" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "Services",
+      "-package-name",
+      "opentype",
+      "-c",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/AIProcessingService.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/AudioCaptureService.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/HotkeyService.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/TextInsertionService.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/TranscriptionService.swift",
+      "-I",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx13.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/include/Services-Swift.h",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "opentype",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "Utilities" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "Utilities",
+      "-package-name",
+      "opentype",
+      "-c",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Utilities/Constants.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Utilities/Extensions.swift",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Utilities/PermissionService.swift",
+      "-I",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx13.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/include/Utilities-Swift.h",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "opentype",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "App" : [
+      "Sparkle",
+      "OpenTypeUI",
+      "Data",
+      "KeychainAccess",
+      "SQLite",
+      "Services",
+      "Providers",
+      "Utilities",
+      "Models"
+    ],
+    "Data" : [
+      "KeychainAccess",
+      "SQLite",
+      "Utilities",
+      "Models"
+    ],
+    "KeychainAccess" : [
+
+    ],
+    "Models" : [
+
+    ],
+    "OpenTypeUI" : [
+      "Data",
+      "KeychainAccess",
+      "SQLite",
+      "Models",
+      "Utilities"
+    ],
+    "Providers" : [
+      "Utilities",
+      "Models"
+    ],
+    "SQLite" : [
+
+    ],
+    "Services" : [
+      "Providers",
+      "Utilities",
+      "Models"
+    ],
+    "Utilities" : [
+
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/App/AppDelegate.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/App/main.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/sources"
+    },
+    "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/HistoryStore.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/HotkeyConfig.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/KeychainManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/ProfileStore.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/SettingsStore.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Data/VoiceModeConfig.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/sources"
+    },
+    "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/KeychainAccess.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/KeychainAccess/Lib/KeychainAccess/Keychain.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/KeychainAccess.build/sources"
+    },
+    "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/DictionaryEntry.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/HistoryEntry.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/Profile.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/TranscriptionResult.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Models/VoiceMode.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/sources"
+    },
+    "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenType-entitlement.plist" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<entitlement-plist>"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<com.apple.security.get-task-allow>"
+        }
+      ],
+      "outputFilePath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenType-entitlement.plist"
+    },
+    "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenType.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/AppDelegate.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/main.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HistoryStore.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/HotkeyConfig.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/KeychainManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/ProfileStore.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/SettingsStore.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Data.build/VoiceModeConfig.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/KeychainAccess.build/Keychain.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/DictionaryEntry.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/HistoryEntry.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/Profile.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/TranscriptionResult.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Models.build/VoiceMode.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/DictionaryView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/HistoryView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainTabView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/MainWindowController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/PopoverViewModel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/ProfilesView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/RecordingControlsView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsTabViews.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/SettingsWindowController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/StatusBarIcon.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/TranscriptionResultView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/AIError.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/AIProvider.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/AppleSpeechProvider.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/OpenAIProvider.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/TranscriptionError.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/TranscriptionProvider.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/AggregateFunctions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Backup.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Blob.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Cipher.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Coding.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Collation.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Aggregation.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Attach.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Pragmas.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Schema.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/CoreFunctions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/CustomFunctions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/DateAndTimeFunctions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Errors.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Expression.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/FTS4.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/FTS5.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Foundation.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Helpers.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Operators.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Query+with.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Query.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/RTree.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Result.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SQLiteFeature.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SQLiteVersion.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Schema.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SchemaChanger.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SchemaDefinitions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SchemaReader.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Setter.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Statement.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/URIQueryParameter.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Value.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/WindowFunctions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/resource_bundle_accessor.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/AIProcessingService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/AudioCaptureService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/HotkeyService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/TextInsertionService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/TranscriptionService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/Constants.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/Extensions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/PermissionService.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenType.product/Objects.LinkFileList"
+    },
+    "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/PopoverView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/PopoverViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/RecordingControlsView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Popover/TranscriptionResultView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/StatusBar/StatusBarController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/StatusBar/StatusBarIcon.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/MainWindowController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/SettingsWindowController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/DictionaryView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/HistoryView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/MainTabView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/ProfilesView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/SettingsTabViews.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/UI/Windows/Views/SettingsView.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/OpenTypeUI.build/sources"
+    },
+    "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/AI/AIError.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/AI/AIProvider.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/AI/OpenAIProvider.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/Transcription/AppleSpeechProvider.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/Transcription/TranscriptionError.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Providers/Transcription/TranscriptionProvider.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Providers.build/sources"
+    },
+    "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite-Dynamic.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/AggregateFunctions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Backup.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Blob.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Cipher.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Coding.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Collation.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Aggregation.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Attach.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Pragmas.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection+Schema.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Connection.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/CoreFunctions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/CustomFunctions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/DateAndTimeFunctions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Errors.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Expression.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/FTS4.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/FTS5.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Foundation.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Helpers.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Operators.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Query+with.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Query.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/RTree.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Result.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SQLiteFeature.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SQLiteVersion.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Schema.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SchemaChanger.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SchemaDefinitions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/SchemaReader.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Setter.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Statement.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/URIQueryParameter.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/Value.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/WindowFunctions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/resource_bundle_accessor.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite-Dynamic.product/Objects.LinkFileList"
+    },
+    "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Backup.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Blob.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection+Aggregation.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection+Attach.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection+Pragmas.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Connection.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Errors.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Result.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/SQLiteFeature.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/SQLiteVersion.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Statement.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/URIQueryParameter.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Core/Value.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/Cipher.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/FTS4.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/FTS5.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Extensions/RTree.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Foundation.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Helpers.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/Connection+Schema.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/SchemaChanger.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/SchemaDefinitions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Schema/SchemaReader.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/AggregateFunctions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Coding.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Collation.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/CoreFunctions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/CustomFunctions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/DateAndTimeFunctions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Expression.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Operators.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Query+with.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Query.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Schema.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/Setter.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/checkouts/SQLite.swift/Sources/SQLite/Typed/WindowFunctions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/DerivedSources/resource_bundle_accessor.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/SQLite.build/sources"
+    },
+    "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/AIProcessingService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/AudioCaptureService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/HotkeyService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/TextInsertionService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Services/TranscriptionService.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Services.build/sources"
+    },
+    "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Utilities/Constants.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Utilities/Extensions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/Utilities/PermissionService.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/Utilities.build/sources"
+    },
+    "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}

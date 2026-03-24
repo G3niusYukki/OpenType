@@ -1,0 +1,19 @@
+{
+  "": {
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/master.swiftdeps"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/App/AppDelegate.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/AppDelegate.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/AppDelegate.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/AppDelegate~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/AppDelegate.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/AppDelegate.dia"
+  },
+  "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/Sources/App/main.swift": {
+    "dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/main.d",
+    "object": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/main.swift.o",
+    "swiftmodule": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/main~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/main.swiftdeps",
+    "diagnostics": "/Users/peterzhang/OpenType/.worktrees/native-rewrite/OpenType/.build-scratch/arm64-apple-macosx/debug/App.build/main.dia"
+  }
+}

@@ -1,6 +1,7 @@
 import Foundation
 import Models
 import Providers
+import Data
 
 public class TranscriptionService: @unchecked Sendable {
     public static let shared = TranscriptionService()
@@ -8,12 +9,22 @@ public class TranscriptionService: @unchecked Sendable {
     private init() {}
 
     public func transcribe(audioURL: URL, language: String? = nil) async throws -> TranscriptionResult {
-        // Default to Apple Speech for now (cloud providers added in Task 14)
-        let provider = AppleSpeechProvider()
+        let provider = makeProvider(for: SettingsStore.shared.selectedTranscriptionProvider)
         return try await provider.transcribe(audioURL: audioURL, language: language)
     }
 
     public func getAvailableProviders() -> [TranscriptionProvider] {
         return [AppleSpeechProvider()]
+    }
+
+    private func makeProvider(for name: String) -> any TranscriptionProvider {
+        switch name {
+        case "OpenAI Whisper":
+            return OpenAIWhisperProvider()
+        case "Groq":
+            return GroqTranscriptionProvider()
+        default:
+            return AppleSpeechProvider()
+        }
     }
 }
