@@ -8,9 +8,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let statusBarController = StatusBarController()
     private let hotkeyService = HotkeyService.shared
     private var settingsWindowController: SettingsWindowController?
+    private var mainWindowController: MainWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupSettingsWindowObserver()
+        setupMainWindowObserver()
         setupHotkeys()
     }
 
@@ -21,6 +23,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             name: .openSettingsWindow,
             object: nil
         )
+    }
+
+    private func setupMainWindowObserver() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(openMainWindow),
+            name: .openHistoryWindow,
+            object: nil
+        )
+    }
+
+    @objc private func openMainWindow() {
+        if mainWindowController == nil {
+            mainWindowController = MainWindowController()
+        }
+        mainWindowController?.showWindow()
     }
 
     @objc private func openSettings() {
