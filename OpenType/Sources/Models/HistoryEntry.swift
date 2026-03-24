@@ -1,6 +1,6 @@
 import Foundation
 
-public struct HistoryEntry: Identifiable {
+public struct HistoryEntry: Identifiable, Codable {
     public let id: UUID
     public let audioPath: String
     public let originalText: String

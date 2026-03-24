@@ -42,6 +42,7 @@ class PopoverViewModel: ObservableObject {
 }
 
 extension Notification.Name {
-    static let openHistoryWindow = Notification.Name("openHistoryWindow")
-    static let openSettingsWindow = Notification.Name("openSettingsWindow")
+    public static let openHistoryWindow = Notification.Name("openHistoryWindow")
+    public static let openSettingsWindow = Notification.Name("openSettingsWindow")
+    public static let openDiagnosticsWindow = Notification.Name("openDiagnosticsWindow")
 }

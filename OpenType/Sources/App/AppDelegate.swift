@@ -5,9 +5,27 @@ import Services
 class AppDelegate: NSObject, NSApplicationDelegate {
     let statusBarController = StatusBarController()
     private let hotkeyService = HotkeyService.shared
+    private var settingsWindowController: SettingsWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        setupSettingsWindowObserver()
         setupHotkeys()
+    }
+
+    private func setupSettingsWindowObserver() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(openSettings),
+            name: .openSettingsWindow,
+            object: nil
+        )
+    }
+
+    @objc private func openSettings() {
+        if settingsWindowController == nil {
+            settingsWindowController = SettingsWindowController()
+        }
+        settingsWindowController?.showWindow()
     }
 
     private func setupHotkeys() {
@@ -85,5 +103,4 @@ extension Notification.Name {
     static let hotkeyHandsFree = Notification.Name("hotkeyHandsFree")
     static let hotkeyTranslate = Notification.Name("hotkeyTranslate")
     static let hotkeyEditSelected = Notification.Name("hotkeyEditSelected")
-    static let openSettingsWindow = Notification.Name("openSettingsWindow")
 }
