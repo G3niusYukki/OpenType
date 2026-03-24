@@ -1,4 +1,5 @@
 import AppKit
+import Data
 import OpenTypeUI
 import Services
 
@@ -33,27 +34,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             hotkeyService.requestPermission()
         }
 
-        let hotkeyNames = [
-            (CGKeyCode(2),  CGEventFlags.maskCommand.union(.maskShift), "Basic Voice Input (\u{2318}\u{21E7}D)"),
-            (CGKeyCode(49), CGEventFlags.maskCommand.union(.maskShift), "Hands-Free (\u{2318}\u{21E7}Space)"),
-            (CGKeyCode(17), CGEventFlags.maskCommand.union(.maskShift), "Translate (\u{2318}\u{21E7}T)"),
-            (CGKeyCode(14), CGEventFlags.maskCommand.union(.maskShift), "Edit Selected (\u{2318}\u{21E7}E)"),
+        typealias HotkeyDef = (id: String, defaultKeyCode: CGKeyCode, defaultModifiers: CGEventFlags, name: String)
+        let hotkeyDefs: [HotkeyDef] = [
+            ("basic",       CGKeyCode(2),  CGEventFlags.maskCommand.union(.maskShift), "Basic Voice Input (\u{2318}\u{21E7}D)"),
+            ("handsFree",   CGKeyCode(49), CGEventFlags.maskCommand.union(.maskShift), "Hands-Free (\u{2318}\u{21E7}Space)"),
+            ("translate",   CGKeyCode(17), CGEventFlags.maskCommand.union(.maskShift), "Translate (\u{2318}\u{21E7}T)"),
+            ("editSelected",CGKeyCode(14), CGEventFlags.maskCommand.union(.maskShift), "Edit Selected (\u{2318}\u{21E7}E)"),
         ]
 
         var failedHotkeys: [String] = []
 
-        for (keyCode, modifiers, name) in hotkeyNames {
+        for def in hotkeyDefs {
+            let config = SettingsStore.shared.hotkeyConfigs[def.id]
+            let keyCode = CGKeyCode(config?.keyCode ?? Int(def.defaultKeyCode))
+            let modifiers = CGEventFlags(rawValue: UInt64(config?.modifiers ?? UInt(def.defaultModifiers.rawValue)))
+
             let handler: () -> Void
-            switch name {
-            case "Basic Voice Input (\u{2318}\u{21E7}D)":    handler = { [weak self] in self?.onBasicHotkey() }
-            case "Hands-Free (\u{2318}\u{21E7}Space)":       handler = { [weak self] in self?.onHandsFreeHotkey() }
-            case "Translate (\u{2318}\u{21E7}T)":             handler = { [weak self] in self?.onTranslateHotkey() }
-            case "Edit Selected (\u{2318}\u{21E7}E)":        handler = { [weak self] in self?.onEditSelectedHotkey() }
-            default:                             handler = {}
+            switch def.id {
+            case "basic":        handler = { [weak self] in self?.onBasicHotkey() }
+            case "handsFree":    handler = { [weak self] in self?.onHandsFreeHotkey() }
+            case "translate":    handler = { [weak self] in self?.onTranslateHotkey() }
+            case "editSelected": handler = { [weak self] in self?.onEditSelectedHotkey() }
+            default:             handler = {}
             }
 
             if !hotkeyService.register(keyCode: keyCode, modifiers: modifiers, handler: handler) {
-                failedHotkeys.append(name)
+                failedHotkeys.append(def.name)
             }
         }
 

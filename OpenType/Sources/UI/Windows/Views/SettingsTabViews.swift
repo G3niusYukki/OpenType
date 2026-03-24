@@ -124,9 +124,13 @@ struct HotkeyRecorderButton: View {
 
     private func startRecording() {
         isRecording = true
-        eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
-            guard isRecording else { return event }
+        eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [self] event in
+            guard self.isRecording else { return event }
             let keyCode = Int(event.keyCode)
+            if keyCode == 53 { // Escape cancels recording
+                stopRecording()
+                return nil
+            }
             let modifiers = event.modifierFlags.rawValue & (
                 NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue
             )
@@ -427,8 +431,7 @@ struct VoiceModesSettingsView: View {
 
 struct DataSettingsView: View {
     private let historyStore = HistoryStore.shared
-    @State private var showClearAlert = false
-    @State private var lastExportURL: URL?
+    @State private var showClearHistoryAlert = false
 
     var body: some View {
         Form {
@@ -437,26 +440,40 @@ struct DataSettingsView: View {
                     exportHistory()
                 }
 
+                Button("Export Dictionary...") {
+                    exportDictionary()
+                }
+            } header: {
+                Text("Export")
+            }
+
+            Section {
                 Button("Import History...") {
                     importHistory()
                 }
+
+                Button("Import Dictionary...") {
+                    importDictionary()
+                }
             } header: {
-                Text("History")
+                Text("Import")
             }
 
             Section {
                 Button("Clear History", role: .destructive) {
-                    showClearAlert = true
+                    showClearHistoryAlert = true
+                }
+
+                Button("Clear Cache", role: .destructive) {
+                    clearCache()
                 }
             } header: {
-                Text("Danger Zone")
-            } footer: {
-                Text("Clearing history removes all recorded transcription entries from the database. This cannot be undone.")
+                Text("Clear Data")
             }
         }
         .formStyle(.grouped)
         .padding()
-        .alert("Clear History?", isPresented: $showClearAlert) {
+        .alert("Clear History?", isPresented: $showClearHistoryAlert) {
             Button("Cancel", role: .cancel) {}
             Button("Clear", role: .destructive) {
                 clearHistory()
@@ -510,6 +527,64 @@ struct DataSettingsView: View {
             try historyStore.clearAllHistory()
         } catch {
             print("Clear history failed: \(error)")
+        }
+    }
+
+    private struct DictionaryEntry: Codable {
+        let term: String
+        let replacement: String
+        let category: String
+    }
+
+    private func exportDictionary() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.json]
+        panel.nameFieldStringValue = "opentype-dictionary.json"
+        panel.canCreateDirectories = true
+
+        panel.begin { response in
+            guard response == .OK, let url = panel.url else { return }
+            let entries = historyStore.getAllDictionaryEntries()
+            let codable = entries.map { DictionaryEntry(term: $0.term, replacement: $0.replacement, category: $0.category) }
+            do {
+                let data = try JSONEncoder().encode(codable)
+                try data.write(to: url)
+            } catch {
+                print("Export dictionary failed: \(error)")
+            }
+        }
+    }
+
+    private func importDictionary() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.json]
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+
+        panel.begin { response in
+            guard response == .OK, let url = panel.url else { return }
+            do {
+                let data = try Data(contentsOf: url)
+                let entries = try JSONDecoder().decode([DictionaryEntry].self, from: data)
+                for entry in entries {
+                    try historyStore.saveDictionaryEntry(term: entry.term, replacement: entry.replacement, category: entry.category)
+                }
+            } catch {
+                print("Import dictionary failed: \(error)")
+            }
+        }
+    }
+
+    private func clearCache() {
+        let tempDir = FileManager.default.temporaryDirectory
+        do {
+            let contents = try FileManager.default.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
+            for file in contents where file.lastPathComponent.hasPrefix("opentype_recording_") {
+                try FileManager.default.removeItem(at: file)
+            }
+        } catch {
+            print("Clear cache failed: \(error)")
         }
     }
 }
