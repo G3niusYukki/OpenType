@@ -240,15 +240,20 @@ func translate(text: String, from: String, to: String) async throws -> String
 
 ### 6.4 TextInsertionService
 ```
-Responsibility: Insert text at cursor position in target app
+Responsibility: Insert text at cursor position and read selected text in target app
 Strategy:
   1. CGEvent: Simulate Cmd+V keypress (requires Accessibility permission)
   2. Fallback: AppleScript osascript (requires Automation permission)
+
+Edit Selected Mode:
+  1. AXUIElement: Read selected text from frontmost app via AXUIElementCopySelectedText
+  2. Fallback: Read from clipboard (user must copy selection beforehand)
 ```
 
 **Key APIs:**
 ```swift
 func insertText(_ text: String) throws
+func getSelectedText() -> String?  // for Edit Selected mode
 func hasAccessibilityPermission() -> Bool
 func requestAccessibilityPermission()
 ```
@@ -263,9 +268,11 @@ Implementation: CGEventTap on kCGHIDEventTap
 | Mode | Default Hotkey |
 |------|----------------|
 | Basic Voice Input | ⌘⇧D |
-| Hands-Free Toggle | ⌘Space |
+| Hands-Free Toggle | ⌘⇧Space (avoids Spotlight conflict) |
 | Translate | ⌘⇧T |
 | Edit Selected | ⌘⇧E |
+
+**Hotkey conflict resolution:** On hotkey registration failure (another app claimed the shortcut), show a user-facing alert in Settings → General explaining which hotkey is unavailable and offering a way to reconfigure. The app does not steal shortcuts from other apps — it only registers if the system allows it.
 
 **Key APIs:**
 ```swift
@@ -339,9 +346,13 @@ com.apple.security.automation.apple-events: true
 | Mode | Behavior | Hotkey |
 |------|----------|--------|
 | **Basic** | Hold hotkey → record → release → process → insert | ⌘⇧D |
-| **Hands-Free** | Toggle hotkey → record → toggle again → process → insert | ⌘Space |
+| **Hands-Free** | Toggle hotkey → record → toggle again → process → insert | ⌘⇧Space |
 | **Translate** | Hold hotkey → record → translate → insert English | ⌘⇧T |
 | **Edit Selected** | Select text in target app → hold hotkey → record → replace selected text | ⌘⇧E |
+
+**Translate mode — source language:** Auto-detected from spoken language (via SFSpeechRecognizer locale). Supported source languages: Chinese (Mandarin), English, Japanese, Korean, French, German, Spanish, and any language SFSpeechRecognizer supports. User can optionally lock to a specific source language in Voice Modes settings tab.
+
+**Edit Selected mode — read selected text:** Uses AXUIElement to read the currently selected text from the frontmost application. Requires Accessibility permission. On AXUIElement failure (e.g., app doesn't support accessibility API), falls back to reading clipboard content (user must manually copy selection before activating).
 
 ## 10. Auto-Update (Sparkle)
 
@@ -391,8 +402,10 @@ com.apple.security.automation.apple-events: true
 - Offer one-time migration prompt on first launch
 
 **Audio file migration:**
-- Existing recorded audio files at `~/Library/Application Support/OpenType/recordings/` remain accessible
-- Copy to new app's container
+- Existing recorded audio files at `~/Library/Application Support/OpenType/recordings/` are **moved** to the new app's container (`~/Library/Application Support/com.opentype.macos/recordings/`)
+- History store stores **relative paths** from the new container root
+- After migration, original files in the old location are deleted
+- Migration runs once on first launch; if already migrated, skip silently
 
 ## 14. Out of Scope (Phase 1)
 
