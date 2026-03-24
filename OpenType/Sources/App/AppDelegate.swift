@@ -62,8 +62,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         updaterDelegate = UpdaterDelegate()
         updaterController = SPUStandardUpdaterController(
             startingUpdater: true,
-            delegate: updaterDelegate,
-            showsVersionUpgrades: true
+            updaterDelegate: updaterDelegate,
+            userDriverDelegate: nil
         )
     }
 
