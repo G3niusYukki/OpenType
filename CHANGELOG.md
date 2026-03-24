@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-03-24
+
+### Added
+
+- **Native macOS Rewrite** — Complete rewrite from Electron to native Swift + AppKit + SwiftUI
+  - Menu bar app (LSUIElement) with SwiftUI Popover
+  - 4 voice input modes: Basic, Hands-Free, Translate, Edit Selected
+  - Multi-provider transcription: Apple Speech (on-device), OpenAI Whisper, Groq
+  - Multi-provider AI post-processing: OpenAI GPT, Anthropic Claude, DeepSeek, Zhipu GLM, MiniMax, Moonshot, Groq
+  - CGEventTap global hotkeys (⌘⇧D/Space/T/E)
+  - Text insertion via CGEvent paste + AppleScript fallback + clipboard
+  - Sparkle auto-update with GitHub Releases feed
+  - SQLite.swift history + dictionary storage
+  - KeychainAccess for secure API key storage
+  - System diagnostics panel
+  - Electron config migration on first launch
+
+### Architecture
+
+- Swift Package Manager modules: App, Services, Providers, Models, Data, Utilities, OpenTypeUI
+- XcodeGen for Xcode project generation
+- macOS 13.0+ deployment target
+
 ## [0.3.5] - 2026-03-23
 
 ### Added
