@@ -187,6 +187,8 @@ schemes:
     <true/>
     <key>com.apple.security.device.audio-input</key>
     <true/>
+    <key>com.apple.security.automation.apple-events</key>
+    <true/>
 </dict>
 </plist>
 ```
@@ -1172,13 +1174,22 @@ class TranscriptionService: @unchecked Sendable {
     }
 
     func transcribe(audioURL: URL, language: String? = nil) async throws -> TranscriptionResult {
-        guard let provider = currentProvider else {
-            // Default to Apple Speech
-            let provider = AppleSpeechProvider()
-            setProvider(provider)
-            return try await provider.transcribe(audioURL: audioURL, language: language)
-        }
+        let provider = getProviderForCurrentSettings()
         return try await provider.transcribe(audioURL: audioURL, language: language)
+    }
+
+    private func getProviderForCurrentSettings() -> TranscriptionProvider {
+        let selected = SettingsStore.shared.selectedTranscriptionProvider
+        switch selected {
+        case "Apple Speech":
+            return AppleSpeechProvider()
+        case "OpenAI Whisper":
+            return OpenAIWhisperProvider()
+        case "Groq":
+            return GroqTranscriptionProvider()
+        default:
+            return AppleSpeechProvider()
+        }
     }
 
     func getAvailableProviders() -> [TranscriptionProvider] {
@@ -1255,7 +1266,21 @@ class HotkeyService {
             callback: callback,
             userInfo: refcon
         ) else {
-            print("Failed to create event tap. Check Accessibility permissions.")
+            // Accessibility permission not granted — show user-facing alert
+            DispatchQueue.main.async {
+                let alert = NSAlert()
+                alert.messageText = "Accessibility Permission Required"
+                alert.informativeText = "OpenType needs Accessibility permission to register global hotkeys. Please grant access in System Settings > Privacy & Security > Accessibility."
+                alert.alertStyle = .warning
+                alert.addButton(withTitle: "Open System Settings")
+                alert.addButton(withTitle: "Later")
+                let response = alert.runModal()
+                if response == .alertFirstButtonReturn {
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+            }
             return false
         }
 
@@ -1636,33 +1661,47 @@ class AIProcessingService: @unchecked Sendable {
     }
 
     func translate(text: String, from: String, to: String, apiKey: String) async throws -> String {
-        guard let provider = currentProvider else {
-            let provider = OpenAIProvider()
-            setProvider(provider)
-            return try await translateWithProvider(provider, text: text, from: from, to: to, apiKey: apiKey)
+        // Use generic chat completions for translation (works for OpenAI-compatible APIs)
+        let providerName = SettingsStore.shared.selectedAIProvider
+        let endpoint: String
+        let model: String
+
+        switch providerName {
+        case "OpenAI GPT":
+            endpoint = "https://api.openai.com/v1/chat/completions"
+            model = "gpt-3.5-turbo"
+        case "Anthropic Claude":
+            endpoint = "https://api.anthropic.com/v1/messages"
+            // Claude uses different API format — fall back to process
+            return try await process(text: "Translate the following from \(from) to \(to): \(text)", apiKey: apiKey)
+        case "DeepSeek":
+            endpoint = "https://api.deepseek.com/v1/chat/completions"
+            model = "deepseek-chat"
+        default:
+            endpoint = "https://api.openai.com/v1/chat/completions"
+            model = "gpt-3.5-turbo"
         }
-        return try await translateWithProvider(provider, text: text, from: from, to: to, apiKey: apiKey)
+
+        return try await translateViaChat(endpoint: endpoint, model: model, text: text, from: from, to: to, apiKey: apiKey)
     }
 
-    private func translateWithProvider(_ provider: AIProvider, text: String, from: String, to: String, apiKey: String) async throws -> String {
-        // Use OpenAI for translation
-        guard let openAIProvider = provider as? OpenAIProvider else {
-            throw AIError.requestFailed
-        }
-
-        let url = URL(string: "https://api.openai.com/v1/chat/completions")!
+    private func translateViaChat(endpoint: String, model: String, text: String, from: String, to: String, apiKey: String) async throws -> String {
+        let url = URL(string: endpoint)!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
+        let prompt = "Translate the following text from \(from) to \(to). Return ONLY the translation, no explanation:\n\n\(text)"
+
         let body: [String: Any] = [
-            "model": "gpt-3.5-turbo",
+            "model": model,
             "messages": [
-                ["role": "system", "content": "You are a translator."],
-                ["role": "user", "content": "Translate the following text from \(from) to \(to). Only return the translation, nothing else:\n\n\(text)"]
+                ["role": "system", "content": "You are a professional translator."],
+                ["role": "user", "content": prompt]
             ],
-            "temperature": 0.3
+            "temperature": 0.3,
+            "max_tokens": 4000
         ]
 
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -1764,10 +1803,6 @@ class SettingsStore: ObservableObject {
 
     private let defaults: UserDefaults
 
-    private init() {
-        defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
-    }
-
     // MARK: - Transcription
     @Published var selectedTranscriptionProvider: String {
         didSet { defaults.set(selectedTranscriptionProvider, forKey: "selectedTranscriptionProvider") }
@@ -1787,6 +1822,10 @@ class SettingsStore: ObservableObject {
         didSet { defaults.set(notificationsEnabled, forKey: "notificationsEnabled") }
     }
 
+    @Published var theme: String {
+        didSet { defaults.set(theme, forKey: "theme") }
+    }
+
     @Published var lastProfileID: String? {
         didSet { defaults.set(lastProfileID, forKey: "lastProfileID") }
     }
@@ -1794,7 +1833,7 @@ class SettingsStore: ObservableObject {
     // MARK: - Hotkeys (stored as dictionaries)
     @Published var hotkeyConfigs: [String: HotkeyConfig] {
         didSet {
-            let data = try? JSONEncoder().encode(hotkeyConfigs)
+            guard let data = try? JSONEncoder().encode(hotkeyConfigs) else { return }
             defaults.set(data, forKey: "hotkeyConfigs")
         }
     }
@@ -1802,7 +1841,7 @@ class SettingsStore: ObservableObject {
     // MARK: - Voice Modes
     @Published var voiceModeConfigs: [VoiceMode: VoiceModeConfig] {
         didSet {
-            let data = try? JSONEncoder().encode(voiceModeConfigs)
+            guard let data = try? JSONEncoder().encode(voiceModeConfigs) else { return }
             defaults.set(data, forKey: "voiceModeConfigs")
         }
     }
@@ -1814,6 +1853,7 @@ class SettingsStore: ObservableObject {
         selectedAIProvider = defaults.string(forKey: "selectedAIProvider") ?? "OpenAI"
         launchAtLogin = defaults.bool(forKey: "launchAtLogin")
         notificationsEnabled = defaults.object(forKey: "notificationsEnabled") as? Bool ?? true
+        theme = defaults.string(forKey: "theme") ?? "system"
         lastProfileID = defaults.string(forKey: "lastProfileID")
 
         if let data = defaults.data(forKey: "hotkeyConfigs"),
@@ -2879,27 +2919,77 @@ struct NewProfileSheet: View {
     }
 }
 
-struct Profile: Identifiable {
+struct Profile: Identifiable, Equatable {
     let id: UUID
     let name: String
     let transcriptionProvider: String
     let aiProvider: String
     let isDefault: Bool
+
+    init(id: UUID = UUID(), name: String, transcriptionProvider: String, aiProvider: String, isDefault: Bool = false) {
+        self.id = id
+        self.name = name
+        self.transcriptionProvider = transcriptionProvider
+        self.aiProvider = aiProvider
+        self.isDefault = isDefault
+    }
 }
 
 class ProfileStore {
     static let shared = ProfileStore()
 
+    private let defaults = UserDefaults.standard
+    private let profilesKey = "profiles"
+
     private init() {}
 
     func createProfile(name: String, transcriptionProvider: String, aiProvider: String) {
-        // TODO: Implement profile creation
-        print("Creating profile: \(name)")
+        var profiles = getAllProfiles()
+        let newProfile = Profile(
+            name: name,
+            transcriptionProvider: transcriptionProvider,
+            aiProvider: aiProvider,
+            isDefault: profiles.isEmpty
+        )
+        profiles.append(newProfile)
+        saveProfiles(profiles)
     }
 
     func getAllProfiles() -> [Profile] {
-        // TODO: Load from UserDefaults or SQLite
-        return []
+        guard let data = defaults.data(forKey: profilesKey),
+              let profiles = try? JSONDecoder().decode([Profile].self, from: data) else {
+            return []
+        }
+        return profiles
+    }
+
+    func deleteProfile(id: UUID) {
+        var profiles = getAllProfiles()
+        profiles.removeAll { $0.id == id }
+        saveProfiles(profiles)
+    }
+
+    func setDefaultProfile(id: UUID) {
+        var profiles = getAllProfiles()
+        profiles = profiles.map { profile in
+            Profile(
+                id: profile.id,
+                name: profile.name,
+                transcriptionProvider: profile.transcriptionProvider,
+                aiProvider: profile.aiProvider,
+                isDefault: profile.id == id
+            )
+        }
+        saveProfiles(profiles)
+    }
+
+    func getDefaultProfile() -> Profile? {
+        getAllProfiles().first { $0.isDefault }
+    }
+
+    private func saveProfiles(_ profiles: [Profile]) {
+        guard let data = try? JSONEncoder().encode(profiles) else { return }
+        defaults.set(data, forKey: profilesKey)
     }
 }
 ```
@@ -3656,7 +3746,87 @@ git add -A && git commit -m "phase7: Add OpenAI Whisper and Groq transcription p
 
 ---
 
-### Task 15: Final Build Verification
+### Task 15: Sparkle Auto-Update Configuration
+
+**Files:**
+- Create: `Sources/App/UpdaterDelegate.swift`
+- Modify: `Sources/App/AppDelegate.swift`
+- Test: Build with Sparkle linked
+- Reference: `docs/superpowers/specs/...md` Section 10
+
+- [ ] **Step 1: Create UpdaterDelegate**
+
+```swift
+import Foundation
+import Sparkle
+
+class UpdaterDelegate: NSObject, SUUpdaterDelegate {
+    func updater(_ updater: SUUpdater, shouldScheduleUpdateCheck date: Date?) -> Bool {
+        return true
+    }
+
+    func updaterShouldPromptForPermission(toCheck updater: SUUpdater) -> Bool {
+        // Check user preference — if notificationsEnabled, check automatically
+        return SettingsStore.shared.notificationsEnabled
+    }
+}
+```
+
+- [ ] **Step 2: Add Sparkle to AppDelegate**
+
+```swift
+class AppDelegate: NSObject, NSApplicationDelegate {
+    let statusBarController = StatusBarController()
+    private let hotkeyService = HotkeyService.shared
+    private var updater: SUUpdater?
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        setupUpdater()
+        setupNotifications()
+        setupHotkeys()
+    }
+
+    private func setupUpdater() {
+        updater = SUUpdater.shared()
+        updater?.delegate = UpdaterDelegate()
+        updater?.automaticallyChecksForUpdates = SettingsStore.shared.notificationsEnabled
+        updater?.checkForUpdatesInBackground()
+    }
+}
+```
+
+- [ ] **Step 3: Add Sparkle entitlements for signed updates**
+
+Add to `Resources/OpenType.entitlements`:
+```xml
+<key>com.apple.security.network.client</key>
+<true/>
+```
+
+- [ ] **Step 4: Create appcast.xml for GitHub Releases**
+
+Create `Resources/appcast.xml`:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>OpenType Releases</title>
+    <link>https://github.com/G3niusYukki/OpenType/releases/feed.xml</link>
+    <description>OpenType releases</description>
+  </channel>
+</rss>
+```
+
+- [ ] **Step 5: Build and commit**
+
+```bash
+xcodebuild -project OpenType.xcodeproj -scheme OpenType -configuration Debug build 2>&1 | grep -E "(error:|BUILD SUCCEEDED|BUILD FAILED)"
+git add -A && git commit -m "phase7: Add Sparkle auto-update configuration"
+```
+
+---
+
+### Task 16: Final Build Verification
 
 **Files:**
 - Verify all targets compile
@@ -3705,4 +3875,4 @@ git add -A && git commit -m "phase7: Final build verification complete - native 
 | **4** | 9 | Data layer (Settings, History, Keychain) |
 | **5** | 10-11 | Settings window, Main window |
 | **6** | 12 | Diagnostics, Migration |
-| **7** | 13-15 | Full integration, cloud providers, build verification |
+| **7** | 13-16 | Integration, cloud providers, Sparkle, build verification |
