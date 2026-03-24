@@ -1,23 +1,17 @@
 import SwiftUI
 import Data
 import Utilities
-
-struct DictionaryEntryItem: Identifiable {
-    let id: String
-    let term: String
-    let replacement: String
-    let category: String
-}
+import Models
 
 struct DictionaryView: View {
-    @State private var entries: [DictionaryEntryItem] = []
+    @State private var entries: [DictionaryEntry] = []
     @State private var searchText = ""
     @State private var showAddSheet = false
     @State private var newTerm = ""
     @State private var newReplacement = ""
     @State private var newCategory = ""
 
-    var filteredEntries: [DictionaryEntryItem] {
+    var filteredEntries: [DictionaryEntry] {
         if searchText.isEmpty {
             return entries
         }
@@ -116,9 +110,7 @@ struct DictionaryView: View {
     }
 
     private func refreshEntries() {
-        entries = HistoryStore.shared.getAllDictionaryEntries().map {
-            DictionaryEntryItem(id: $0.id, term: $0.term, replacement: $0.replacement, category: $0.category)
-        }
+        entries = HistoryStore.shared.getAllDictionaryEntries()
     }
 
     private func saveEntry() {
@@ -154,7 +146,7 @@ struct DictionaryView: View {
 }
 
 struct DictionaryEntryRow: View {
-    let entry: DictionaryEntryItem
+    let entry: DictionaryEntry
     let onDelete: () -> Void
 
     var body: some View {

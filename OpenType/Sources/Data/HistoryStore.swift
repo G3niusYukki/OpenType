@@ -3,6 +3,10 @@ import SQLite
 import Models
 import Utilities
 
+public enum HistoryStoreError: Error {
+    case databaseNotInitialized
+}
+
 public class HistoryStore: @unchecked Sendable {
     public static let shared = HistoryStore()
 
@@ -71,7 +75,9 @@ public class HistoryStore: @unchecked Sendable {
     // MARK: - History CRUD
 
     public func saveHistoryEntry(_ entry: HistoryEntry) throws {
-        guard let db = db else { return }
+        guard let db = db else {
+            fatalError("HistoryStore used without valid database connection")
+        }
 
         let insert = history.insert(
             id <- entry.id.uuidString,
@@ -148,7 +154,9 @@ public class HistoryStore: @unchecked Sendable {
     // MARK: - Dictionary CRUD
 
     public func saveDictionaryEntry(term t: String, replacement r: String, category c: String) throws {
-        guard let db = db else { return }
+        guard let db = db else {
+            fatalError("HistoryStore used without valid database connection")
+        }
 
         let insert = dictionary.insert(or: .replace,
             termId <- UUID().uuidString,
@@ -159,12 +167,12 @@ public class HistoryStore: @unchecked Sendable {
         try db.run(insert)
     }
 
-    public func getAllDictionaryEntries() -> [(id: String, term: String, replacement: String, category: String)] {
+    public func getAllDictionaryEntries() -> [DictionaryEntry] {
         guard let db = db else { return [] }
 
         do {
             return try db.prepare(dictionary).map { row in
-                (id: row[termId], term: row[term], replacement: row[replacement], category: row[category])
+                DictionaryEntry(id: row[termId], term: row[term], replacement: row[replacement], category: row[category])
             }
         } catch {
             print("Failed to fetch dictionary: \(error)")

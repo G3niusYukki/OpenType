@@ -132,7 +132,7 @@ struct HistoryRowView: View {
                 .foregroundColor(.primary)
 
             HStack(spacing: 8) {
-                Label(formatDuration(entry.duration), systemImage: "clock")
+                Label(entry.duration.formattedDuration, systemImage: "clock")
                     .font(.caption2)
                     .foregroundColor(.secondary)
 
@@ -142,12 +142,6 @@ struct HistoryRowView: View {
             }
         }
         .padding(.vertical, 4)
-    }
-
-    private func formatDuration(_ duration: TimeInterval) -> String {
-        let minutes = Int(duration) / 60
-        let seconds = Int(duration) % 60
-        return String(format: "%d:%02d", minutes, seconds)
     }
 }
 
@@ -188,7 +182,7 @@ struct HistoryDetailPanel: View {
                     }
                     .buttonStyle(.borderedProminent)
 
-                    Text("Audio (\(formatDuration(entry.duration)))")
+                    Text("Audio (\(entry.duration.formattedDuration))")
                         .font(.caption)
                         .foregroundColor(.secondary)
 
@@ -239,6 +233,7 @@ struct HistoryDetailPanel: View {
             }
             .padding()
         }
+        .onDisappear { audioPlayer?.stop() }
     }
 
     private func playAudio() {
@@ -283,11 +278,5 @@ struct HistoryDetailPanel: View {
             return URL(fileURLWithPath: entry.audioPath)
         }
         return base.appendingPathComponent(entry.audioPath)
-    }
-
-    private func formatDuration(_ duration: TimeInterval) -> String {
-        let minutes = Int(duration) / 60
-        let seconds = Int(duration) % 60
-        return String(format: "%d:%02d", minutes, seconds)
     }
 }
