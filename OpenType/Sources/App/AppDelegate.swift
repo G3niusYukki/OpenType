@@ -82,6 +82,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupHotkeys() {
+        // Request accessibility permission once (shows one dialog)
         if !hotkeyService.checkPermission() {
             hotkeyService.requestPermission()
         }
@@ -107,17 +108,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
 
+        // Show a single alert if any hotkeys failed
         if !failedHotkeys.isEmpty {
             DispatchQueue.main.async {
                 let alert = NSAlert()
-                alert.messageText = "Some Hotkeys Could Not Be Registered"
-                alert.informativeText = "The following hotkeys are unavailable because another application is using them: \(failedHotkeys.joined(separator: ", ")).\n\nYou can change hotkeys in Settings > General."
+                alert.messageText = "Accessibility Permission Required"
+                alert.informativeText = "OpenType needs Accessibility permission to register global hotkeys. The following hotkeys could not be registered: \(failedHotkeys.joined(separator: ", ")).\n\nPlease grant access in System Settings > Privacy & Security > Accessibility, then restart OpenType."
                 alert.alertStyle = .warning
-                alert.addButton(withTitle: "Open Settings")
+                alert.addButton(withTitle: "Open System Settings")
                 alert.addButton(withTitle: "Later")
                 let response = alert.runModal()
                 if response == .alertFirstButtonReturn {
-                    NotificationCenter.default.post(name: .openSettingsWindow, object: nil)
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                        NSWorkspace.shared.open(url)
+                    }
                 }
             }
         }

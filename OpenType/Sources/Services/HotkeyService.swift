@@ -12,6 +12,8 @@ public class HotkeyService {
 
     private init() {}
 
+    private var permissionDenied = false
+
     public func register(keyCode: CGKeyCode, modifiers: CGEventFlags, handler: @escaping () -> Void) -> Bool {
         handlers[keyCode] = handler
         registeredModifiers[modifiers.rawValue] = true
@@ -42,20 +44,7 @@ public class HotkeyService {
             callback: callback,
             userInfo: refcon
         ) else {
-            DispatchQueue.main.async {
-                let alert = NSAlert()
-                alert.messageText = "Accessibility Permission Required"
-                alert.informativeText = "OpenType needs Accessibility permission to register global hotkeys. Please grant access in System Settings > Privacy & Security > Accessibility."
-                alert.alertStyle = .warning
-                alert.addButton(withTitle: "Open System Settings")
-                alert.addButton(withTitle: "Later")
-                let response = alert.runModal()
-                if response == .alertFirstButtonReturn {
-                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-                        NSWorkspace.shared.open(url)
-                    }
-                }
-            }
+            permissionDenied = true
             return false
         }
 
