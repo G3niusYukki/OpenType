@@ -28,6 +28,13 @@ public enum Constants {
         public static let defaultHandsFree = (keyCode: CGKeyCode(49), modifiers: CGEventFlags.maskCommand.union(.maskShift)) // Space
         public static let defaultTranslate = (keyCode: CGKeyCode(17), modifiers: CGEventFlags.maskCommand.union(.maskShift)) // T
         public static let defaultEditSelected = (keyCode: CGKeyCode(14), modifiers: CGEventFlags.maskCommand.union(.maskShift)) // E
+
+        public static let defaultHotkeys: [(id: String, keyCode: Int, modifiers: UInt, name: String)] = [
+            ("basic",        2,  UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue), "Basic Voice Input"),
+            ("handsFree",   49,  UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue), "Hands-Free"),
+            ("translate",   17,  UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue), "Translate"),
+            ("editSelected",14,  UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue), "Edit Selected"),
+        ]
     }
 
     public enum UI {

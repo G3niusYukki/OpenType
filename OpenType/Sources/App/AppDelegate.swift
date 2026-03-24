@@ -2,6 +2,7 @@ import AppKit
 import Data
 import OpenTypeUI
 import Services
+import Utilities
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     let statusBarController = StatusBarController()
@@ -34,20 +35,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             hotkeyService.requestPermission()
         }
 
-        typealias HotkeyDef = (id: String, defaultKeyCode: CGKeyCode, defaultModifiers: CGEventFlags, name: String)
-        let hotkeyDefs: [HotkeyDef] = [
-            ("basic",       CGKeyCode(2),  CGEventFlags.maskCommand.union(.maskShift), "Basic Voice Input (\u{2318}\u{21E7}D)"),
-            ("handsFree",   CGKeyCode(49), CGEventFlags.maskCommand.union(.maskShift), "Hands-Free (\u{2318}\u{21E7}Space)"),
-            ("translate",   CGKeyCode(17), CGEventFlags.maskCommand.union(.maskShift), "Translate (\u{2318}\u{21E7}T)"),
-            ("editSelected",CGKeyCode(14), CGEventFlags.maskCommand.union(.maskShift), "Edit Selected (\u{2318}\u{21E7}E)"),
-        ]
-
         var failedHotkeys: [String] = []
 
-        for def in hotkeyDefs {
+        for def in Constants.Hotkeys.defaultHotkeys {
             let config = SettingsStore.shared.hotkeyConfigs[def.id]
-            let keyCode = CGKeyCode(config?.keyCode ?? Int(def.defaultKeyCode))
-            let modifiers = CGEventFlags(rawValue: UInt64(config?.modifiers ?? UInt(def.defaultModifiers.rawValue)))
+            let keyCode = CGKeyCode(config?.keyCode ?? def.keyCode)
+            let modifiers = CGEventFlags(rawValue: UInt64(config?.modifiers ?? def.modifiers))
 
             let handler: () -> Void
             switch def.id {

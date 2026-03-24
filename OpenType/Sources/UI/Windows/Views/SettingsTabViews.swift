@@ -1,6 +1,5 @@
 import SwiftUI
 import AppKit
-import CoreGraphics
 import Models
 import Data
 import Utilities
@@ -10,13 +9,6 @@ import Utilities
 struct GeneralSettingsView: View {
     @ObservedObject private var settings = SettingsStore.shared
     @State private var accessibilityGranted = PermissionService.shared.checkAccessibilityPermission()
-
-    private let hotkeyItems: [(id: String, label: String, defaultKeyCode: Int, defaultModifiers: UInt)] = [
-        ("basic", "Basic Voice Input", 2,  UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue)),
-        ("handsFree", "Hands-Free",    49, UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue)),
-        ("translate", "Translate",      17, UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue)),
-        ("editSelected", "Edit Selected", 14, UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue)),
-    ]
 
     var body: some View {
         Form {
@@ -28,14 +20,14 @@ struct GeneralSettingsView: View {
             }
 
             Section {
-                ForEach(hotkeyItems, id: \.id) { item in
+                ForEach(Constants.Hotkeys.defaultHotkeys, id: \.id) { item in
                     HStack {
-                        Text(item.label)
+                        Text(item.name)
                         Spacer()
                         HotkeyRecorderButton(
                             config: binding(for: item.id),
-                            defaultKeyCode: item.defaultKeyCode,
-                            defaultModifiers: item.defaultModifiers
+                            defaultKeyCode: item.keyCode,
+                            defaultModifiers: item.modifiers
                         )
                     }
                 }
