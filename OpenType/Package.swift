@@ -23,6 +23,8 @@ let package = Package(
                 "Providers",
                 "Models",
                 "Data",
+                "Utilities",
+                "OpenTypeUI",
                 .product(name: "SQLite", package: "SQLite.swift"),
                 .product(name: "KeychainAccess", package: "KeychainAccess"),
                 .product(name: "Sparkle", package: "Sparkle"),
@@ -42,6 +44,7 @@ let package = Package(
             path: "Sources/Data"
         ),
         .target(name: "Utilities", path: "Sources/Utilities"),
+        .target(name: "OpenTypeUI", path: "Sources/UI"),
         .testTarget(name: "AppTests", dependencies: ["App", "Services", "Data"], path: "Tests"),
     ]
 )
