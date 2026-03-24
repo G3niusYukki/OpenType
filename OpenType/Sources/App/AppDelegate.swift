@@ -11,9 +11,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var mainWindowController: MainWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Run Electron config migration if needed
+        if MigrationService.shared.needsMigration {
+            do {
+                try MigrationService.shared.migrate()
+            } catch {
+                print("Migration failed: \(error)")
+            }
+        }
+
         setupSettingsWindowObserver()
         setupMainWindowObserver()
         setupHotkeys()
+        setupNotifications()
     }
 
     private func setupSettingsWindowObserver() {
@@ -32,6 +42,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             name: .openHistoryWindow,
             object: nil
         )
+    }
+
+    private func setupNotifications() {
+        NotificationCenter.default.addObserver(
+            forName: .openDiagnosticsWindow,
+            object: nil,
+            queue: .main
+        ) { _ in
+            DiagnosticsWindowController.show()
+        }
     }
 
     @objc private func openMainWindow() {
