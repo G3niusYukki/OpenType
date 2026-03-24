@@ -31,8 +31,8 @@ let package = Package(
             ],
             path: "Sources/App"
         ),
-        .target(name: "Services", dependencies: ["Models", "Providers", "Utilities"], path: "Sources/Services"),
-        .target(name: "Providers", dependencies: ["Models", "Utilities"], path: "Sources/Providers"),
+        .target(name: "Services", dependencies: ["Models", "Providers", "Utilities", "Data"], path: "Sources/Services"),
+        .target(name: "Providers", dependencies: ["Models", "Utilities", "Data"], path: "Sources/Providers"),
         .target(name: "Models", path: "Sources/Models"),
         .target(
             name: "Data",
@@ -45,7 +45,7 @@ let package = Package(
             path: "Sources/Data"
         ),
         .target(name: "Utilities", path: "Sources/Utilities"),
-        .target(name: "OpenTypeUI", dependencies: ["Utilities", "Models", "Data"], path: "Sources/UI"),
+        .target(name: "OpenTypeUI", dependencies: ["Utilities", "Models", "Data", "Services"], path: "Sources/UI"),
         .testTarget(name: "AppTests", dependencies: ["App", "Services", "Data"], path: "Tests"),
     ]
 )

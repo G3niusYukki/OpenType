@@ -2,6 +2,7 @@ import AppKit
 import Data
 import OpenTypeUI
 import Services
+import Sparkle
 import Utilities
 
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -9,6 +10,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private let hotkeyService = HotkeyService.shared
     private var settingsWindowController: SettingsWindowController?
     private var mainWindowController: MainWindowController?
+    private var updater: SUUpdater?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Run Electron config migration if needed
@@ -23,6 +25,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupSettingsWindowObserver()
         setupMainWindowObserver()
         setupHotkeys()
+        setupUpdater()
         setupNotifications()
     }
 
@@ -52,6 +55,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ) { _ in
             DiagnosticsWindowController.show()
         }
+    }
+
+    private func setupUpdater() {
+        updater = SUUpdater.shared()
+        updater?.delegate = UpdaterDelegate()
+        updater?.automaticallyChecksForUpdates = SettingsStore.shared.notificationsEnabled
+        updater?.checkForUpdatesInBackground()
     }
 
     @objc private func openMainWindow() {
