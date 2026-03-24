@@ -1,7 +1,7 @@
 import Foundation
 
 public struct DiagnosticResult: Identifiable {
-    public let id = UUID()
+    public var id: String { name }
     public let name: String
     public let status: DiagnosticStatus
     public let details: String

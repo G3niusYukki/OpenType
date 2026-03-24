@@ -37,10 +37,18 @@ public class DiagnosticsService {
         results.append(checkAudioDevices())
 
         // Network
-        results.append(checkNetwork())
+        results.append(await checkNetwork())
 
         // Storage
         results.append(checkStorage())
+
+        // FFmpeg — not required, using Apple Speech Framework
+        results.append(DiagnosticResult(
+            name: "FFmpeg Availability",
+            status: .skipped,
+            details: "FFmpeg is not required — the native app uses Apple Speech Framework for transcription.",
+            suggestion: nil
+        ))
 
         return results
     }
@@ -205,7 +213,7 @@ public class DiagnosticsService {
         }
     }
 
-    private func checkNetwork() -> DiagnosticResult {
+    private func checkNetwork() async -> DiagnosticResult {
         guard let url = URL(string: "https://www.apple.com") else {
             return DiagnosticResult(
                 name: "Network",
@@ -219,7 +227,7 @@ public class DiagnosticsService {
         request.timeoutInterval = 5.0
 
         do {
-            let (_, response) = try URLSession.shared.synchronousDataTask(with: request)
+            let (_, response) = try await URLSession.shared.data(for: request)
             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
                 return DiagnosticResult(
                     name: "Network",
@@ -291,31 +299,5 @@ public class DiagnosticsService {
                 details: "Failed to check/create app directory: \(error.localizedDescription)"
             )
         }
-    }
-}
-
-extension URLSession {
-    func synchronousDataTask(with request: URLRequest) throws -> (Data?, URLResponse?) {
-        var data: Data?
-        var response: URLResponse?
-        var error: Error?
-
-        let semaphore = DispatchSemaphore(value: 0)
-
-        let task = dataTask(with: request) { d, r, e in
-            data = d
-            response = r
-            error = e
-            semaphore.signal()
-        }
-        task.resume()
-
-        semaphore.wait()
-
-        if let e = error {
-            throw e
-        }
-
-        return (data, response)
     }
 }

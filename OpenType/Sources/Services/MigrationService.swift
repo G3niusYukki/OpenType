@@ -2,6 +2,13 @@ import Foundation
 import Utilities
 import Data
 
+// Local migration target type mirroring Data.HotkeyConfig (keyCode + modifiers only, no enabled)
+// The 'enabled' field from Electron config is not migrated as hotkeys are controlled natively.
+private struct MigratedHotkeyConfig: Codable {
+    let keyCode: Int
+    let modifiers: UInt
+}
+
 public class MigrationService {
     public static let shared = MigrationService()
 
@@ -10,8 +17,9 @@ public class MigrationService {
     private init() {}
 
     public var needsMigration: Bool {
-        let electronConfigPath = electronConfigURL.path
-        return fileManager.fileExists(atPath: electronConfigPath)
+        let defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
+        guard !defaults.bool(forKey: "migrationCompleted") else { return false }
+        return fileManager.fileExists(atPath: electronConfigURL.path)
     }
 
     private var electronConfigURL: URL {
@@ -51,6 +59,9 @@ public class MigrationService {
         let defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
         defaults.set(true, forKey: "migrationCompleted")
         defaults.synchronize()
+
+        // 5. Delete the old Electron config file
+        try? fileManager.removeItem(at: electronConfigURL)
     }
 
     private func migrateConfig() throws {
@@ -58,13 +69,12 @@ public class MigrationService {
         let electronConfig = try JSONDecoder().decode(ElectronConfig.self, from: data)
 
         // Migrate hotkey configs
-        var hotkeyConfigs: [String: HotkeyConfig] = [:]
+        var hotkeyConfigs: [String: MigratedHotkeyConfig] = [:]
         if let hotkeys = electronConfig.hotkeys {
             for (id, config) in hotkeys {
-                hotkeyConfigs[id] = HotkeyConfig(
+                hotkeyConfigs[id] = MigratedHotkeyConfig(
                     keyCode: config.keyCode,
-                    modifiers: config.modifiers,
-                    enabled: config.enabled
+                    modifiers: config.modifiers
                 )
             }
         }
@@ -109,7 +119,11 @@ public class MigrationService {
 
         for fileURL in contents {
             let destinationURL = newRecordingsURL.appendingPathComponent(fileURL.lastPathComponent)
-            try? fileManager.copyItem(at: fileURL, to: destinationURL)
+            do {
+                try fileManager.copyItem(at: fileURL, to: destinationURL)
+            } catch {
+                print("Failed to migrate recording \(fileURL.lastPathComponent): \(error)")
+            }
         }
     }
 }
@@ -126,12 +140,6 @@ struct ElectronConfig: Codable {
 }
 
 struct ElectronHotkeyConfig: Codable {
-    let keyCode: Int
-    let modifiers: UInt
-    let enabled: Bool
-}
-
-struct HotkeyConfig: Codable {
     let keyCode: Int
     let modifiers: UInt
     let enabled: Bool
