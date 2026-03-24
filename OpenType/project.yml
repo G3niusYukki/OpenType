@@ -1,0 +1,77 @@
+name: OpenType
+options:
+  bundleIdPrefix: com.opentype
+  deploymentTarget:
+    macOS: "13.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+
+packages:
+  SQLite:
+    url: https://github.com/stephencelis/SQLite.swift
+    from: 0.15.0
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.6.0
+  KeychainAccess:
+    url: https://github.com/kishikawakatsumi/KeychainAccess
+    from: 4.2.0
+
+targets:
+  OpenType:
+    type: application
+    platform: macOS
+    deploymentTarget: 13.0
+    sources:
+      - path: Sources/App
+      - path: Sources/UI
+      - path: Sources/Services
+      - path: Sources/Providers
+      - path: Sources/Models
+      - path: Sources/Data
+      - path: Sources/Utilities
+    resources:
+      - path: Resources
+    dependencies:
+      - package: SQLite
+      - package: Sparkle
+      - package: KeychainAccess
+    info:
+      path: Resources/Info.plist
+      properties:
+        CFBundleName: OpenType
+        CFBundleDisplayName: OpenType
+        CFBundleIdentifier: com.opentype.macos
+        CFBundleVersion: "1"
+        CFBundleShortVersionString: "0.1.0"
+        CFBundlePackageType: APPL
+        CFBundleExecutable: OpenType
+        LSMinimumSystemVersion: "13.0"
+        LSUIElement: true
+        NSPrincipalClass: NSApplication
+        NSMicrophoneUsageDescription: "OpenType needs microphone access to record your voice for transcription."
+        NSSpeechRecognitionUsageDescription: "OpenType uses speech recognition to transcribe your voice."
+    entitlements:
+      path: Resources/OpenType.entitlements
+      properties:
+        com.apple.security.device.microphone: true
+        com.apple.security.device.audio-input: true
+        com.apple.security.automation.apple-events: true
+    settings:
+      base:
+        SWIFT_VERSION: "5.9"
+        MACOSX_DEPLOYMENT_TARGET: "13.0"
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        PRODUCT_BUNDLE_IDENTIFIER: com.opentype.macos
+        INFOPLIST_FILE: Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Resources/OpenType.entitlements
+        ENABLE_HARDENED_RUNTIME: YES
+
+schemes:
+  OpenType:
+    build:
+      targets:
+        OpenType: all
+    run:
+      config: Debug

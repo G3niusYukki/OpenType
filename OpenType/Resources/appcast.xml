@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>OpenType Releases</title>
+    <link>https://github.com/G3niusYukki/OpenType/releases/feed.xml</link>
+    <description>OpenType releases</description>
+  </channel>
+</rss>

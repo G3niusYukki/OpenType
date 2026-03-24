@@ -40,6 +40,13 @@ coverage/
 # OpenCode
 .opencode/
 
+# Swift Package Manager
+.build/
+.build-native/
+.swiftpm/
+*.xcodeproj/
+*.xcworkspace/
+
 # OpenSpec
 openspec/
 .worktrees/
