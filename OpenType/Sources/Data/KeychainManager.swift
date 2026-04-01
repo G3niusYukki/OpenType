@@ -45,4 +45,32 @@ public class KeychainManager {
         return keychain.allKeys().filter { $0.hasPrefix("ai_") }
             .map { String($0.dropFirst("ai_".count)) }
     }
+
+    // MARK: - Multi-credential support (for providers like Alibaba Cloud)
+
+    public func saveCredential(provider: String, keyName: String, value: String) throws {
+        try keychain.set(value, key: "credential_\(provider)_\(keyName)")
+    }
+
+    public func getCredential(provider: String, keyName: String) -> String? {
+        try? keychain.get("credential_\(provider)_\(keyName)")
+    }
+
+    public func deleteCredential(provider: String, keyName: String) throws {
+        try keychain.remove("credential_\(provider)_\(keyName)")
+    }
+
+    public func getAllCredentialsForProvider(provider: String) -> [String: String] {
+        let prefix = "credential_\(provider)_"
+        var credentials: [String: String] = [:]
+        for key in keychain.allKeys() {
+            if key.hasPrefix(prefix) {
+                let keyName = String(key.dropFirst(prefix.count))
+                if let value = try? keychain.get(key) {
+                    credentials[keyName] = value
+                }
+            }
+        }
+        return credentials
+    }
 }

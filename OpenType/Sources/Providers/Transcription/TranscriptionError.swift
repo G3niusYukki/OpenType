@@ -5,6 +5,8 @@ public enum TranscriptionError: Error, LocalizedError {
     case recognitionFailed
     case noResult
     case providerUnavailable
+    case invalidCredentials
+    case quotaExceeded
 
     public var errorDescription: String? {
         switch self {
@@ -12,6 +14,8 @@ public enum TranscriptionError: Error, LocalizedError {
         case .recognitionFailed: return "Speech recognition failed"
         case .noResult: return "No transcription result"
         case .providerUnavailable: return "Transcription provider unavailable"
+        case .invalidCredentials: return "Invalid credentials"
+        case .quotaExceeded: return "API quota exceeded"
         }
     }
 }

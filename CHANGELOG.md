@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Alibaba Cloud ASR Provider** — New transcription provider with HMAC-SHA256 signature authentication
+  - Support for AccessKey ID/Secret credential pairs
+  - Full POP API integration for Chinese ASR
+  - Multi-credential support in KeychainManager
+- **6 New AI Providers** — Complete implementations for:
+  - Groq (llama-3.3-70b-versatile)
+  - Anthropic Claude (claude-3-sonnet)
+  - DeepSeek (deepseek-chat)
+  - Zhipu GLM (glm-4)
+  - MiniMax (abab6.5s-chat)
+  - Moonshot (moonshot-v1-8k)
+- **AIProviderFactory** — Unified factory pattern for AI provider selection
+
+### Fixed
+
+- **Audio Level Detection** — Replaced fake `Float.random()` with real RMS audio metering
+  - Calculates dB levels from actual audio buffers
+  - Smooth level transitions for better UX
+- **AIProcessingService** — Removed hardcoded OpenAIProvider
+  - Now uses AIProviderFactory with user-selected provider
+  - Added `isAvailable()` and `getAvailableProviders()` methods
+- **TranscriptionService** — Fixed `getAvailableProviders()` to return all providers
+- **HistoryStore** — Replaced `fatalError` with proper error throwing (`HistoryStoreError.databaseNotInitialized`)
+- **SettingsTabViews** — Corrected provider lists to match actual implementations
+  - Transcription: Apple Speech, OpenAI Whisper, Groq, Alibaba Cloud ASR
+  - AI: OpenAI, Groq, Anthropic, DeepSeek, Zhipu, MiniMax, Moonshot
+- **OpenAIProvider** — Updated default model from deprecated gpt-3.5-turbo to gpt-4o-mini
+
+### Changed
+
+- **Project Cleanup** — Moved Electron legacy code to `deprecated/` directory
+  - Removed from git tracking via updated `.gitignore`
+  - Clean repository now contains only Swift code
+- **CI/CD** — Updated GitHub Actions for Swift project
+  - New `build-swift.yml` workflow
+  - Updated `quality.yml` for Swift compilation checks
+  - Removed Node.js/Electron CI configuration
+
 ## [0.4.0] - 2026-03-24
 
 ### Added

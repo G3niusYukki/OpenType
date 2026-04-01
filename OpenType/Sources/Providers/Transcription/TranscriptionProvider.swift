@@ -20,8 +20,19 @@ public enum TranscriptionProviderFactory {
             return OpenAIWhisperProvider()
         case "Groq":
             return GroqTranscriptionProvider()
+        case "Alibaba Cloud ASR":
+            return AliyunASRProvider()
         default:
             return AppleSpeechProvider()
         }
+    }
+
+    public static func getAvailableProviders() -> [any TranscriptionProvider] {
+        return [
+            AppleSpeechProvider(),
+            OpenAIWhisperProvider(),
+            GroqTranscriptionProvider(),
+            AliyunASRProvider()
+        ]
     }
 }

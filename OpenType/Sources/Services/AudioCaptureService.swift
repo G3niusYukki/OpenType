@@ -24,6 +24,7 @@ public class AudioCaptureService: ObservableObject {
     private var levelTimer: Timer?
     private var recordingStartTime: Date?
     private var _tempRecordingURL: URL?
+    private var lastAudioBuffer: AVAudioPCMBuffer?
 
     private var tempRecordingURL: URL {
         let tempDir = FileManager.default.temporaryDirectory
@@ -83,6 +84,9 @@ public class AudioCaptureService: ObservableObject {
     private func processAudioBuffer(_ buffer: AVAudioPCMBuffer, converter: AVAudioConverter) {
         guard let audioFile = audioFile else { return }
 
+        // Store buffer for level metering
+        lastAudioBuffer = buffer
+
         let frameCapacity = AVAudioFrameCount(
             Double(buffer.frameLength) * 16000.0 / buffer.format.sampleRate
         )
@@ -114,7 +118,33 @@ public class AudioCaptureService: ObservableObject {
 
     private func updateAudioLevel() {
         guard isRecording else { return }
-        audioLevel = Float.random(in: 0.1...0.8)
+        
+        // Calculate RMS (Root Mean Square) from the last audio buffer
+        guard let buffer = lastAudioBuffer,
+              let channelData = buffer.floatChannelData else {
+            audioLevel = 0.0
+            return
+        }
+        
+        let frameLength = Int(buffer.frameLength)
+        let channelDataPointer = channelData[0]
+        var sum: Float = 0.0
+        
+        for i in 0..<frameLength {
+            let sample = channelDataPointer[i]
+            sum += sample * sample
+        }
+        
+        let rms = sqrt(sum / Float(frameLength))
+        
+        // Convert to logarithmic scale (dB) and normalize to 0.0-1.0
+        // Typical range: -60dB (quiet) to 0dB (loud)
+        let db = 20.0 * log10(max(rms, 0.0001))
+        let normalizedLevel = (db + 60.0) / 60.0
+        
+        // Apply smoothing and clamp to valid range
+        let targetLevel = max(0.0, min(1.0, normalizedLevel))
+        audioLevel = audioLevel * 0.7 + targetLevel * 0.3
     }
 
     public func stopRecording() async throws -> (url: URL, duration: TimeInterval) {

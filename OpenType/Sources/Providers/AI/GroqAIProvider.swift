@@ -1,8 +1,8 @@
 import Foundation
 
-public actor OpenAIProvider: AIProvider {
-    public let name = "OpenAI"
-    private let baseURL = "https://api.openai.com/v1"
+public actor GroqAIProvider: AIProvider {
+    public let name = "Groq"
+    private let baseURL = "https://api.groq.com/openai/v1"
 
     public init() {}
 
@@ -21,7 +21,7 @@ public actor OpenAIProvider: AIProvider {
         """
 
         let body: [String: Any] = [
-            "model": model ?? "gpt-4o-mini",
+            "model": model ?? "llama-3.3-70b-versatile",
             "messages": [
                 ["role": "system", "content": "You are a text post-processor for voice dictation."],
                 ["role": "user", "content": prompt]
@@ -37,7 +37,7 @@ public actor OpenAIProvider: AIProvider {
             throw AIError.requestFailed
         }
 
-        let result = try JSONDecoder().decode(OpenAIResponse.self, from: data)
+        let result = try JSONDecoder().decode(GroqResponse.self, from: data)
         return result.choices.first?.message.content ?? text
     }
 
@@ -55,7 +55,7 @@ public actor OpenAIProvider: AIProvider {
         let prompt = "Translate the following text from \(from) to \(to). Return ONLY the translation:\n\n\(text)"
 
         let body: [String: Any] = [
-            "model": model ?? "gpt-4o-mini",
+            "model": model ?? "llama-3.3-70b-versatile",
             "messages": [
                 ["role": "system", "content": "You are a professional translator."],
                 ["role": "user", "content": prompt]
@@ -71,17 +71,19 @@ public actor OpenAIProvider: AIProvider {
             throw AIError.requestFailed
         }
 
-        let result = try JSONDecoder().decode(OpenAIResponse.self, from: data)
+        let result = try JSONDecoder().decode(GroqResponse.self, from: data)
         return result.choices.first?.message.content ?? text
     }
 }
 
-public struct OpenAIResponse: Codable {
-    public struct Choice: Codable {
-        public struct Message: Codable {
-            public let content: String
-        }
-        public let message: Message
+private struct GroqResponse: Codable {
+    let choices: [Choice]
+    
+    struct Choice: Codable {
+        let message: Message
     }
-    public let choices: [Choice]
+    
+    struct Message: Codable {
+        let content: String
+    }
 }

@@ -76,7 +76,7 @@ public class HistoryStore: @unchecked Sendable {
 
     public func saveHistoryEntry(_ entry: HistoryEntry) throws {
         guard let db = db else {
-            fatalError("HistoryStore used without valid database connection")
+            throw HistoryStoreError.databaseNotInitialized
         }
 
         let insert = history.insert(
@@ -155,7 +155,7 @@ public class HistoryStore: @unchecked Sendable {
 
     public func saveDictionaryEntry(term t: String, replacement r: String, category c: String) throws {
         guard let db = db else {
-            fatalError("HistoryStore used without valid database connection")
+            throw HistoryStoreError.databaseNotInitialized
         }
 
         let insert = dictionary.insert(or: .replace,

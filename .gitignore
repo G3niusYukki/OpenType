@@ -50,3 +50,6 @@ coverage/
 # OpenSpec
 openspec/
 .worktrees/
+
+# Deprecated Electron code
+deprecated/

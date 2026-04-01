@@ -1,48 +1,77 @@
 import Foundation
 import Providers
+import Data
+import Utilities
 
 public class AIProcessingService: @unchecked Sendable {
     public static let shared = AIProcessingService()
 
     private init() {}
 
-    public func process(text: String, apiKey: String) async throws -> String {
-        let provider = OpenAIProvider()
-        return try await provider.process(text: text, apiKey: apiKey)
+    private func getProvider() -> any AIProvider {
+        let providerName = SettingsStore.shared.selectedAIProvider
+        return AIProviderFactory.makeProvider(name: providerName)
     }
 
-    public func removeFillers(text: String, apiKey: String) async throws -> String {
-        let provider = OpenAIProvider()
-        return try await provider.removeFillers(text: text, apiKey: apiKey)
+    private func getAPIKey(for providerName: String) -> String? {
+        return KeychainManager.shared.getAIAPIKey(provider: providerName)
     }
 
-    public func translate(text: String, from: String, to: String, apiKey: String) async throws -> String {
-        let url = URL(string: "https://api.openai.com/v1/chat/completions")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    private func getModel(for providerName: String) -> String? {
+        // Get custom model from settings if configured
+        let defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
+        let key = "ai_model_\(providerName)"
+        return defaults.string(forKey: key)
+    }
 
-        let prompt = "Translate the following text from \(from) to \(to). Return ONLY the translation:\n\n\(text)"
-
-        let body: [String: Any] = [
-            "model": "gpt-3.5-turbo",
-            "messages": [
-                ["role": "system", "content": "You are a professional translator."],
-                ["role": "user", "content": prompt]
-            ],
-            "temperature": 0.3
-        ]
-
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw AIError.requestFailed
+    public func process(text: String) async throws -> String {
+        let provider = getProvider()
+        let providerName = SettingsStore.shared.selectedAIProvider
+        
+        guard let apiKey = getAPIKey(for: providerName) else {
+            throw AIError.apiKeyNotFound
         }
-
-        let result = try JSONDecoder().decode(OpenAIResponse.self, from: data)
-        return result.choices.first?.message.content ?? text
+        
+        let model = getModel(for: providerName)
+        return try await provider.process(text: text, apiKey: apiKey, model: model)
     }
+
+    public func removeFillers(text: String) async throws -> String {
+        let provider = getProvider()
+        let providerName = SettingsStore.shared.selectedAIProvider
+        
+        guard let apiKey = getAPIKey(for: providerName) else {
+            throw AIError.apiKeyNotFound
+        }
+        
+        let model = getModel(for: providerName)
+        return try await provider.removeFillers(text: text, apiKey: apiKey, model: model)
+    }
+
+    public func translate(text: String, from: String, to: String) async throws -> String {
+        let provider = getProvider()
+        let providerName = SettingsStore.shared.selectedAIProvider
+        
+        guard let apiKey = getAPIKey(for: providerName) else {
+            throw AIError.apiKeyNotFound
+        }
+        
+        let model = getModel(for: providerName)
+        return try await provider.translate(text: text, from: from, to: to, apiKey: apiKey, model: model)
+    }
+
+    public func getAvailableProviders() -> [any AIProvider] {
+        return AIProviderFactory.getAvailableProviders()
+    }
+
+    public func isAvailable() -> Bool {
+        let providerName = SettingsStore.shared.selectedAIProvider
+        return getAPIKey(for: providerName) != nil
+    }
+}
+
+public enum AIError: Error {
+    case requestFailed
+    case apiKeyNotFound
+    case invalidResponse
 }

@@ -236,7 +236,7 @@ struct TranscriptionSettingsView: View {
         case idle, saved, error
     }
 
-    private let providers = ["Apple Speech", "Whisper", "Deepgram", "AssemblyAI"]
+    private let providers = ["Apple Speech", "OpenAI Whisper", "Groq", "Alibaba Cloud ASR"]
 
     var body: some View {
         Form {
@@ -315,7 +315,7 @@ struct AISettingsView: View {
         case idle, saved, error
     }
 
-    private let providers = ["OpenAI", "Anthropic", "Google AI"]
+    private let providers = ["OpenAI", "Groq", "Anthropic", "DeepSeek", "Zhipu", "MiniMax", "Moonshot"]
 
     var body: some View {
         Form {

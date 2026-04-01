@@ -172,8 +172,8 @@ struct NewProfileSheet: View {
     let onSave: () -> Void
     let onCancel: () -> Void
 
-    private let transcriptionProviders = ["Apple Speech", "OpenAI Whisper", "Groq", "Alibaba", "Tencent", "Baidu", "iFlytek"]
-    private let aiProviders = ["OpenAI", "Anthropic", "DeepSeek", "Zhipu", "MiniMax", "Moonshot", "Groq"]
+    private let transcriptionProviders = ["Apple Speech", "OpenAI Whisper", "Groq", "Alibaba Cloud ASR"]
+    private let aiProviders = ["OpenAI", "Groq", "Anthropic", "DeepSeek", "Zhipu", "MiniMax", "Moonshot"]
 
     var body: some View {
         VStack(spacing: 16) {

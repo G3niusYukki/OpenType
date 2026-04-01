@@ -15,7 +15,7 @@ public class TranscriptionService: @unchecked Sendable {
         return try await provider.transcribe(audioURL: audioURL, language: language)
     }
 
-    public func getAvailableProviders() -> [TranscriptionProvider] {
-        return [AppleSpeechProvider()]
+    public func getAvailableProviders() -> [any TranscriptionProvider] {
+        return TranscriptionProviderFactory.getAvailableProviders()
     }
 }

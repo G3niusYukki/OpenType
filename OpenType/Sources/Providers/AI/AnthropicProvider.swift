@@ -1,16 +1,17 @@
 import Foundation
 
-public actor OpenAIProvider: AIProvider {
-    public let name = "OpenAI"
-    private let baseURL = "https://api.openai.com/v1"
+public actor AnthropicProvider: AIProvider {
+    public let name = "Anthropic Claude"
+    private let baseURL = "https://api.anthropic.com/v1"
 
     public init() {}
 
     public func process(text: String, apiKey: String, model: String?) async throws -> String {
-        let url = URL(string: "\(baseURL)/chat/completions")!
+        let url = URL(string: "\(baseURL)/messages")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("\(apiKey)", forHTTPHeaderField: "x-api-key")
+        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let prompt = """
@@ -21,9 +22,9 @@ public actor OpenAIProvider: AIProvider {
         """
 
         let body: [String: Any] = [
-            "model": model ?? "gpt-4o-mini",
+            "model": model ?? "claude-3-sonnet-20240229",
+            "max_tokens": 4096,
             "messages": [
-                ["role": "system", "content": "You are a text post-processor for voice dictation."],
                 ["role": "user", "content": prompt]
             ],
             "temperature": 0.3
@@ -37,8 +38,11 @@ public actor OpenAIProvider: AIProvider {
             throw AIError.requestFailed
         }
 
-        let result = try JSONDecoder().decode(OpenAIResponse.self, from: data)
-        return result.choices.first?.message.content ?? text
+        let result = try JSONDecoder().decode(AnthropicResponse.self, from: data)
+        if let content = result.content.first, content.type == "text" {
+            return content.text
+        }
+        return text
     }
 
     public func removeFillers(text: String, apiKey: String, model: String?) async throws -> String {
@@ -46,18 +50,19 @@ public actor OpenAIProvider: AIProvider {
     }
 
     public func translate(text: String, from: String, to: String, apiKey: String, model: String?) async throws -> String {
-        let url = URL(string: "\(baseURL)/chat/completions")!
+        let url = URL(string: "\(baseURL)/messages")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("\(apiKey)", forHTTPHeaderField: "x-api-key")
+        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let prompt = "Translate the following text from \(from) to \(to). Return ONLY the translation:\n\n\(text)"
 
         let body: [String: Any] = [
-            "model": model ?? "gpt-4o-mini",
+            "model": model ?? "claude-3-sonnet-20240229",
+            "max_tokens": 4096,
             "messages": [
-                ["role": "system", "content": "You are a professional translator."],
                 ["role": "user", "content": prompt]
             ],
             "temperature": 0.3
@@ -71,17 +76,19 @@ public actor OpenAIProvider: AIProvider {
             throw AIError.requestFailed
         }
 
-        let result = try JSONDecoder().decode(OpenAIResponse.self, from: data)
-        return result.choices.first?.message.content ?? text
+        let result = try JSONDecoder().decode(AnthropicResponse.self, from: data)
+        if let content = result.content.first, content.type == "text" {
+            return content.text
+        }
+        return text
     }
 }
 
-public struct OpenAIResponse: Codable {
-    public struct Choice: Codable {
-        public struct Message: Codable {
-            public let content: String
-        }
-        public let message: Message
+private struct AnthropicResponse: Codable {
+    let content: [ContentBlock]
+    
+    struct ContentBlock: Codable {
+        let type: String
+        let text: String
     }
-    public let choices: [Choice]
 }

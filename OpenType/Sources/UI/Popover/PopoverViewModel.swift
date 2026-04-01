@@ -48,14 +48,10 @@ class PopoverViewModel: ObservableObject {
                 // Step 2: Transcribe audio
                 let result = try await transcriptionService.transcribe(audioURL: url)
 
-                // Step 3: Get API key and run AI processing
-                let apiKey = KeychainManager.shared.getAIAPIKey(
-                    provider: SettingsStore.shared.selectedAIProvider
-                ) ?? ""
-
+                // Step 3: Run AI processing if available
                 var processedText = result.text
-                if !apiKey.isEmpty {
-                    processedText = try await aiService.process(text: result.text, apiKey: apiKey)
+                if aiService.isAvailable() {
+                    processedText = try await aiService.process(text: result.text)
                 }
 
                 // Step 4: Save to history
