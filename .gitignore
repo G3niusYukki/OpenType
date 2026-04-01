@@ -53,3 +53,7 @@ openspec/
 
 # Deprecated Electron code
 deprecated/
+
+# Development planning files
+.sisyphus/
+docs/superpowers/
