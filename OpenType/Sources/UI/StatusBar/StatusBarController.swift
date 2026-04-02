@@ -20,14 +20,48 @@ public class StatusBarController: NSObject, ObservableObject {
     private func setupStatusItem() {
         guard let button = statusItem.button else { return }
         button.image = NSImage(systemSymbolName: StatusBarIcon.idle.symbolName, accessibilityDescription: "OpenType")
-        button.action = #selector(togglePopover)
+        button.action = #selector(statusBarButtonClicked(_:))
         button.target = self
+        button.sendAction(on: [.leftMouseUp, .rightMouseUp])
     }
 
     private func setupPopover() {
         popover.contentSize = NSSize(width: Constants.UI.popoverWidth, height: Constants.UI.popoverHeight)
         popover.behavior = .transient
         popover.animates = true
+    }
+
+    @objc private func statusBarButtonClicked(_ sender: Any?) {
+        if NSApp.currentEvent?.type == .rightMouseUp {
+            showMenu()
+        } else {
+            togglePopover()
+        }
+    }
+
+    private func showMenu() {
+        let menu = NSMenu()
+
+        menu.addItem(NSMenuItem(title: "Open OpenType", action: #selector(openApp), keyEquivalent: "o"))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Quit OpenType", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+
+        statusItem.menu = menu
+        statusItem.button?.performClick(nil)
+        DispatchQueue.main.async { [weak self] in
+            self?.statusItem.menu = nil
+        }
+    }
+
+    @objc private func openApp() {
+        NSApp.activate(ignoringOtherApps: true)
+        NotificationCenter.default.post(name: .openHistoryWindow, object: nil)
+    }
+
+    @objc private func openSettings() {
+        NotificationCenter.default.post(name: .openSettingsWindow, object: nil)
     }
 
     @objc private func togglePopover() {

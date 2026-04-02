@@ -47,7 +47,7 @@ targets:
         CFBundlePackageType: APPL
         CFBundleExecutable: OpenType
         LSMinimumSystemVersion: "13.0"
-        LSUIElement: true
+        LSUIElement: false
         NSPrincipalClass: NSApplication
         NSMicrophoneUsageDescription: "OpenType needs microphone access to record your voice for transcription."
         NSSpeechRecognitionUsageDescription: "OpenType uses speech recognition to transcribe your voice."

@@ -25,7 +25,7 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>13.0</string>
 	<key>LSUIElement</key>
-	<true/>
+	<false/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>OpenType needs microphone access to record your voice for transcription.</string>
 	<key>NSPrincipalClass</key>

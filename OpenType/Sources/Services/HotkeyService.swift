@@ -7,22 +7,25 @@ public class HotkeyService {
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
-    private var handlers: [CGKeyCode: () -> Void] = [:]
-    private var registeredModifiers: [UInt64: Bool] = [:]
+    private struct Registration {
+        let modifiers: CGEventFlags
+        let handler: () -> Void
+    }
+    private var registrations: [CGKeyCode: Registration] = [:]
 
     private init() {}
 
     private var permissionDenied = false
 
+    @discardableResult
     public func register(keyCode: CGKeyCode, modifiers: CGEventFlags, handler: @escaping () -> Void) -> Bool {
-        handlers[keyCode] = handler
-        registeredModifiers[modifiers.rawValue] = true
+        registrations[keyCode] = Registration(modifiers: modifiers, handler: handler)
 
-        if eventTap != nil {
-            unregisterAll()
+        // Create event tap on first registration
+        if eventTap == nil {
+            return createEventTap()
         }
-
-        return createEventTap()
+        return true
     }
 
     private func createEventTap() -> Bool {
@@ -57,24 +60,30 @@ public class HotkeyService {
     }
 
     private func handleEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+        if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            if let tap = eventTap {
+                CGEvent.tapEnable(tap: tap, enable: true)
+            }
+            return Unmanaged.passUnretained(event)
+        }
+
         guard type == .keyDown else { return Unmanaged.passUnretained(event) }
 
         let keyCode = CGKeyCode(event.getIntegerValueField(.keyboardEventKeycode))
         let flags = event.flags
 
-        for (registeredKeyCode, handler) in handlers {
-            if keyCode == registeredKeyCode {
-                let hasCommand = flags.contains(.maskCommand)
-                let hasShift = flags.contains(.maskShift)
+        guard let registration = registrations[keyCode] else {
+            return Unmanaged.passUnretained(event)
+        }
 
-                let requiresCommand = registeredModifiers[CGEventFlags.maskCommand.union(.maskShift).rawValue] == true
-                if requiresCommand && hasCommand && hasShift {
-                    DispatchQueue.main.async {
-                        handler()
-                    }
-                    return nil
-                }
+        // Check that exactly the required modifier flags are present
+        let required = registration.modifiers
+        let actual = flags.intersection(.maskCommand.union(.maskShift).union(.maskAlternate).union(.maskControl))
+        if actual == required {
+            DispatchQueue.main.async {
+                registration.handler()
             }
+            return nil
         }
 
         return Unmanaged.passUnretained(event)
@@ -89,8 +98,7 @@ public class HotkeyService {
         }
         eventTap = nil
         runLoopSource = nil
-        handlers.removeAll()
-        registeredModifiers.removeAll()
+        registrations.removeAll()
     }
 
     public func checkPermission() -> Bool {
