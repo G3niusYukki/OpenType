@@ -46,5 +46,10 @@ let package = Package(
         ),
         .target(name: "Utilities", path: "Sources/Utilities"),
         .target(name: "OpenTypeUI", dependencies: ["Utilities", "Models", "Data", "Services"], path: "Sources/UI"),
+        .testTarget(
+            name: "OpenTypeTests",
+            dependencies: ["Services", "Models", "Data", "Utilities", "Providers"],
+            path: "Tests"
+        ),
     ]
 )
