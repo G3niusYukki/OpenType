@@ -58,6 +58,15 @@ AppToneRule
   appName: String                  // display name
   toneDescription: String          // e.g. "Professional"
   instructions: String             // prompt fragment
+
+TonePreset (enum)
+  professional                    // "Write in a formal, professional tone..."
+  casual                          // "Write in a relaxed, conversational tone..."
+  concise                         // "Be brief and direct..."
+  creative                        // "Use vivid, expressive language..."
+  academic                        // "Write in a scholarly tone..."
+
+Each case has a `key: String` (for localization) and `instructions: String` (prompt fragment).
 ```
 
 ### Persistence
@@ -105,19 +114,21 @@ Users can review and delete style examples in Settings > Style. This ensures tra
 The key method on StyleProfileService:
 
 ```swift
-func buildPrompt(rawText: String, appBundleID: String?) -> String
+func buildSystemPrompt(appBundleID: String?) -> String
 ```
 
-The `mode: VoiceMode` parameter is intentionally omitted from the signature — prompt structure does not vary by mode. Mode-specific logic (translate, edit) lives in PopoverViewModel which constructs its own prompts for those modes and calls `buildPrompt` only for basic/hands-free processing.
+This method returns the **system prompt only** (instructions + tone rules + examples). It does NOT include the raw user text. The raw text is passed separately as the `text` parameter to `AIProvider.process(prompt:text:)`.
 
 Assembly order:
 1. **Base system prompt** — the current hardcoded prompt (filler removal, formatting, repetition cleanup)
 2. **Global tone rules** — merge `ToneRule.instructions` from the active StyleProfile
 3. **App-specific tone** — if `appBundleID` matches an `AppToneRule`, merge those instructions (override/supplement global tone)
 4. **Few-shot examples** — append 2-3 most relevant `StyleExample` pairs as context (prioritize examples from the same app, then most recent)
-5. **User text** — append the raw transcribed text
 
-The final prompt is a single string passed to the AI provider.
+The returned string is the system message. The caller passes the user's raw text separately as the user message. This clean separation ensures:
+- Edit mode can construct its own system prompt via `buildEditPrompt()` without going through `buildSystemPrompt()`
+- Translation mode can construct its own system prompt via `buildTranslationPrompt()` without going through `buildSystemPrompt()`
+- The AI provider protocol's `prompt` (system) / `text` (user) split is respected
 
 ### Token Budget
 
@@ -125,8 +136,7 @@ Prompt merging must respect a token budget to avoid exceeding model context wind
 
 - **Base prompt + tone rules + app tone**: max 500 tokens (these are instruction fragments, typically short)
 - **Style examples**: max 800 tokens total across 2-3 examples. Truncate individual examples at 300 tokens each. Prioritize same-app examples, then most recent.
-- **User text**: no limit (this is the primary content)
-- **Total budget**: 1300 tokens of overhead before user text
+- **Total budget**: 1300 tokens of overhead
 
 If the assembled prompt exceeds budget, truncate style examples first (reduce count from 3→2→1→0), then truncate individual example text. The base prompt and tone rules are never truncated.
 
@@ -142,21 +152,21 @@ Current protocol methods (all with hardcoded prompts):
 ```swift
 func process(text: String, apiKey: String, model: String?) async throws -> String
 func removeFillers(text: String, apiKey: String, model: String?) async throws -> String
-func translate(text: String, from: String, to: String, apiKey: String?, model: String?) async throws -> String
+func translate(text: String, from: String, to: String, apiKey: String, model: String?) async throws -> String
 ```
 
 New protocol:
 ```swift
 func process(prompt: String, text: String, apiKey: String, model: String?) async throws -> String
-func translate(prompt: String, text: String, from: String, to: String, apiKey: String?, model: String?) async throws -> String
+func translate(prompt: String, text: String, from: String, to: String, apiKey: String, model: String?) async throws -> String
 ```
 
 Changes:
-- `process()` gains `prompt` parameter — the fully assembled system prompt from StyleProfileService
+- `process()` gains `prompt` parameter — the system message (instructions + tone + style examples)
 - `removeFillers()` is **removed** — it was identical to `process()` anyway. Use `process()` with the base prompt instead.
-- `translate()` gains `prompt` parameter — allows style-aware translation in the future. For now, pass the translation base prompt.
-- `apiKey` parameter remains `String` (non-optional) for `translate()` to match the current protocol. The optional `apiKey: String?` in the current `translate()` is a pre-existing inconsistency — keep it as-is during this refactor to minimize changes.
-- The `prompt` parameter is the system message; `text` is the user message. Hardcoded prompts are removed from all 7 providers.
+- `translate()` gains `prompt` parameter — the system message for translation
+- `apiKey` is `String` (non-optional) for all methods, matching the current protocol
+- `prompt` is the system message; `text` is the user message. This clean separation allows different modes (basic, edit, translate) to construct their own system prompts independently.
 
 The `removeFillers()` removal is safe. Codebase audit confirms:
 1. It used the exact same prompt as `process()` in all 7 provider implementations
@@ -167,10 +177,9 @@ The `removeFillers()` removal is safe. Codebase audit confirms:
 
 `AIProcessingService` gains a dependency on `StyleProfileService.shared` (singleton, following the same pattern as all other services in the codebase):
 ```swift
+// Basic/hands-free mode: use StyleProfileService for system prompt
 func process(text: String, appBundleID: String? = nil) async throws -> String {
-    let prompt = styleProfileService.buildPrompt(
-        rawText: text, appBundleID: appBundleID
-    )
+    let prompt = styleProfileService.buildSystemPrompt(appBundleID: appBundleID)
     let provider = AIProviderFactory.makeProvider(name: settings.selectedAIProvider)
     return try await provider.process(
         prompt: prompt, text: text,
@@ -179,6 +188,17 @@ func process(text: String, appBundleID: String? = nil) async throws -> String {
     )
 }
 
+// Edit mode: caller provides the system prompt directly (bypasses buildSystemPrompt)
+func processWithPrompt(prompt: String, text: String) async throws -> String {
+    let provider = AIProviderFactory.makeProvider(name: settings.selectedAIProvider)
+    return try await provider.process(
+        prompt: prompt, text: text,
+        apiKey: keychain.getKey(for: settings.selectedAIProvider),
+        model: settings.selectedAIModel
+    )
+}
+
+// Translate mode: use StyleProfileService for translation system prompt
 func translate(text: String, from: String, to: String, appBundleID: String? = nil) async throws -> String {
     let prompt = styleProfileService.buildTranslationPrompt(from: from, to: to, appBundleID: appBundleID)
     let provider = AIProviderFactory.makeProvider(name: settings.selectedAIProvider)
@@ -190,20 +210,7 @@ func translate(text: String, from: String, to: String, appBundleID: String? = ni
 }
 ```
 
-### Translation Prompt
-
-`StyleProfileService.buildTranslationPrompt(from:to:appBundleID:)`:
-```swift
-func buildTranslationPrompt(from: String, to: String, appBundleID: String?) -> String {
-    var parts = ["Translate the following text from \(from) to \(to). Return ONLY the translation."]
-    if let appTone = getAppTone(for: appBundleID) {
-        parts.append(appTone.instructions)
-    }
-    return parts.joined(separator: " ")
-}
-```
-
-Translation uses a simpler prompt assembly: base translation instruction + app tone rules (no style examples, since style learning is about writing style, not translation accuracy).
+**Edit mode path**: PopoverViewModel calls `aiService.processWithPrompt(prompt:text:)` with the prompt from `StyleProfileService.buildEditPrompt()`. This bypasses `buildSystemPrompt()` because edit mode needs its own prompt structure (selected text + edit command + tone + style context).
 ```
 
 The `removeFillers()` method is removed. Callers should use `process()` which includes filler removal in its base prompt.
@@ -302,14 +309,16 @@ Automatically detect the spoken language and support 100+ languages via cloud pr
 - `SFSpeechRecognizer` requires a `Locale` at init time — there is no language-agnostic auto-detect mode
 - **Auto-detect architecture**: Create an `AppleSpeechAutoDetector` class that manages up to 3 `SFSpeechRecognizer` instances (one per locale). It runs recognition in parallel with `async let` and returns the result with the highest confidence. This class is owned by `AppleSpeechProvider` and used only when auto-detect is on.
 - **`recentLocales` persistence**: Stored in UserDefaults key `recentLocales` as `[String]` (locale identifiers). Updated after each successful detection. On first launch, defaults to `[Locale.current.identifier]`. Persisted in `SettingsStore`.
-- `SFSpeechRecognitionResult` returns the detected locale — extract and return in `TranscriptionResult.detectedLanguage`
-- Fallback: if all parallel recognizers fail or return low confidence, use user's configured `sourceLanguage`
+- **Confidence computation**: `SFSpeechRecognitionResult` has no top-level confidence. Compute confidence as the average of `result.bestTranscription.segments.map(\.confidence)`. Compare average confidences across parallel recognizer results and select the highest.
+- **Detected language**: Since `SFSpeechRecognitionResult` does not have a `locale` property, the detected language is derived from the winning recognizer's configured locale (`recognizer.locale.identifier`). Return this in `TranscriptionResult.detectedLanguage`.
+- Fallback: if all parallel recognizers fail or return average confidence < 0.3, use user's configured `sourceLanguage`
 - **When auto-detect is OFF**: Use `Locale.current` or user's configured language (current behavior)
+- **Streaming + auto-detect**: Auto-detect only applies to final `transcribe()` (file-based recognition with parallel `async let`). During streaming (`transcribeStreaming()`), use the most recently detected locale from the last successful transcription, or `Locale.current` if no history. Streaming with 3 concurrent recognizers is not supported — it would require merging 3 real-time partial result streams, which is architecturally complex and provides minimal UX benefit since the final result will auto-detect correctly.
 
 **Tier 2 — Cloud providers (Whisper/Groq/Aliyun, 99+ languages)**:
 - When `language` is nil and auto-detect is on, send requests without the `language` parameter, letting the model auto-detect
 - When Apple Speech has already detected a language, pass it as a hint to cloud providers to improve accuracy
-- **Cloud providers must populate `detectedLanguage`** in `TranscriptionResult` when auto-detect is on. The Whisper API already returns a `language` field in its response (not `detected_language`). When auto-detect is on, map this `language` field to `TranscriptionResult.detectedLanguage` instead of `TranscriptionResult.language`.
+- **Cloud providers `detectedLanguage` contract**: When auto-detect is on and the API returns a detected language, set `TranscriptionResult.detectedLanguage` to the detected language code and `TranscriptionResult.language` to the same value. When auto-detect is off, set `TranscriptionResult.language` to the configured language and leave `detectedLanguage` nil.
 
 **Groq model change**: The current Groq transcription provider hardcodes `distil-whisper-large-v3-en` (English-only). Model selection logic:
 - Auto-detect ON → `whisper-large-v3` (multilingual)
@@ -331,7 +340,7 @@ init(from decoder: Decoder) throws {
     autoDetectLanguage = try container.decodeIfPresent(Bool.self, forKey: .autoDetectLanguage) ?? true
 }
 
-override func encode(to encoder: Encoder) throws {
+func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     // ... encode all properties including autoDetectLanguage ...
 }
@@ -513,12 +522,14 @@ User stops recording
        [if auto-detect ON + Apple Speech: parallel locale recognition]
        [if auto-detect OFF: use VoiceModeConfig.sourceLanguage]
   -> DictionaryService.applyReplacements(to: rawText)
-  -> StyleProfileService.buildPrompt(rawText:, appBundleID:)
+  -> StyleProfileService.buildSystemPrompt(appBundleID:)
        [merge: base prompt + tone rules + app tone + style examples]
        [if no active profile: base prompt only]
   -> AIProcessingService.process(text:, appBundleID:)
-       [provider executes with assembled prompt]
+       [basic/hands-free: buildSystemPrompt + user text as separate messages]
   -> For edit mode: EditCommandDetector.detect(voiceText)
+       -> StyleProfileService.buildEditPrompt(selectedText:, command:, appBundleID:)
+       -> AIProcessingService.processWithPrompt(prompt:, text:)
        [route to replace or insert-after based on command]
        [use locale-aware prompt template]
   -> TextInsertionService inserts/replaces text
@@ -530,7 +541,7 @@ User stops recording
 ### Prompt Merging Flow
 
 ```
-StyleProfileService.buildPrompt()
+StyleProfileService.buildSystemPrompt()
   |
   +-- Base system prompt (filler removal, formatting)
   |
@@ -540,10 +551,14 @@ StyleProfileService.buildPrompt()
   |
   +-- 2-3 relevant StyleExamples (few-shot context, prioritize same app)
   |
-  +-- User's raw transcribed text
+  v
+  System prompt string
+
+  +-- User's raw transcribed text (passed separately as 'text' param)
   |
   v
-  Fully assembled prompt -> AI provider
+  AIProvider.process(prompt: systemPrompt, text: userText)
+  [prompt = system message, text = user message]
 ```
 
 ---
