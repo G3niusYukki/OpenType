@@ -1,6 +1,7 @@
 import Foundation
 import Providers
 import Data
+import Models
 import Utilities
 
 public class AIProcessingService: @unchecked Sendable {
@@ -24,40 +25,42 @@ public class AIProcessingService: @unchecked Sendable {
         return defaults.string(forKey: key)
     }
 
-    public func process(text: String) async throws -> String {
+    public func process(text: String, appBundleID: String? = nil) async throws -> String {
         let provider = getProvider()
         let providerName = SettingsStore.shared.selectedAIProvider
-        
+
         guard let apiKey = getAPIKey(for: providerName) else {
             throw AIError.apiKeyNotFound
         }
-        
+
         let model = getModel(for: providerName)
-        return try await provider.process(text: text, apiKey: apiKey, model: model)
+        let prompt = StyleProfileService.shared.buildSystemPrompt(appBundleID: appBundleID)
+        return try await provider.process(prompt: prompt, text: text, apiKey: apiKey, model: model)
     }
 
-    public func removeFillers(text: String) async throws -> String {
+    public func processWithPrompt(prompt: String, text: String) async throws -> String {
         let provider = getProvider()
         let providerName = SettingsStore.shared.selectedAIProvider
-        
+
         guard let apiKey = getAPIKey(for: providerName) else {
             throw AIError.apiKeyNotFound
         }
-        
+
         let model = getModel(for: providerName)
-        return try await provider.removeFillers(text: text, apiKey: apiKey, model: model)
+        return try await provider.process(prompt: prompt, text: text, apiKey: apiKey, model: model)
     }
 
-    public func translate(text: String, from: String, to: String) async throws -> String {
+    public func translate(text: String, from: String, to: String, appBundleID: String? = nil) async throws -> String {
         let provider = getProvider()
         let providerName = SettingsStore.shared.selectedAIProvider
-        
+
         guard let apiKey = getAPIKey(for: providerName) else {
             throw AIError.apiKeyNotFound
         }
-        
+
         let model = getModel(for: providerName)
-        return try await provider.translate(text: text, from: from, to: to, apiKey: apiKey, model: model)
+        let prompt = StyleProfileService.shared.buildTranslationPrompt(from: from, to: to, appBundleID: appBundleID)
+        return try await provider.translate(prompt: prompt, text: text, from: from, to: to, apiKey: apiKey, model: model)
     }
 
     public func getAvailableProviders() -> [any AIProvider] {

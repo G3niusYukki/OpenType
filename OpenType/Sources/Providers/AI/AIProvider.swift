@@ -2,9 +2,8 @@ import Foundation
 
 public protocol AIProvider: Sendable {
     var name: String { get }
-    func process(text: String, apiKey: String, model: String?) async throws -> String
-    func removeFillers(text: String, apiKey: String, model: String?) async throws -> String
-    func translate(text: String, from: String, to: String, apiKey: String, model: String?) async throws -> String
+    func process(prompt: String, text: String, apiKey: String, model: String?) async throws -> String
+    func translate(prompt: String, text: String, from: String, to: String, apiKey: String, model: String?) async throws -> String
 }
 
 public enum AIProviderFactory {
