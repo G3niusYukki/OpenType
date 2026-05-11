@@ -2,68 +2,97 @@
 
 ## 🎉 Major Improvements
 
-### 🎙️ New Transcription Provider: Alibaba Cloud ASR
+### 🎙️ Core Pipeline Complete — All 4 Voice Modes Working
 
-We're excited to announce support for **Alibaba Cloud ASR**, providing high-quality Chinese speech recognition with enterprise-grade reliability.
+All four voice input modes are now fully functional with proper routing:
 
-**Features:**
-- HMAC-SHA256 signature authentication for secure API access
-- Support for AccessKey ID/Secret credential pairs
-- Optimized for Chinese language transcription
-- Real-time punctuation and text normalization
+| Mode | Pipeline |
+|------|----------|
+| **Basic** | Record → Transcribe → Dictionary → AI Process → Insert |
+| **Translate** | Record → Transcribe → Dictionary → AI Translate → Insert |
+| **Edit Selected** | Get Selection → Record → Transcribe → AI Edit → Replace |
+| **Hands-Free** | Toggle start/stop with proper state management |
 
-**Setup:**
-1. Go to Settings → Transcription
-2. Select "Alibaba Cloud ASR"
-3. Enter your AccessKey ID and Secret (get them from Alibaba Cloud Console)
+### 🎙️ Streaming Transcription (Apple Speech)
 
-### 🤖 6 New AI Post-Processing Providers
+Apple Speech provider now supports real-time streaming transcription via `AsyncThrowingStream`. See partial results appear as you speak instead of waiting for the recording to finish.
 
-OpenType now supports **7 AI providers** total, giving you maximum flexibility:
+### 📚 Dictionary System Fully Integrated
 
-| Provider | Best For | Model |
-|----------|----------|-------|
-| OpenAI | General purpose | gpt-4o-mini |
-| **Groq** | Speed | llama-3.3-70b-versatile |
-| **Anthropic** | Quality | claude-3-sonnet |
-| **DeepSeek** | Chinese text | deepseek-chat |
-| **Zhipu GLM** | Chinese AI | glm-4 |
-| **MiniMax** | Chinese AI | abab6.5s-chat |
-| **Moonshot** | Chinese AI | moonshot-v1-8k |
+Custom dictionary entries now apply to all transcriptions automatically. Longest-match-first replacement prevents partial-match issues.
 
-**New:** AI providers are now dynamically selectable in Settings → AI Provider
+### 👤 Profile System Active
 
-### 🐛 Bug Fixes
+Switching profiles now updates transcription and AI provider settings in real-time.
 
-#### Real Audio Level Detection
-- **Fixed:** Audio waveform visualization was using fake random data
-- **Now:** Real RMS (Root Mean Square) calculation from actual audio buffers
-- **Result:** Accurate audio level feedback during recording
+### 🔔 Notifications & Launch at Login
 
-#### AI Provider Selection
-- **Fixed:** AI processing always used OpenAI regardless of user selection
-- **Now:** Respects user-selected provider via new AIProviderFactory
-- **Result:** Your preferred AI provider is actually used
+- Transcription completion notifications via UserNotifications
+- SMAppService integration for auto-launch at login
 
-#### Improved Error Handling
-- **Fixed:** Database errors caused app crashes (fatalError)
-- **Now:** Graceful error handling with user-friendly messages
-- **Result:** More stable app experience
+### 🎨 Error Banner UI
 
-### 🧹 Code Cleanup
+Toast-style error messages with retry option for transcription failures, microphone permission issues, and API errors.
 
-- **Removed:** All Electron legacy code moved to `deprecated/` directory
-- **Repository:** Clean Swift-only codebase
-- **CI/CD:** Updated GitHub Actions for Swift builds
+---
+
+## 🐛 Bug Fixes
+
+### Critical Fixes
+- **LSUIElement** — Fixed to `true` for true menu bar app (no Dock icon)
+- **Hands-Free Toggle** — Now correctly toggles recording on/off via status bar controller
+- **Voice Mode Filtering** — Disabled modes are now hidden from popover and hotkeys are not registered
+- **Hotkey Hot-Reload** — Changing hotkeys in Settings takes effect immediately (no restart needed)
+
+### Quality Fixes
+- **Audio Playback** — Replaced timer-based stop with `AVAudioPlayerDelegate` for reliable playback
+- **App Termination** — Proper cleanup on exit: stops recording, cleans temp files, unregisters hotkeys
+- **Temp File Cleanup** — Automatic cleanup of old recording files
+- **Alibaba Cloud ASR** — Upgraded to ACS3-HMAC-SHA256 signature v3 with proper headers
+
+---
 
 ## 📊 Technical Stats
 
-| Metric | Before | After |
-|--------|--------|-------|
-| Transcription Providers | 3 | 4 (+34%) |
-| AI Providers | 1 | 7 (+600%) |
-| Fake Implementations | 1 | 0 |
-| Code Quality Score | 7/10 | 9/10 |
+| Metric | v0.4.0 | v0.5.0 |
+|--------|--------|--------|
+| Transcription Providers | 4 | 4 |
+| AI Providers | 7 | 7 |
+| Voice Modes (functional) | 1/4 | 4/4 ✅ |
+| Unit Tests | 0 | 17 |
+| Dictionary Integration | UI only | Fully wired ✅ |
+| Profile Integration | UI only | Fully wired ✅ |
+| Error Handling | print() only | Toast UI ✅ |
+
+---
+
+## 📝 What's New Since v0.4.0
+
+### New Features
+- **Core pipeline routing** — All 4 voice modes fully functional
+- **Dictionary Service** — Real-time word replacement from user dictionary
+- **Profile Service** — Profile switching updates provider settings
+- **Error Banner UI** — Toast-style error display with retry
+- **Notification Service** — Transcription completion notifications
+- **Launch at Login** — SMAppService auto-launch
+- **Streaming Transcription** — `AsyncThrowingStream` protocol + AppleSpeechProvider implementation
+- **About Page** — Version info and links in Settings
+- **Sparkle Update Feed** — SUFeedURL configured
+
+### Bug Fixes
+- Hands-free toggle via status bar controller
+- Voice mode enable/disable filtering
+- Hotkey hot-reload on settings change
+- AVAudioPlayerDelegate for reliable audio playback
+- App termination cleanup
+- Temp file automatic cleanup
+- Alibaba Cloud ASR ACS3-HMAC-SHA256 signature v3
+- LSUIElement set to true
+
+### Testing
+- 17 unit tests (models, settings, dictionary, voice mode configs)
+
+---
 
 ## 🚀 Installation
 
@@ -85,23 +114,23 @@ cd OpenType/OpenType
 swift build -c release
 ```
 
+---
+
 ## 📝 API Key Setup
 
-### OpenAI / Groq / Anthropic
+### OpenAI / Groq / Anthropic / DeepSeek / Zhipu / MiniMax / Moonshot
 1. Get API key from provider's website
 2. Open OpenType → Settings → AI
 3. Select provider and enter API key
 
 ### Alibaba Cloud ASR
 1. Sign up at [Alibaba Cloud](https://www.alibabacloud.com/)
-2. Create AccessKey ID and Secret
+2. Create AccessKey ID and Secret in RAM console
 3. Open OpenType → Settings → Transcription
-4. Select "Alibaba Cloud ASR" and enter credentials
+4. Select "Alibaba Cloud ASR" and enter credentials (separate ID and Secret fields)
 
-## 🙏 Contributors
-
-Special thanks to all contributors who helped improve OpenType!
+---
 
 ## 📄 License
 
-MIT License © 2024 OpenType Contributors
+MIT License © 2024-2026 OpenType Contributors

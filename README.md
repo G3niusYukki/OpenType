@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/G3niusYukki/OpenType/releases"><img src="https://img.shields.io/github/v/release/G3niusYukki/OpenType?include_prereleases&color=blue" alt="Release"></a>
+  <a href="https://github.com/G3niusYukki/OpenType/releases"><img src="https://img.shields.io/github/v/release/G3niusYukki/OpenType?color=blue" alt="Release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg" alt="Platform">
   <img src="https://img.shields.io/badge/Swift-5.9-orange.svg" alt="Swift">

@@ -5,11 +5,11 @@ All notable changes to OpenType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.0] - 2026-05-11
 
 ### Added
 
-- **Alibaba Cloud ASR Provider** — New transcription provider with HMAC-SHA256 signature authentication
+- **Alibaba Cloud ASR Provider** — New transcription provider with ACS3-HMAC-SHA256 signature v3
   - Support for AccessKey ID/Secret credential pairs
   - Full POP API integration for Chinese ASR
   - Multi-credential support in KeychainManager
@@ -21,6 +21,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - MiniMax (abab6.5s-chat)
   - Moonshot (moonshot-v1-8k)
 - **AIProviderFactory** — Unified factory pattern for AI provider selection
+- **Core Pipeline Routing** — All 4 voice modes now properly routed:
+  - Basic: record → transcribe → dictionary → AI process → insert
+  - Translate: record → transcribe → dictionary → AI translate → insert
+  - Edit Selected: get selected text → record → transcribe → AI edit → replace selection
+  - Hands-Free: toggle start/stop with proper state management
+- **Dictionary Service** — Real-time word replacement from user dictionary
+  - Longest-match-first replacement to prevent partial matches
+  - Case-insensitive and width-insensitive matching
+- **Profile Service** — Profile activation now updates transcription/AI provider settings
+- **Error Banner UI** — Toast-style error display with retry option
+- **Notification Service** — Transcription completion notifications via UserNotifications
+- **Launch at Login** — SMAppService integration for auto-launch
+- **Streaming Transcription** — New `transcribeStreaming()` protocol method with `AsyncThrowingStream`
+  - AppleSpeechProvider supports real-time partial results
+- **About Page** — App version, build info, links in Settings
+- **Sparkle Update Feed** — SUFeedURL configured for auto-updates
 
 ### Fixed
 
@@ -29,23 +45,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Smooth level transitions for better UX
 - **AIProcessingService** — Removed hardcoded OpenAIProvider
   - Now uses AIProviderFactory with user-selected provider
-  - Added `isAvailable()` and `getAvailableProviders()` methods
-- **TranscriptionService** — Fixed `getAvailableProviders()` to return all providers
-- **HistoryStore** — Replaced `fatalError` with proper error throwing (`HistoryStoreError.databaseNotInitialized`)
-- **SettingsTabViews** — Corrected provider lists to match actual implementations
-  - Transcription: Apple Speech, OpenAI Whisper, Groq, Alibaba Cloud ASR
-  - AI: OpenAI, Groq, Anthropic, DeepSeek, Zhipu, MiniMax, Moonshot
+- **HistoryStore** — Replaced `fatalError` with proper error throwing
+- **LSUIElement** — Fixed to `true` for true menu bar app behavior (no Dock icon)
+- **Hotkey Hot-Reload** — Changing hotkeys in Settings now takes effect immediately without restart
+- **Hands-Free Toggle** — StatusBarController now handles hands-free hotkey for toggle behavior
+- **Voice Mode Filtering** — Disabled voice modes are hidden from the popover and their hotkeys are not registered
+- **Audio Playback** — Replaced unreliable timer-based stop with `AVAudioPlayerDelegate`
+- **App Termination** — Proper cleanup on exit: stop recording, clean temp files, unregister hotkeys
+- **Alibaba Cloud ASR** — Signature upgraded to ACS3-HMAC-SHA256 v3 with proper timestamp and x-acs-* headers
+- **Temp File Cleanup** — Automatic cleanup of old recording files, keeping recent 20
 - **OpenAIProvider** — Updated default model from deprecated gpt-3.5-turbo to gpt-4o-mini
 
 ### Changed
 
 - **Project Cleanup** — Moved Electron legacy code to `deprecated/` directory
-  - Removed from git tracking via updated `.gitignore`
-  - Clean repository now contains only Swift code
 - **CI/CD** — Updated GitHub Actions for Swift project
-  - New `build-swift.yml` workflow
-  - Updated `quality.yml` for Swift compilation checks
-  - Removed Node.js/Electron CI configuration
+- **Tests** — Added 17 unit tests covering models, settings, dictionary, and voice mode configs
 
 ## [0.4.0] - 2026-03-24
 
