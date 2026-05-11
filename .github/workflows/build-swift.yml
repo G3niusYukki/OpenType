@@ -30,7 +30,7 @@ jobs:
       - name: Run Swift Tests
         run: |
           cd OpenType
-          swift test 2>/dev/null || echo "No tests configured yet"
+          swift test
 
       - name: Build Release Archive
         if: startsWith(github.ref, 'refs/tags/')
@@ -59,15 +59,33 @@ jobs:
           cd OpenType
           swift build -c release
 
-      - name: Package Release
+      - name: Create App Bundle
         run: |
-          cd OpenType/.build/release
-          zip -r ../../../OpenType.zip OpenType
+          mkdir -p OpenType.app/Contents/MacOS
+          mkdir -p OpenType.app/Contents/Resources
+          cp OpenType/.build/release/OpenType OpenType.app/Contents/MacOS/
+          cp OpenType/Resources/Info.plist OpenType.app/Contents/
+          echo "APPL????" > OpenType.app/Contents/PkgInfo
 
-      - name: Upload Release Asset
+      - name: Create DMG
+        run: |
+          mkdir -p dmg_root
+          cp -R OpenType.app dmg_root/
+          hdiutil create -volname "OpenType" -srcfolder dmg_root -ov -format UDZO OpenType.dmg
+
+      - name: Extract Release Notes
+        id: notes
+        run: |
+          NOTES=$(cat RELEASE.md)
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Upload Release
         uses: softprops/action-gh-release@v1
         with:
-          files: OpenType.zip
+          files: OpenType.dmg
+          body: ${{ steps.notes.outputs.body }}
           draft: false
           prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
         env:
