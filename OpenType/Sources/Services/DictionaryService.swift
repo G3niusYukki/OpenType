@@ -1,4 +1,5 @@
 import Foundation
+import NaturalLanguage
 import Data
 
 public class DictionaryService {
@@ -13,7 +14,6 @@ public class DictionaryService {
         guard !entries.isEmpty else { return text }
 
         var result = text
-        // 按 term 长度降序排序，长词优先替换
         let sorted = entries.sorted { $0.term.count > $1.term.count }
         for entry in sorted {
             result = result.replacingOccurrences(
@@ -23,5 +23,32 @@ public class DictionaryService {
             )
         }
         return result
+    }
+
+    /// 从文本中自动学习新词条 — 使用 NSLinguisticTagger 提取专有名词
+    public func learnFromText(_ text: String) {
+        let existingEntries = HistoryStore.shared.getAllDictionaryEntries()
+        let existingTerms = Set(existingEntries.map { $0.term.lowercased() })
+
+        let tagger = NSLinguisticTagger(tagSchemes: [.nameType], options: 0)
+        tagger.string = text
+
+        let range = NSRange(location: 0, length: text.utf16.count)
+        var detectedTerms: [String: Int] = [:]
+
+        tagger.enumerateTags(in: range, unit: .word, scheme: .nameType, options: [.omitWhitespace]) { tag, tokenRange, _ in
+            if tag == .personalName || tag == .placeName || tag == .organizationName {
+                let term = (text as NSString).substring(with: tokenRange)
+                detectedTerms[term, default: 0] += 1
+            }
+        }
+
+        for (term, count) in detectedTerms where count >= 2 && !existingTerms.contains(term.lowercased()) {
+            try? HistoryStore.shared.saveDictionaryEntry(
+                term: term,
+                replacement: term,
+                category: "Auto"
+            )
+        }
     }
 }

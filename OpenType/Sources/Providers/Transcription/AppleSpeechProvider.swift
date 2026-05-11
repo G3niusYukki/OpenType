@@ -34,13 +34,12 @@ public class AppleSpeechProvider: TranscriptionProvider, @unchecked Sendable {
                 guard let result = result, result.isFinal else { return }
 
                 let text = result.bestTranscription.formattedString
-                let detectedLocale = result.bestTranscription.segments.first.map { _ in
-                    self.recognizer.locale.identifier
-                }
+                let detected = self.recognizer.locale.identifier
 
                 let transcriptionResult = TranscriptionResult(
                     text: text,
-                    language: language ?? detectedLocale,
+                    language: language ?? detected,
+                    detectedLanguage: detected,
                     confidence: nil,
                     segments: nil,
                     duration: 0,

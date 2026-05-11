@@ -32,6 +32,18 @@ struct PopoverView: View {
                 onStopRecording: { viewModel.stopRecording() }
             )
 
+            // Language indicator
+            if let lang = viewModel.detectedLang, !viewModel.isRecording {
+                HStack(spacing: 4) {
+                    Text(langEmoji(for: lang))
+                    Text(langDisplayName(for: lang))
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.top, 4)
+            }
+
             // Error banner
             if let error = errorState {
                 ErrorBannerView(state: error)
@@ -46,7 +58,9 @@ struct PopoverView: View {
                 .padding(.vertical, 8)
 
             TranscriptionResultView(
-                text: viewModel.transcribedText,
+                liveText: viewModel.liveText,
+                finalText: viewModel.transcribedText,
+                isRecording: viewModel.isRecording,
                 isProcessing: viewModel.isProcessing
             )
 
@@ -106,5 +120,23 @@ struct PopoverView: View {
                 errorState = ErrorBannerState(title: "操作失败", message: message)
             }
         }
+    }
+
+    private func langEmoji(for code: String) -> String {
+        switch code.prefix(2) {
+        case "zh": return "🇨🇳"
+        case "en": return "🇺🇸"
+        case "ja": return "🇯🇵"
+        case "ko": return "🇰🇷"
+        case "fr": return "🇫🇷"
+        case "de": return "🇩🇪"
+        case "es": return "🇪🇸"
+        case "pt": return "🇵🇹"
+        default: return "🌐"
+        }
+    }
+
+    private func langDisplayName(for code: String) -> String {
+        Locale.current.localizedString(forIdentifier: code) ?? code
     }
 }

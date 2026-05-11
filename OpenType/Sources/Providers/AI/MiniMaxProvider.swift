@@ -14,8 +14,11 @@ public actor MiniMaxProvider: AIProvider {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let prompt = """
-        Process the following transcribed text. Remove filler words (um, uh, 嗯, 啊),
-        fix repetitions, and clean up self-corrections while preserving the meaning:
+        Process the following transcribed text:
+        1. Remove filler words (um, uh, 嗯, 啊)
+        2. Fix repetitions and self-corrections
+        3. Auto-format: organize lists, steps, and key points into structured text
+        4. Preserve the original meaning and tone
 
         \(text)
         """

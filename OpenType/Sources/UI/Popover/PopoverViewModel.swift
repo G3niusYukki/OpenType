@@ -9,6 +9,8 @@ class PopoverViewModel: ObservableObject {
     @Published var isRecording = false
     @Published var isProcessing = false
     @Published var transcribedText = ""
+    @Published var liveText = ""
+    @Published var detectedLang: String?
     @Published var recentHistory: [HistoryEntry] = []
     @Published var currentMode: VoiceMode = .basic
     @Published var isHandsFreeActive = false
@@ -18,6 +20,7 @@ class PopoverViewModel: ObservableObject {
     private let aiService = AIProcessingService.shared
     private let textInserter = TextInsertionService.shared
     private let dictionaryService = DictionaryService.shared
+    private var streamingTask: Task<Void, Never>?
 
     init() {
         recentHistory = HistoryStore.shared.getRecentHistory(limit: 3)
@@ -27,14 +30,42 @@ class PopoverViewModel: ObservableObject {
         currentMode = mode
         isRecording = true
         transcribedText = ""
+        liveText = ""
+        detectedLang = nil
 
         Task {
             do {
                 try await audioService.startRecording()
+                // 启动流式转写
+                startStreamingTranscription()
             } catch {
                 print("Failed to start recording: \(error)")
                 isRecording = false
                 postError("录音启动失败: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func startStreamingTranscription() {
+        streamingTask?.cancel()
+        streamingTask = Task {
+            // 等待音频文件有数据
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            guard !Task.isCancelled, isRecording else { return }
+
+            do {
+                // 获取当前录音文件 URL
+                let tempFile = FileManager.default.temporaryDirectory
+                    .appendingPathComponent("opentype_stream_temp.wav")
+
+                let stream = transcriptionService.transcribeStreaming(audioURL: tempFile)
+                for try await text in stream {
+                    guard !Task.isCancelled, isRecording else { break }
+                    liveText = text
+                }
+            } catch {
+                // 流式转写失败，不打断录音
+                print("Streaming transcription error: \(error)")
             }
         }
     }
@@ -64,14 +95,22 @@ class PopoverViewModel: ObservableObject {
     func stopRecording() {
         isRecording = false
         isProcessing = true
+        streamingTask?.cancel()
+        streamingTask = nil
 
         Task {
             do {
                 let (url, duration) = try await audioService.stopRecording()
                 let result = try await transcriptionService.transcribe(audioURL: url)
 
+                // 优先使用流式实时结果，如果为空则用文件转写结果
+                let rawText = liveText.isEmpty ? result.text : liveText
+
                 // 词典替换
-                let dictionaryText = dictionaryService.applyReplacements(to: result.text)
+                let dictionaryText = dictionaryService.applyReplacements(to: rawText)
+
+                // 语言检测
+                detectedLang = result.detectedLanguage ?? result.language
 
                 // 按模式分流处理
                 let finalText = try await processForMode(dictionaryText, audioURL: url)
@@ -88,12 +127,16 @@ class PopoverViewModel: ObservableObject {
                 )
                 try? HistoryStore.shared.saveHistoryEntry(entry)
 
+                // 自动学习词典
+                dictionaryService.learnFromText(rawText)
+
                 // UI 更新
                 transcribedText = finalText
+                liveText = ""
                 recentHistory = HistoryStore.shared.getRecentHistory(limit: 3)
                 isProcessing = false
 
-                // 自动插入文本（hands-free 模式不自动插入，由用户手动触发）
+                // 自动插入文本
                 if currentMode != .handsFree {
                     if currentMode == .editSelected {
                         textInserter.replaceSelectedText(with: finalText)
@@ -102,7 +145,6 @@ class PopoverViewModel: ObservableObject {
                     }
                 }
 
-                // 清理临时文件
                 audioService.cleanupTempFiles(keepingRecent: 20)
             } catch {
                 handleError(error)
