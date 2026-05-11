@@ -171,4 +171,26 @@ public class AudioCaptureService: ObservableObject {
     public func getRecordingDuration() -> TimeInterval {
         recordingStartTime.map { Date().timeIntervalSince($0) } ?? 0
     }
+
+    public func cleanupTempFiles(keepingRecent: Int = 20) {
+        let tempDir = FileManager.default.temporaryDirectory
+        do {
+            let files = try FileManager.default.contentsOfDirectory(
+                at: tempDir,
+                includingPropertiesForKeys: [.creationDateKey]
+            ).filter { $0.lastPathComponent.hasPrefix("opentype_recording_") }
+
+            let sorted = files.sorted { a, b in
+                let dateA = (try? a.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? Date.distantPast
+                let dateB = (try? b.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? Date.distantPast
+                return dateA > dateB
+            }
+
+            for file in sorted.dropFirst(keepingRecent) {
+                try? FileManager.default.removeItem(at: file)
+            }
+        } catch {
+            print("Failed to cleanup temp files: \(error)")
+        }
+    }
 }

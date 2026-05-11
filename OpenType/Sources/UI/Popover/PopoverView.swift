@@ -1,15 +1,23 @@
 import SwiftUI
 import Utilities
 import Models
+import Data
 
 struct PopoverView: View {
-    @StateObject private var viewModel = PopoverViewModel()
+    @ObservedObject var viewModel: PopoverViewModel
     @State private var selectedMode: VoiceMode = .basic
+    @State private var errorState: ErrorBannerState?
+
+    private var enabledModes: [VoiceMode] {
+        VoiceMode.allCases.filter { mode in
+            SettingsStore.shared.voiceModeConfigs[mode]?.enabled ?? true
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             Picker("Mode", selection: $selectedMode) {
-                ForEach(VoiceMode.allCases, id: \.self) { mode in
+                ForEach(enabledModes, id: \.self) { mode in
                     Text(mode.displayName).tag(mode)
                 }
             }
@@ -23,6 +31,16 @@ struct PopoverView: View {
                 onStartRecording: { viewModel.startRecording(mode: selectedMode) },
                 onStopRecording: { viewModel.stopRecording() }
             )
+
+            // Error banner
+            if let error = errorState {
+                ErrorBannerView(state: error)
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
+                            withAnimation { errorState = nil }
+                        }
+                    }
+            }
 
             Divider()
                 .padding(.vertical, 8)
@@ -83,5 +101,10 @@ struct PopoverView: View {
             .padding(8)
         }
         .frame(width: Constants.UI.popoverWidth, height: Constants.UI.popoverHeight)
+        .onReceive(NotificationCenter.default.publisher(for: .transcriptionError)) { notification in
+            if let message = notification.userInfo?["message"] as? String {
+                errorState = ErrorBannerState(title: "操作失败", message: message)
+            }
+        }
     }
 }

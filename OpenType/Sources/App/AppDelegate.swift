@@ -1,5 +1,6 @@
 import AppKit
 import Data
+import Models
 import OpenTypeUI
 import Services
 import Sparkle
@@ -26,6 +27,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupSettingsWindowObserver()
         setupMainWindowObserver()
         setupHotkeys()
+        setupHotkeyObserver()
         setupUpdater()
         setupNotifications()
     }
@@ -90,6 +92,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         var failedHotkeys: [String] = []
 
         for def in Constants.Hotkeys.defaultHotkeys {
+            // 检查该模式是否启用
+            if let mode = VoiceMode(rawValue: def.id), let modeConfig = SettingsStore.shared.voiceModeConfigs[mode], !modeConfig.enabled {
+                continue
+            }
+
             let config = SettingsStore.shared.hotkeyConfigs[def.id]
             let keyCode = CGKeyCode(config?.keyCode ?? def.keyCode)
             let modifiers = CGEventFlags(rawValue: UInt64(config?.modifiers ?? def.modifiers))
@@ -143,8 +150,33 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NotificationCenter.default.post(name: .hotkeyEditSelected, object: nil)
     }
 
-    func applicationWillTerminate(_ notification: Notification) {
+    private func setupHotkeyObserver() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(reloadHotkeys),
+            name: .hotkeyConfigChanged,
+            object: nil
+        )
+    }
+
+    @objc private func reloadHotkeys() {
         hotkeyService.unregisterAll()
+        setupHotkeys()
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        // 停止录音
+        if AudioCaptureService.shared.isRecording {
+            let semaphore = DispatchSemaphore(value: 0)
+            Task {
+                _ = try? await AudioCaptureService.shared.stopRecording()
+                semaphore.signal()
+            }
+            _ = semaphore.wait(timeout: .now() + 2)
+        }
+
+        hotkeyService.unregisterAll()
+        AudioCaptureService.shared.cleanupTempFiles(keepingRecent: 0)
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -152,9 +184,4 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-extension Notification.Name {
-    static let hotkeyBasic = Notification.Name("hotkeyBasic")
-    static let hotkeyHandsFree = Notification.Name("hotkeyHandsFree")
-    static let hotkeyTranslate = Notification.Name("hotkeyTranslate")
-    static let hotkeyEditSelected = Notification.Name("hotkeyEditSelected")
-}
+

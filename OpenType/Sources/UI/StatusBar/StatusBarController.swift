@@ -5,6 +5,7 @@ import Utilities
 public class StatusBarController: NSObject, ObservableObject {
     private var statusItem: NSStatusItem
     private var popover: NSPopover
+    private var popoverViewModel: PopoverViewModel?
     @Published public var currentIcon: StatusBarIcon = .idle
 
     public override init() {
@@ -15,6 +16,23 @@ public class StatusBarController: NSObject, ObservableObject {
 
         setupStatusItem()
         setupPopover()
+        setupNotificationObservers()
+    }
+
+    private func setupNotificationObservers() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleHandsFreeHotkey),
+            name: .hotkeyHandsFree,
+            object: nil
+        )
+    }
+
+    @objc private func handleHandsFreeHotkey() {
+        guard let viewModel = popoverViewModel else { return }
+        Task { @MainActor in
+            viewModel.toggleHandsFree()
+        }
     }
 
     private func setupStatusItem() {
@@ -68,13 +86,17 @@ public class StatusBarController: NSObject, ObservableObject {
         if popover.isShown {
             closePopover()
         } else {
-            showPopover()
+            Task { @MainActor in
+                showPopover()
+            }
         }
     }
 
-    public func showPopover() {
+    @MainActor public func showPopover() {
         guard let button = statusItem.button else { return }
-        popover.contentViewController = NSHostingController(rootView: PopoverView())
+        let viewModel = PopoverViewModel()
+        self.popoverViewModel = viewModel
+        popover.contentViewController = NSHostingController(rootView: PopoverView(viewModel: viewModel))
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
     }
 

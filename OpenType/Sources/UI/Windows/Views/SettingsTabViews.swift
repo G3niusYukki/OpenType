@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import ServiceManagement
 import Models
 import Data
 import Utilities
@@ -13,7 +14,22 @@ struct GeneralSettingsView: View {
     var body: some View {
         Form {
             Section {
-                Toggle("Launch at Login", isOn: $settings.launchAtLogin)
+                Toggle("Launch at Login", isOn: Binding(
+                    get: { settings.launchAtLogin },
+                    set: { newValue in
+                        settings.launchAtLogin = newValue
+                        do {
+                            if newValue {
+                                try SMAppService.mainApp.register()
+                            } else {
+                                try SMAppService.mainApp.unregister()
+                            }
+                        } catch {
+                            print("SMAppService error: \(error)")
+                            settings.launchAtLogin = !newValue
+                        }
+                    }
+                ))
                 Toggle("Enable Notifications", isOn: $settings.notificationsEnabled)
             } header: {
                 Text("Startup")
@@ -127,6 +143,7 @@ struct HotkeyRecorderButton: View {
                 NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue
             )
             config = HotkeyConfig(keyCode: keyCode, modifiers: modifiers)
+            NotificationCenter.default.post(name: .hotkeyConfigChanged, object: nil)
             stopRecording()
             return nil
         }

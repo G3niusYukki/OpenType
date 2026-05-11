@@ -87,6 +87,47 @@ public class TextInsertionService {
         return nil
     }
 
+    public func replaceSelectedText(with newText: String) {
+        guard PermissionService.shared.checkAccessibilityPermission() else {
+            insertViaClipboard(newText)
+            return
+        }
+
+        let systemWideElement = AXUIElementCreateSystemWide()
+        var focusedElement: CFTypeRef?
+        AXUIElementCopyAttributeValue(systemWideElement, kAXFocusedUIElementAttribute as CFString, &focusedElement)
+
+        guard let element = focusedElement else {
+            insertViaClipboard(newText)
+            return
+        }
+
+        let axElement = element as! AXUIElement
+
+        // Delete existing selection by backspacing first, then paste
+        let source = CGEventSource(stateID: .hidSystemState)
+
+        // Backspace to clear selection
+        if let deleteDown = CGEvent(keyboardEventSource: source, virtualKey: 0x33, keyDown: true),
+           let deleteUp = CGEvent(keyboardEventSource: source, virtualKey: 0x33, keyDown: false) {
+            deleteDown.post(tap: .cgAnnotatedSessionEventTap)
+            deleteUp.post(tap: .cgAnnotatedSessionEventTap)
+        }
+
+        // Insert the new text via clipboard paste
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(newText, forType: .string)
+
+        if let cmdVDown = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: true),
+           let cmdVUp = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: false) {
+            cmdVDown.flags = .maskCommand
+            cmdVUp.flags = .maskCommand
+            cmdVDown.post(tap: .cgAnnotatedSessionEventTap)
+            cmdVUp.post(tap: .cgAnnotatedSessionEventTap)
+        }
+    }
+
     public func hasAccessibilityPermission() -> Bool {
         PermissionService.shared.checkAccessibilityPermission()
     }
