@@ -26,6 +26,8 @@ Build shared infrastructure (StyleProfileService) first, then stack features on 
 
 A new service that manages the user's writing style data and builds context-aware AI prompts by merging a base system prompt with style instructions and tone rules. Replaces hardcoded prompts in all 7 AI providers.
 
+**Relationship to existing `Profile` model**: The current `Profile` struct pairs a transcription provider with an AI provider. `StyleProfile` is a separate concept — it manages style/tone configuration. They are complementary: a user has a Profile (which providers to use) and a StyleProfile (how to write). A future version may merge them, but for v0.6.0 they are independent. Settings shows them in separate tabs.
+
 ### Data Model
 
 ```
@@ -62,21 +64,27 @@ AppToneRule
 
 New SQLite tables in HistoryStore:
 - `style_profiles` — StyleProfile rows
-- `style_examples` — StyleExample rows, FK to style_profiles
-- `tone_rules` — ToneRule rows, FK to style_profiles
-- `app_tone_rules` — AppToneRule rows, FK to style_profiles
+- `style_examples` — StyleExample rows, FK to style_profiles (ON DELETE CASCADE)
+- `tone_rules` — ToneRule rows, FK to style_profiles (ON DELETE CASCADE)
+- `app_tone_rules` — AppToneRule rows, FK to style_profiles (ON DELETE CASCADE)
+
+All child tables use `ON DELETE CASCADE` so deleting a StyleProfile automatically removes its examples, rules, and app tones. Enable `PRAGMA foreign_keys = ON` in HistoryStore's SQLite connection (currently not set).
 
 SQLite is preferred over UserDefaults for style examples because:
 - Style examples can grow unbounded (each dictation = one example)
 - UserDefaults has no practical size limits but queries are inefficient for collections
 - HistoryStore already manages SQLite, adding tables is natural
 
+Also add `appBundleID` column to the existing `history` table so past dictations retain their app context for retroactive style example creation.
+
 ### Style Learning — Explicit Opt-In
 
-After each dictation, the popover shows an "Accept as style example" button. When tapped:
+After each dictation in basic/hands-free/translate modes, the popover shows an "Accept as style example" button. When tapped:
 1. The raw transcribed text + final polished text are saved as a `StyleExample`
 2. The `appBundleID` is captured from `NSWorkspace.shared.frontmostApplication`
 3. The example is associated with the active `StyleProfile`
+
+**Hands-free mode**: Since text is auto-inserted without user interaction, the "Accept as style example" button appears in the popover but is not auto-triggered. The user must click it to save the example. If they don't interact with the popover before it closes, the example is not saved. This keeps hands-free truly hands-free while still allowing style collection when desired.
 
 Users can review and delete style examples in Settings > Style. This ensures training data quality — only output the user explicitly approves enters the style profile.
 
@@ -85,8 +93,10 @@ Users can review and delete style examples in Settings > Style. This ensures tra
 The key method on StyleProfileService:
 
 ```swift
-func buildPrompt(rawText: String, mode: VoiceMode, appBundleID: String?) -> String
+func buildPrompt(rawText: String, appBundleID: String?) -> String
 ```
+
+The `mode: VoiceMode` parameter is intentionally omitted from the signature — prompt structure does not vary by mode. Mode-specific logic (translate, edit) lives in PopoverViewModel which constructs its own prompts for those modes and calls `buildPrompt` only for basic/hands-free processing.
 
 Assembly order:
 1. **Base system prompt** — the current hardcoded prompt (filler removal, formatting, repetition cleanup)
@@ -97,21 +107,45 @@ Assembly order:
 
 The final prompt is a single string passed to the AI provider.
 
+### Token Budget
+
+Prompt merging must respect a token budget to avoid exceeding model context windows. Strategy:
+
+- **Base prompt + tone rules + app tone**: max 500 tokens (these are instruction fragments, typically short)
+- **Style examples**: max 800 tokens total across 2-3 examples. Truncate individual examples at 300 tokens each. Prioritize same-app examples, then most recent.
+- **User text**: no limit (this is the primary content)
+- **Total budget**: 1300 tokens of overhead before user text
+
+If the assembled prompt exceeds budget, truncate style examples first (reduce count from 3→2→1→0), then truncate individual example text. The base prompt and tone rules are never truncated.
+
+### No Active Profile Fallback
+
+When no StyleProfile exists (first launch) or no profile is active, `buildPrompt()` returns the base system prompt only — equivalent to v0.5.0 behavior. This fallback ensures the app works immediately after install without requiring style profile setup.
+
 ### AIProvider Protocol Change
 
-Current protocol:
+Current protocol methods (all with hardcoded prompts):
 ```swift
-func process(text: String, apiKey: String, model: String) async throws -> String
+func process(text: String, apiKey: String, model: String?) async throws -> String
+func removeFillers(text: String, apiKey: String, model: String?) async throws -> String
+func translate(text: String, from: String, to: String, apiKey: String?, model: String?) async throws -> String
 ```
 
 New protocol:
 ```swift
-func process(prompt: String, text: String, apiKey: String, model: String) async throws -> String
+func process(prompt: String, text: String, apiKey: String, model: String?) async throws -> String
+func translate(prompt: String, text: String, from: String, to: String, apiKey: String?, model: String?) async throws -> String
 ```
 
-The `prompt` parameter contains the fully assembled system prompt. The `text` parameter is the user's transcribed text. This separates prompt construction (in StyleProfileService) from prompt execution (in providers).
+Changes:
+- `process()` gains `prompt` parameter — the fully assembled system prompt from StyleProfileService
+- `removeFillers()` is **removed** — it was identical to `process()` anyway. Use `process()` with the base prompt instead.
+- `translate()` gains `prompt` parameter — allows style-aware translation in the future. For now, pass the translation base prompt.
+- The `prompt` parameter is the system message; `text` is the user message. Hardcoded prompts are removed from all 7 providers.
 
-All 7 AI providers update to use the `prompt` parameter as the system message and `text` as the user message. The hardcoded prompts are removed from providers.
+The `removeFillers()` removal is safe because:
+1. It used the exact same prompt as `process()`
+2. It was only called from `AIProcessingService.removeFillers()` which can now call `process()` with the base prompt
 
 ### AIProcessingService Change
 
@@ -119,7 +153,7 @@ All 7 AI providers update to use the `prompt` parameter as the system message an
 ```swift
 func process(text: String, appBundleID: String? = nil) async throws -> String {
     let prompt = styleProfileService.buildPrompt(
-        rawText: text, mode: currentMode, appBundleID: appBundleID
+        rawText: text, appBundleID: appBundleID
     )
     let provider = AIProviderFactory.makeProvider(name: settings.selectedAIProvider)
     return try await provider.process(
@@ -128,7 +162,19 @@ func process(text: String, appBundleID: String? = nil) async throws -> String {
         model: settings.selectedAIModel
     )
 }
+
+func translate(text: String, from: String, to: String, appBundleID: String? = nil) async throws -> String {
+    let prompt = styleProfileService.buildTranslationPrompt(from: from, to: to, appBundleID: appBundleID)
+    let provider = AIProviderFactory.makeProvider(name: settings.selectedAIProvider)
+    return try await provider.translate(
+        prompt: prompt, text: text, from: from, to: to,
+        apiKey: keychain.getKey(for: settings.selectedAIProvider),
+        model: settings.selectedAIModel
+    )
+}
 ```
+
+The `removeFillers()` method is removed. Callers should use `process()` which includes filler removal in its base prompt.
 
 ### New Files
 
@@ -141,11 +187,11 @@ func process(text: String, appBundleID: String? = nil) async throws -> String {
 
 | File | Change |
 |---|---|
-| `AIProvider.swift` | Protocol: add `prompt` parameter to `process()` |
-| `All 7 AI providers` | Use `prompt` as system message, remove hardcoded prompts |
-| `AIProcessingService.swift` | Add `appBundleID` param, call StyleProfileService |
+| `AIProvider.swift` | Protocol: add `prompt` param to `process()` and `translate()`, remove `removeFillers()` |
+| `All 7 AI providers` | Use `prompt` as system message, remove hardcoded prompts, remove `removeFillers()` impl |
+| `AIProcessingService.swift` | Add `appBundleID` param, call StyleProfileService, remove `removeFillers()` |
 | `PopoverViewModel.swift` | Pass `appBundleID` to AIProcessingService, add "save style" action |
-| `HistoryStore.swift` | Add 4 new SQLite tables + CRUD methods |
+| `HistoryStore.swift` | Add 4 new SQLite tables + CRUD methods, enable `PRAGMA foreign_keys`, add `appBundleID` to history table |
 | `PopoverView.swift` | Add "Accept as style example" button |
 
 ---
@@ -186,7 +232,7 @@ Users can also write custom tone instructions for any app.
 
 After the first dictation into an app that has no `AppToneRule` configured, show a non-intrusive suggestion in the popover: "Set a tone for [AppName]?" with quick-pick buttons for the presets.
 
-The auto-suggest fires only once per app (track in UserDefaults: `suggestedAppTones: Set<String>`).
+The auto-suggest fires only once per app (track in UserDefaults: `suggestedAppTones: Set<String>`). To prevent unbounded growth, prune entries older than 90 days on each launch (the set only stores bundle IDs, so stale entries for uninstalled apps can be safely removed).
 
 ### AppToneRule Storage
 
@@ -220,13 +266,19 @@ Automatically detect the spoken language and support 100+ languages via cloud pr
 ### Two-Tier Detection
 
 **Tier 1 — Apple Speech (on-device, ~60 locales)**:
-- Modify `AppleSpeechProvider` to support auto-detect mode: when `language` is nil, do not pin a locale on `SFSpeechRecognizer`
+- `SFSpeechRecognizer` requires a `Locale` at init time — there is no language-agnostic auto-detect mode
+- **Auto-detect strategy**: Try the user's top 3 recent locales in parallel (tracked in a `recentLocales: [Locale]` list, updated after each successful detection). Send the audio to multiple recognizers and pick the result with the highest confidence
+- On first launch with no history: use `Locale.current` as the single locale
 - `SFSpeechRecognitionResult` returns the detected locale — extract and return in `TranscriptionResult.detectedLanguage`
-- Fallback: if auto-detect fails or returns unsupported locale, use user's configured `sourceLanguage`
+- Fallback: if all parallel recognizers fail or return low confidence, use user's configured `sourceLanguage`
+- **When auto-detect is OFF**: Use `Locale.current` or user's configured language (current behavior)
 
 **Tier 2 — Cloud providers (Whisper/Groq/Aliyun, 99+ languages)**:
 - When `language` is nil and auto-detect is on, send requests without the `language` parameter, letting the model auto-detect
 - When Apple Speech has already detected a language, pass it as a hint to cloud providers to improve accuracy
+- **Cloud providers must populate `detectedLanguage`** in `TranscriptionResult` when the API returns a detected language (currently only `language` is set). Add parsing for Whisper API's `detected_language` response field.
+
+**Groq model change**: The current Groq transcription provider hardcodes `distil-whisper-large-v3-en` (English-only). When auto-detect is ON, switch to `whisper-large-v3` (multilingual). When auto-detect is OFF and the configured language is English, continue using `distil-whisper-large-v3-en` for speed.
 
 ### Mixed-Language Support
 
@@ -235,6 +287,15 @@ Whisper inherently handles code-switching. No special handling — the AI post-p
 ### Settings
 
 New `autoDetectLanguage: Bool` property on `VoiceModeConfig` (default: true).
+
+**Codable migration**: `VoiceModeConfig` is `Codable` and stored as JSON in UserDefaults. Adding `autoDetectLanguage` requires backward-compatible decoding. Implement using `CodingKeys` + `decodeIfPresent` with default value `true`:
+```swift
+init(from decoder: Decoder) throws {
+    // ... existing properties ...
+    autoDetectLanguage = try container.decodeIfPresent(Bool.self, forKey: .autoDetectLanguage) ?? true
+}
+```
+Existing saved configs that lack the key will decode as `true` (auto-detect on by default).
 
 When auto-detect is ON:
 - Language selector in settings is hidden/disabled for that mode
@@ -253,13 +314,13 @@ When auto-detect is OFF:
 
 | File | Change |
 |---|---|
-| `AppleSpeechProvider.swift` | Add auto-detect mode (no locale pinned) |
-| `OpenAIWhisperProvider.swift` | Support nil language parameter |
-| `GroqTranscriptionProvider.swift` | Support nil language parameter |
-| `AliyunASRProvider.swift` | Support nil language parameter |
+| `AppleSpeechProvider.swift` | Add parallel multi-locale recognition for auto-detect |
+| `OpenAIWhisperProvider.swift` | Support nil language, populate `detectedLanguage` from API response |
+| `GroqTranscriptionProvider.swift` | Support nil language, switch to `whisper-large-v3` for multilingual, populate `detectedLanguage` |
+| `AliyunASRProvider.swift` | Support nil language parameter, populate `detectedLanguage` |
 | `TranscriptionService.swift` | Pass language=nil when auto-detect on |
 | `PopoverViewModel.swift` | Use VoiceModeConfig.autoDetectLanguage |
-| `VoiceModeConfig.swift` | Add `autoDetectLanguage: Bool` |
+| `VoiceModeConfig.swift` | Add `autoDetectLanguage: Bool` with Codable migration |
 | `SettingsTabViews.swift` | Add auto-detect toggle |
 
 ---
@@ -277,14 +338,16 @@ Detected from the spoken command using keyword matching:
 | Command | Trigger phrases | Action |
 |---|---|---|
 | Rephrase | "rephrase", "rewrite", "reword" | AI rewrites in different words, same meaning |
-| Shorten | "shorten", "make shorter", "condense", "summarize" | AI condenses the text |
+| Shorten | "shorten", "make shorter", "condense" | AI condenses the text |
 | Lengthen | "lengthen", "expand", "elaborate", "make longer" | AI expands with more detail |
 | Change tone | "make formal", "make casual", "make professional" | AI adjusts tone (uses StyleProfileService tone) |
 | Translate | "translate to [lang]" | AI translates selected text |
-| Summarize | "summarize", "give me a summary" | AI produces a concise summary |
-| Explain | "explain", "what does this mean" | AI explains the text |
+| Summarize | "summarize", "give me a summary" | AI produces a concise summary (read-only) |
+| Explain | "explain", "what does this mean" | AI explains the text (read-only) |
 | Fix grammar | "fix grammar", "correct" | AI fixes grammar/spelling only |
 | Custom | (anything else) | AI interprets as free-form edit instruction |
+
+**Disambiguation**: "summarize" only maps to the `Summarize` command (read-only, insert-after), not `Shorten` (replace). `Shorten` uses "condense", "shorten", "make shorter" only. This avoids the keyword collision where "summarize" previously appeared in both commands with different insertion behaviors.
 
 ### Command Detection
 
@@ -307,9 +370,15 @@ Keyword matching against trigger phrases, with tone/translation extraction. Fall
 - AI output replaces the selected text via `TextInsertionService.replaceSelectedText()`
 
 **Read-only** (new behavior): summarize, explain, translate
-- AI output is **inserted after the selection** via `TextInsertionService.insertText()`
+- AI output is **inserted after the selection** via a new `TextInsertionService.insertTextAfterSelection()` method
 - Original text remains untouched
 - This enables analysis of text the user can't modify (received emails, documentation)
+
+**`insertTextAfterSelection()` implementation**:
+1. Use `AXUIElementCopyAttributeValue` to get the selection range (via `kAXSelectedTextRangeAttribute`)
+2. Move cursor to the end of the selection: simulate `Cmd+Shift+Right` via CGEvent to deselect and position at end, then use AXUIElement to set `kAXSelectedTextRangeAttribute` to a zero-length range at the selection end
+3. If AXUIElement approach fails (some apps don't support `kAXSelectedTextRangeAttribute`), fall back to: (a) copy selected text to clipboard, (b) simulate Right arrow key to move cursor to end of selection, (c) insert new text via existing `insertText()` paste method
+4. Add a newline before the inserted text for visual separation
 
 ### Style-Aware Editing
 
@@ -324,7 +393,12 @@ func buildEditPrompt(selectedText: String, command: EditCommand,
                      appBundleID: String?) -> String
 ```
 
-Template:
+**Locale-aware prompts**: The current Edit mode uses Chinese prompt templates (`原始文本：`, `编辑指令：`). The new `EditCommandDetector` respects the app's locale:
+- If `Locale.current.language.languageCode?.identifier == "zh"`, use Chinese prompt templates
+- Otherwise, use English templates
+- Tone instructions and style examples are always in the language they were written in (user-authored or preset)
+
+Template (English):
 ```
 Selected text: [selectedText]
 Edit command: [commandDescription]
@@ -336,6 +410,20 @@ For summarize/explain/translate:
 
 For all other commands:
   Return ONLY the modified text. Do not include explanations.
+```
+
+Template (Chinese):
+```
+原始文本：[selectedText]
+编辑指令：[commandDescription]
+[AppToneRule instructions if applicable]
+[Style examples if applicable]
+
+对于摘要/解释/翻译：
+  返回结果，不要修改原始文本。
+
+对于其他命令：
+  只返回修改后的文本，不要添加任何解释。
 ```
 
 ### UI Changes
@@ -369,25 +457,30 @@ After an edit operation, the popover shows the detected command label:
 User presses hotkey
   -> PopoverViewModel.startRecording(mode:)
   -> AudioCaptureService starts
-  -> AppleSpeechProvider streams partial results (auto-detect language)
+  -> AppleSpeechProvider streams partial results
+       [if auto-detect: try top 3 recent locales, pick best confidence]
+       [if manual: use configured locale]
 
 User stops recording
   -> PopoverViewModel.stopRecording()
   -> Capture frontmostBundleID from NSWorkspace
-  -> TranscriptionService.transcribe(audioURL:, language: nil)
-       [if auto-detect: provider detects language]
-       [if manual: use VoiceModeConfig.sourceLanguage]
+  -> TranscriptionService.transcribe(audioURL:, language: nil/configured)
+       [if auto-detect ON + cloud: provider auto-detects language, populates detectedLanguage]
+       [if auto-detect ON + Apple Speech: parallel locale recognition]
+       [if auto-detect OFF: use VoiceModeConfig.sourceLanguage]
   -> DictionaryService.applyReplacements(to: rawText)
-  -> StyleProfileService.buildPrompt(rawText:, mode:, appBundleID:)
+  -> StyleProfileService.buildPrompt(rawText:, appBundleID:)
        [merge: base prompt + tone rules + app tone + style examples]
+       [if no active profile: base prompt only]
   -> AIProcessingService.process(text:, appBundleID:)
        [provider executes with assembled prompt]
   -> For edit mode: EditCommandDetector.detect(voiceText)
        [route to replace or insert-after based on command]
+       [use locale-aware prompt template]
   -> TextInsertionService inserts/replaces text
-  -> HistoryEntry saved
+  -> HistoryEntry saved (with appBundleID)
   -> DictionaryService.learnFromText()
-  -> Prompt: "Accept as style example?" (if not already saved)
+  -> Show "Accept as style example?" button in popover
 ```
 
 ### Prompt Merging Flow
