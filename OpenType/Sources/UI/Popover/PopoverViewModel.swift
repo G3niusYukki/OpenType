@@ -113,7 +113,12 @@ class PopoverViewModel: ObservableObject {
         Task {
             do {
                 let (url, duration) = try await audioService.stopRecording()
-                let result = try await transcriptionService.transcribe(audioURL: url)
+
+                // Determine language: nil for auto-detect, or configured source language
+                let autoDetect = SettingsStore.shared.voiceModeConfigs[currentMode]?.autoDetectLanguage ?? true
+                let language: String? = autoDetect ? nil : SettingsStore.shared.voiceModeConfigs[currentMode]?.sourceLanguage
+
+                let result = try await transcriptionService.transcribe(audioURL: url, language: language)
                 lastRawText = result.text
 
                 // 优先使用流式实时结果，如果为空则用文件转写结果

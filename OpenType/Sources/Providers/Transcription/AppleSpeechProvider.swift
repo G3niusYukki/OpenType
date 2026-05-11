@@ -2,6 +2,7 @@ import Foundation
 import Speech
 import Models
 import Utilities
+import Data
 
 public class AppleSpeechProvider: TranscriptionProvider, @unchecked Sendable {
     public let name = "Apple Speech"
@@ -20,6 +21,34 @@ public class AppleSpeechProvider: TranscriptionProvider, @unchecked Sendable {
             }
         }
 
+        // Auto-detect mode: use parallel locale detection
+        if language == nil {
+            let recentLocales = SettingsStore.shared.recentLocales.prefix(3).map { Locale(identifier: $0) }
+            let locales = recentLocales.isEmpty ? [Locale.current] : recentLocales
+
+            let detector = AppleSpeechAutoDetector(locales: locales)
+            let (text, locale, confidence) = try await detector.detect(audioURL: audioURL)
+
+            let detectedIdentifier = locale.identifier
+
+            // Update recentLocales: add detected locale to front, keep max 5 unique
+            var updated = SettingsStore.shared.recentLocales
+            updated.removeAll { $0 == detectedIdentifier }
+            updated.insert(detectedIdentifier, at: 0)
+            SettingsStore.shared.recentLocales = Array(updated.prefix(5))
+
+            return TranscriptionResult(
+                text: text,
+                language: detectedIdentifier,
+                detectedLanguage: detectedIdentifier,
+                confidence: confidence,
+                segments: nil,
+                duration: 0,
+                provider: name
+            )
+        }
+
+        // Specific language mode: use the configured locale
         let request = SFSpeechURLRecognitionRequest(url: audioURL)
         request.shouldReportPartialResults = false
         request.addsPunctuation = true
@@ -38,7 +67,7 @@ public class AppleSpeechProvider: TranscriptionProvider, @unchecked Sendable {
 
                 let transcriptionResult = TranscriptionResult(
                     text: text,
-                    language: language ?? detected,
+                    language: language,
                     detectedLanguage: detected,
                     confidence: nil,
                     segments: nil,
@@ -61,12 +90,24 @@ public class AppleSpeechProvider: TranscriptionProvider, @unchecked Sendable {
                     }
                 }
 
+                // For streaming, use the most recently detected locale or Locale.current
+                let locale: Locale
+                if let language = language {
+                    locale = Locale(identifier: language)
+                } else if let recent = SettingsStore.shared.recentLocales.first {
+                    locale = Locale(identifier: recent)
+                } else {
+                    locale = .current
+                }
+
+                let streamRecognizer = SFSpeechRecognizer(locale: locale) ?? SFSpeechRecognizer()!
+
                 let request = SFSpeechURLRecognitionRequest(url: audioURL)
                 request.shouldReportPartialResults = true
                 request.addsPunctuation = true
 
                 var lastText = ""
-                recognizer.recognitionTask(with: request) { result, error in
+                streamRecognizer.recognitionTask(with: request) { result, error in
                     if let error = error {
                         continuation.finish(throwing: error)
                         return

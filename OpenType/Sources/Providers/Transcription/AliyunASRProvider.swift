@@ -20,15 +20,20 @@ public actor AliyunASRProvider: TranscriptionProvider {
         let audioData = try Data(contentsOf: audioURL)
         let audioBase64 = audioData.base64EncodedString()
 
-        // Create request body
+        // Create request body — only include language when explicitly specified
+        var payload: [String: Any] = [
+            "audio_base64": audioBase64,
+            "audio_format": "wav",
+            "sample_rate": 16000,
+            "enable_punctuation_prediction": true,
+            "enable_inverse_text_normalization": true
+        ]
+        if let language = language {
+            payload["language"] = language
+        }
+
         let requestBody: [String: Any] = [
-            "payload": [
-                "audio_base64": audioBase64,
-                "audio_format": "wav",
-                "sample_rate": 16000,
-                "enable_punctuation_prediction": true,
-                "enable_inverse_text_normalization": true
-            ],
+            "payload": payload,
             "context": [
                 "device_id": "opentype-macos"
             ]
@@ -94,9 +99,24 @@ public actor AliyunASRProvider: TranscriptionProvider {
             throw TranscriptionError.recognitionFailed
         }
 
+        // Extract detected language from response when available
+        let detectedLangFromResponse = payload["language"] as? String
+
+        let resolvedLanguage: String?
+        let detectedLanguage: String?
+        if language == nil {
+            let detected = detectedLangFromResponse ?? "zh"
+            resolvedLanguage = detected
+            detectedLanguage = detected
+        } else {
+            resolvedLanguage = language
+            detectedLanguage = nil
+        }
+
         return TranscriptionResult(
             text: result.trimmingCharacters(in: .whitespacesAndNewlines),
-            language: language ?? "zh",
+            language: resolvedLanguage,
+            detectedLanguage: detectedLanguage,
             confidence: nil,
             segments: nil,
             duration: 0,

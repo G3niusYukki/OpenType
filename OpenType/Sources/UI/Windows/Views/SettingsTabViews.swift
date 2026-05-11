@@ -268,6 +268,23 @@ struct TranscriptionSettingsView: View {
                 Text("Transcription Provider")
             }
 
+            Section {
+                Toggle("Auto-detect Language", isOn: Binding(
+                    get: { settings.voiceModeConfigs[.basic]?.autoDetectLanguage ?? true },
+                    set: { newValue in
+                        for mode in VoiceMode.allCases {
+                            var config = settings.voiceModeConfigs[mode] ?? VoiceModeConfig()
+                            config.autoDetectLanguage = newValue
+                            settings.voiceModeConfigs[mode] = config
+                        }
+                    }
+                ))
+            } header: {
+                Text("Language")
+            } footer: {
+                Text("When enabled, the transcription language is detected automatically. Disable to set a specific source language per voice mode.")
+            }
+
             if settings.selectedTranscriptionProvider != "Apple Speech" {
                 Section {
                     SecureField("API Key", text: $apiKeyInput)

@@ -24,6 +24,7 @@ actor OpenAIWhisperProvider: TranscriptionProvider {
         body.append("Content-Disposition: form-data; name=\"model\"\r\n\r\n".data(using: .utf8)!)
         body.append("whisper-1\r\n".data(using: .utf8)!)
 
+        // Only include language field when explicitly provided (auto-detect omits it)
         if let language = language {
             body.append("--\(boundary)\r\n".data(using: .utf8)!)
             body.append("Content-Disposition: form-data; name=\"language\"\r\n\r\n".data(using: .utf8)!)
@@ -48,9 +49,22 @@ actor OpenAIWhisperProvider: TranscriptionProvider {
 
         let result = try JSONDecoder().decode(WhisperResponse.self, from: data)
 
+        // When auto-detect (language is nil), populate detectedLanguage from API response
+        let resolvedLanguage: String?
+        let detectedLanguage: String?
+        if language == nil {
+            let detected = result.language ?? "en"
+            resolvedLanguage = detected
+            detectedLanguage = detected
+        } else {
+            resolvedLanguage = language
+            detectedLanguage = nil
+        }
+
         return TranscriptionResult(
             text: result.text.trimmingCharacters(in: .whitespacesAndNewlines),
-            language: result.language ?? language ?? "en",
+            language: resolvedLanguage,
+            detectedLanguage: detectedLanguage,
             confidence: nil,
             segments: nil,
             duration: result.duration ?? 0,
