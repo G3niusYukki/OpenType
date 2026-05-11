@@ -7,6 +7,7 @@ public actor AliyunASRProvider: TranscriptionProvider {
     public let name = "Alibaba Cloud ASR"
     private let endpoint = "https://nls-meta.cn-shanghai.aliyuncs.com"
     private let apiPath = "/rest/2022-12/14/asr"
+    private let apiVersion = "2022-12-14"
 
     public func transcribe(audioURL: URL, language: String?) async throws -> TranscriptionResult {
         // Get credentials from Keychain
@@ -33,24 +34,39 @@ public actor AliyunASRProvider: TranscriptionProvider {
             ]
         ]
 
-        // Generate signature
-        let timestamp = ISO8601DateFormatter().string(from: Date())
-        let signature = generateSignature(
+        let bodyData = try JSONSerialization.data(withJSONObject: requestBody)
+        let bodyString = String(data: bodyData, encoding: .utf8)!
+
+        // Headers for signature
+        let timestamp = generateTimestamp()
+        let nonce = UUID().uuidString
+        let contentType = "application/json"
+
+        // Generate signature using ACS3-HMAC-SHA256
+        let signature = generateACS3Signature(
             accessKeyId: accessKeyId,
             accessKeySecret: accessKeySecret,
             method: "POST",
             path: apiPath,
-            body: requestBody,
-            timestamp: timestamp
+            query: "",
+            body: bodyString,
+            contentType: contentType,
+            timestamp: timestamp,
+            nonce: nonce
         )
 
-        // Build request
+        // Build request with required headers
         let url = URL(string: "\(endpoint)\(apiPath)")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("acs \(accessKeyId):\(signature)", forHTTPHeaderField: "Authorization")
-        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+        request.setValue(contentType, forHTTPHeaderField: "Content-Type")
+        request.setValue(timestamp, forHTTPHeaderField: "x-acs-date")
+        request.setValue(nonce, forHTTPHeaderField: "x-acs-signature-nonce")
+        request.setValue(apiVersion, forHTTPHeaderField: "x-acs-version")
+        request.setValue("ASR", forHTTPHeaderField: "x-acs-action")
+        request.setValue("ACS3-HMAC-SHA256", forHTTPHeaderField: "x-acs-algorithm")
+        request.setValue("\(accessKeyId)/\(signature)", forHTTPHeaderField: "Authorization")
+        request.httpBody = bodyData
 
         // Execute request
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -59,7 +75,6 @@ public actor AliyunASRProvider: TranscriptionProvider {
             // Parse error response
             if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
                 let errorCode = errorJson["code"] as? String
-                let errorMessage = errorJson["message"] as? String ?? "Unknown error"
                 
                 if errorCode == "InvalidAccessKeyId.NotFound" || errorCode == "SignatureDoesNotMatch" {
                     throw TranscriptionError.invalidCredentials
@@ -89,34 +104,59 @@ public actor AliyunASRProvider: TranscriptionProvider {
         )
     }
 
-    private func generateSignature(
+    // MARK: - Timestamp
+
+    private func generateTimestamp() -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        return formatter.string(from: Date())
+    }
+
+    // MARK: - ACS3-HMAC-SHA256 Signature
+
+    private func generateACS3Signature(
         accessKeyId: String,
         accessKeySecret: String,
         method: String,
         path: String,
-        body: [String: Any],
-        timestamp: String
+        query: String,
+        body: String,
+        contentType: String,
+        timestamp: String,
+        nonce: String
     ) -> String {
-        // Create canonical request
-        let bodyData = try! JSONSerialization.data(withJSONObject: body)
-        let bodyString = String(data: bodyData, encoding: .utf8)!
-        let canonicalRequest = "\(method)\n\(path)\n\n\(bodyString)"
+        // Build canonical request
+        let hashedBody = sha256Hex(body)
+        let canonicalHeaders = "content-type:\(contentType)\nx-acs-action:ASR\nx-acs-date:\(timestamp)\nx-acs-signature-nonce:\(nonce)\nx-acs-version:\(apiVersion)\n"
+        let signedHeaders = "content-type;x-acs-action;x-acs-date;x-acs-signature-nonce;x-acs-version"
+        let canonicalRequest = "\(method)\n\(path)\n\(query)\n\(canonicalHeaders)\n\(signedHeaders)\n\(hashedBody)"
 
-        // Create string to sign
-        let date = timestamp
-        let stringToSign = "ACS3-HMAC-SHA256\n\(date)\n\(canonicalRequest)"
+        // String to sign
+        let hashedCanonicalRequest = sha256Hex(canonicalRequest)
+        let stringToSign = "ACS3-HMAC-SHA256\n\(hashedCanonicalRequest)"
 
-        // Generate HMAC-SHA256 signature
-        let signature = hmacSHA256(key: accessKeySecret, data: stringToSign)
-        return signature.base64EncodedString()
+        // Sign
+        let signatureData = hmacSHA256(key: accessKeySecret, data: stringToSign)
+        return signatureData.map { String(format: "%02x", $0) }.joined()
+    }
+
+    private func sha256Hex(_ str: String) -> String {
+        guard let data = str.data(using: .utf8) else { return "" }
+        var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+        data.withUnsafeBytes { ptr in
+            _ = CC_SHA256(ptr.baseAddress, CC_LONG(data.count), &hash)
+        }
+        return hash.map { String(format: "%02x", $0) }.joined()
     }
 
     private func hmacSHA256(key: String, data: String) -> Data {
         let keyData = key.data(using: .utf8)!
         let dataToSign = data.data(using: .utf8)!
-        
+
         var macData = Data(count: Int(CC_SHA256_DIGEST_LENGTH))
-        
+
         keyData.withUnsafeBytes { keyBytes in
             dataToSign.withUnsafeBytes { dataBytes in
                 macData.withUnsafeMutableBytes { macBytes in
@@ -127,7 +167,7 @@ public actor AliyunASRProvider: TranscriptionProvider {
                 }
             }
         }
-        
+
         return macData
     }
 }

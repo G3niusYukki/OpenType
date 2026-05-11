@@ -30,6 +30,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupHotkeyObserver()
         setupUpdater()
         setupNotifications()
+
+        Task {
+            _ = await NotificationService.shared.requestPermission()
+        }
     }
 
     private func setupSettingsWindowObserver() {

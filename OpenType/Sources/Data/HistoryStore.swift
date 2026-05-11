@@ -49,6 +49,10 @@ public class HistoryStore: @unchecked Sendable {
         }
     }
 
+    public func close() {
+        db = nil
+    }
+
     private func createTables() throws {
         guard let db = db else { return }
 

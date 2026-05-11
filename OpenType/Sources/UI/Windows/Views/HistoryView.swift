@@ -149,6 +149,7 @@ struct HistoryDetailPanel: View {
     let entry: HistoryEntry
     @Binding var audioPlayer: AVAudioPlayer?
     @State private var isPlaying = false
+    @State private var audioDelegate: AudioPlayerDelegate?
 
     var body: some View {
         ScrollView {
@@ -240,6 +241,7 @@ struct HistoryDetailPanel: View {
         if isPlaying {
             audioPlayer?.stop()
             audioPlayer = nil
+            audioDelegate = nil
             isPlaying = false
             return
         }
@@ -252,15 +254,17 @@ struct HistoryDetailPanel: View {
 
         do {
             audioPlayer = try AVAudioPlayer(contentsOf: url)
+            let delegate = AudioPlayerDelegate {
+                DispatchQueue.main.async {
+                    self.isPlaying = false
+                    self.audioPlayer = nil
+                    self.audioDelegate = nil
+                }
+            }
+            audioDelegate = delegate
+            audioPlayer?.delegate = delegate
             audioPlayer?.play()
             isPlaying = true
-
-            // Stop after duration
-            DispatchQueue.main.asyncAfter(deadline: .now() + entry.duration) {
-                audioPlayer?.stop()
-                audioPlayer = nil
-                isPlaying = false
-            }
         } catch {
             print("Failed to play audio: \(error)")
         }
@@ -278,5 +282,13 @@ struct HistoryDetailPanel: View {
             return URL(fileURLWithPath: entry.audioPath)
         }
         return base.appendingPathComponent(entry.audioPath)
+    }
+}
+
+private class AudioPlayerDelegate: NSObject, AVAudioPlayerDelegate {
+    let onFinish: () -> Void
+    init(onFinish: @escaping () -> Void) { self.onFinish = onFinish }
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        onFinish()
     }
 }
