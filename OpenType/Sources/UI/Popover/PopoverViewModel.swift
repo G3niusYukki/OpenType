@@ -3,6 +3,7 @@ import AppKit
 import Models
 import Services
 import Data
+import Utilities
 
 @MainActor
 class PopoverViewModel: ObservableObject {
@@ -14,6 +15,11 @@ class PopoverViewModel: ObservableObject {
     @Published var recentHistory: [HistoryEntry] = []
     @Published var currentMode: VoiceMode = .basic
     @Published var isHandsFreeActive = false
+    @Published var canSaveStyleExample = false
+    @Published var didSaveStyleExample = false
+    @Published var detectedEditCommand: EditCommand?
+    private var lastRawText: String = ""
+    private var lastAppBundleID: String?
 
     private let audioService = AudioCaptureService.shared
     private let transcriptionService = TranscriptionService.shared
@@ -32,6 +38,9 @@ class PopoverViewModel: ObservableObject {
         transcribedText = ""
         liveText = ""
         detectedLang = nil
+        canSaveStyleExample = false
+        didSaveStyleExample = false
+        detectedEditCommand = nil
 
         Task {
             do {
@@ -98,10 +107,14 @@ class PopoverViewModel: ObservableObject {
         streamingTask?.cancel()
         streamingTask = nil
 
+        let frontmostBundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+        lastAppBundleID = frontmostBundleID
+
         Task {
             do {
                 let (url, duration) = try await audioService.stopRecording()
                 let result = try await transcriptionService.transcribe(audioURL: url)
+                lastRawText = result.text
 
                 // 优先使用流式实时结果，如果为空则用文件转写结果
                 let rawText = liveText.isEmpty ? result.text : liveText
@@ -115,6 +128,11 @@ class PopoverViewModel: ObservableObject {
                 // 按模式分流处理
                 let finalText = try await processForMode(dictionaryText, audioURL: url)
 
+                if currentMode != .editSelected {
+                    canSaveStyleExample = true
+                    didSaveStyleExample = false
+                }
+
                 // 保存历史
                 let entry = HistoryEntry(
                     audioPath: url.path,
@@ -123,7 +141,8 @@ class PopoverViewModel: ObservableObject {
                     mode: currentMode,
                     provider: result.provider,
                     duration: duration,
-                    language: result.language ?? "en"
+                    language: result.language ?? "en",
+                    appBundleID: lastAppBundleID
                 )
                 try? HistoryStore.shared.saveHistoryEntry(entry)
 
@@ -139,7 +158,10 @@ class PopoverViewModel: ObservableObject {
                 // 自动插入文本
                 if currentMode != .handsFree {
                     if currentMode == .editSelected {
-                        textInserter.replaceSelectedText(with: finalText)
+                        if detectedEditCommand == nil {
+                            insertText()
+                        }
+                        // Otherwise, insertion already handled in processEditSelected
                     } else {
                         insertText()
                     }
@@ -167,35 +189,37 @@ class PopoverViewModel: ObservableObject {
 
     private func processBasic(_ text: String) async throws -> String {
         guard aiService.isAvailable() else { return text }
-        return try await aiService.process(text: text)
+        return try await aiService.process(text: text, appBundleID: lastAppBundleID)
     }
 
     private func processTranslate(_ text: String) async throws -> String {
         guard aiService.isAvailable() else { return text }
         let targetLanguage = SettingsStore.shared.voiceModeConfigs[.translate]?.targetLanguage ?? "en"
-        return try await aiService.translate(text: text, from: "auto", to: targetLanguage)
+        return try await aiService.translate(text: text, from: "auto", to: targetLanguage, appBundleID: lastAppBundleID)
     }
 
     private func processEditSelected(_ voiceCommand: String) async throws -> String {
         // 获取选中的文本
         guard let selectedText = textInserter.getSelectedText(), !selectedText.isEmpty else {
+            detectedEditCommand = nil
             // 没有选中文本时当作普通语音输入
             return try await processBasic(voiceCommand)
         }
 
         guard aiService.isAvailable() else { return selectedText }
 
-        // 构建编辑 prompt
-        let prompt = """
-        原始文本：
-        \(selectedText)
+        let command = EditCommandDetector.detect(from: voiceCommand)
+        let prompt = StyleProfileService.shared.buildEditPrompt(selectedText: selectedText, command: command, appBundleID: lastAppBundleID)
+        let result = try await aiService.processWithPrompt(prompt: prompt, text: selectedText)
+        detectedEditCommand = command
 
-        编辑指令：
-        \(voiceCommand)
+        if command.isReadOnly {
+            textInserter.insertTextAfterSelection(result)
+        } else {
+            textInserter.replaceSelectedText(with: result)
+        }
 
-        根据编辑指令修改原始文本。只返回修改后的文本，不要添加任何解释。
-        """
-        return try await aiService.process(text: prompt)
+        return result
     }
 
     // MARK: - Error Handling
@@ -235,6 +259,19 @@ class PopoverViewModel: ObservableObject {
     }
 
     // MARK: - Actions
+
+    func saveAsStyleExample() {
+        guard let profile = try? StyleProfileService.shared.getAllStyleProfiles().first(where: { $0.isActive }) else { return }
+        let example = StyleExample(
+            rawText: lastRawText,
+            polishedText: transcribedText,
+            appBundleID: lastAppBundleID,
+            profileID: profile.id
+        )
+        try? StyleProfileService.shared.saveStyleExample(example)
+        didSaveStyleExample = true
+        canSaveStyleExample = false
+    }
 
     func insertText() {
         do {

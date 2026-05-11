@@ -128,6 +128,31 @@ public class TextInsertionService {
         }
     }
 
+    public func insertTextAfterSelection(_ text: String) {
+        guard PermissionService.shared.checkAccessibilityPermission() else {
+            insertViaClipboard(text)
+            return
+        }
+
+        // Move cursor to end of selection to deselect
+        let source = CGEventSource(stateID: .hidSystemState)
+        if let rightDown = CGEvent(keyboardEventSource: source, virtualKey: 0x7C, keyDown: true),
+           let rightUp = CGEvent(keyboardEventSource: source, virtualKey: 0x7C, keyDown: false) {
+            rightDown.post(tap: .cgAnnotatedSessionEventTap)
+            rightUp.post(tap: .cgAnnotatedSessionEventTap)
+        }
+
+        // Small delay to ensure cursor moved
+        usleep(50_000)
+
+        // Now insert the text
+        do {
+            try insertText(text)
+        } catch {
+            insertViaClipboard(text)
+        }
+    }
+
     public func hasAccessibilityPermission() -> Bool {
         PermissionService.shared.checkAccessibilityPermission()
     }
