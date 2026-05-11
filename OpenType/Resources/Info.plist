@@ -32,5 +32,7 @@
 	<string>NSApplication</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>OpenType uses speech recognition to transcribe your voice.</string>
+	<key>SUFeedURL</key>
+	<string>https://github.com/G3niusYukki/OpenType/releases/latest/download/appcast.xml</string>
 </dict>
 </plist>

@@ -25,6 +25,10 @@ struct SettingsView: View {
             DataSettingsView()
                 .tabItem { Label("Data", systemImage: "externaldrive") }
                 .tag(4)
+
+            AboutSettingsView()
+                .tabItem { Label("About", systemImage: "info.circle") }
+                .tag(5)
         }
         .frame(
             width: Constants.UI.settingsWindowWidth,

@@ -3,8 +3,9 @@ import Speech
 import Models
 import Utilities
 
-public actor AppleSpeechProvider: TranscriptionProvider {
+public class AppleSpeechProvider: TranscriptionProvider, @unchecked Sendable {
     public let name = "Apple Speech"
+    public var supportsStreaming: Bool { true }
     private let recognizer: SFSpeechRecognizer
 
     public init(locale: Locale = .current) {
@@ -46,6 +47,44 @@ public actor AppleSpeechProvider: TranscriptionProvider {
                     provider: self.name
                 )
                 continuation.resume(returning: transcriptionResult)
+            }
+        }
+    }
+
+    public func transcribeStreaming(audioURL: URL, language: String?) -> AsyncThrowingStream<String, Error> {
+        AsyncThrowingStream { continuation in
+            Task {
+                if PermissionService.shared.checkSpeechPermission() != .granted {
+                    let status = await PermissionService.shared.requestSpeechPermission()
+                    if status != .granted {
+                        continuation.finish(throwing: TranscriptionError.speechPermissionDenied)
+                        return
+                    }
+                }
+
+                let request = SFSpeechURLRecognitionRequest(url: audioURL)
+                request.shouldReportPartialResults = true
+                request.addsPunctuation = true
+
+                var lastText = ""
+                recognizer.recognitionTask(with: request) { result, error in
+                    if let error = error {
+                        continuation.finish(throwing: error)
+                        return
+                    }
+
+                    guard let result = result else { return }
+
+                    let text = result.bestTranscription.formattedString
+                    if text != lastText && !text.isEmpty {
+                        continuation.yield(text)
+                        lastText = text
+                    }
+
+                    if result.isFinal {
+                        continuation.finish()
+                    }
+                }
             }
         }
     }
