@@ -64,6 +64,24 @@ struct PopoverView: View {
                 isProcessing: viewModel.isProcessing
             )
 
+            if let command = viewModel.detectedEditCommand {
+                Text(command.displayLabel)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal)
+                    .padding(.top, 4)
+            }
+
+            if viewModel.canSaveStyleExample && !viewModel.didSaveStyleExample {
+                Button(action: { viewModel.saveAsStyleExample() }) {
+                    Label("Save as Style Example", systemImage: "text.badge.star")
+                }
+                .buttonStyle(.borderless)
+                .font(.caption)
+                .padding(.horizontal)
+                .padding(.top, 4)
+            }
+
             Divider()
                 .padding(.vertical, 8)
 

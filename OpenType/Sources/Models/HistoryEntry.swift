@@ -10,8 +10,9 @@ public struct HistoryEntry: Identifiable, Codable {
     public let createdAt: Date
     public let duration: TimeInterval
     public let language: String
+    public let appBundleID: String?
 
-    public init(id: UUID = UUID(), audioPath: String, originalText: String, processedText: String, mode: VoiceMode, provider: String, createdAt: Date = Date(), duration: TimeInterval, language: String) {
+    public init(id: UUID = UUID(), audioPath: String, originalText: String, processedText: String, mode: VoiceMode, provider: String, createdAt: Date = Date(), duration: TimeInterval, language: String, appBundleID: String? = nil) {
         self.id = id
         self.audioPath = audioPath
         self.originalText = originalText
@@ -21,5 +22,6 @@ public struct HistoryEntry: Identifiable, Codable {
         self.createdAt = createdAt
         self.duration = duration
         self.language = language
+        self.appBundleID = appBundleID
     }
 }

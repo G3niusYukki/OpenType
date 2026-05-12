@@ -22,13 +22,17 @@ struct SettingsView: View {
                 .tabItem { Label("Voice Modes", systemImage: "mic") }
                 .tag(3)
 
+            StyleSettingsView()
+                .tabItem { Label("Style", systemImage: "paintbrush") }
+                .tag(4)
+
             DataSettingsView()
                 .tabItem { Label("Data", systemImage: "externaldrive") }
-                .tag(4)
+                .tag(5)
 
             AboutSettingsView()
                 .tabItem { Label("About", systemImage: "info.circle") }
-                .tag(5)
+                .tag(6)
         }
         .frame(
             width: Constants.UI.settingsWindowWidth,

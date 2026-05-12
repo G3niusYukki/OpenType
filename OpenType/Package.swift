@@ -44,7 +44,7 @@ let package = Package(
             ],
             path: "Sources/Data"
         ),
-        .target(name: "Utilities", path: "Sources/Utilities"),
+        .target(name: "Utilities", dependencies: ["Models"], path: "Sources/Utilities"),
         .target(name: "OpenTypeUI", dependencies: ["Utilities", "Models", "Data", "Services"], path: "Sources/UI"),
         .testTarget(
             name: "OpenTypeTests",

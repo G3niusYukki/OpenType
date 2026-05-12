@@ -1,5 +1,6 @@
 import XCTest
 @testable import Models
+import Services
 
 final class StyleProfileServiceTests: XCTestCase {
 
@@ -30,5 +31,19 @@ final class StyleProfileServiceTests: XCTestCase {
         XCTAssertFalse(EditCommand.rephrase.isReadOnly)
         XCTAssertFalse(EditCommand.shorten.isReadOnly)
         XCTAssertFalse(EditCommand.custom.isReadOnly)
+    }
+
+    func testBuildSystemPromptWithNoProfile() {
+        let service = StyleProfileService.shared
+        let prompt = service.buildSystemPrompt(appBundleID: nil)
+        XCTAssertTrue(prompt.contains("filler words"))
+    }
+
+    func testBuildTranslationPrompt() {
+        let service = StyleProfileService.shared
+        let prompt = service.buildTranslationPrompt(from: "en", to: "zh", appBundleID: nil)
+        XCTAssertTrue(prompt.contains("Translate"))
+        XCTAssertTrue(prompt.contains("en"))
+        XCTAssertTrue(prompt.contains("zh"))
     }
 }

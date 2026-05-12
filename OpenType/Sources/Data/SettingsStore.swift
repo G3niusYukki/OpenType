@@ -51,6 +51,19 @@ public class SettingsStore: ObservableObject {
         }
     }
 
+    // MARK: - Style
+    @Published public var suggestedAppTones: [String: Date] = [:] {
+        didSet {
+            if let data = try? JSONEncoder().encode(suggestedAppTones) {
+                defaults.set(data, forKey: "suggestedAppTones")
+            }
+        }
+    }
+
+    @Published public var recentLocales: [String] = [Locale.current.identifier] {
+        didSet { defaults.set(recentLocales, forKey: "recentLocales") }
+    }
+
     private init() {
         defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
 
@@ -73,6 +86,17 @@ public class SettingsStore: ObservableObject {
             voiceModeConfigs = configs
         } else {
             voiceModeConfigs = [:]
+        }
+
+        if let data = defaults.data(forKey: "suggestedAppTones"),
+           var decoded = try? JSONDecoder().decode([String: Date].self, from: data) {
+            let cutoff = Date().addingTimeInterval(-90 * 24 * 60 * 60)
+            decoded = decoded.filter { $0.value > cutoff }
+            suggestedAppTones = decoded
+        }
+
+        if let locales = defaults.stringArray(forKey: "recentLocales"), !locales.isEmpty {
+            recentLocales = locales
         }
     }
 }
