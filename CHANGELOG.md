@@ -5,6 +5,55 @@ All notable changes to OpenType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-05-12
+
+### Added
+
+- **Style Profile System** — Learn your writing style from examples and apply it to AI output
+  - StyleProfileService with prompt merging, token budget, and few-shot style examples
+  - Save any dictation as a style example from the popover
+  - Tone rules: global tone instructions (e.g., "be concise", "use active voice")
+  - Tone presets: Formal, Casual, Professional, Friendly, Academic, Creative
+  - Multiple named profiles with active profile switching
+- **Per-App Tone Adaptation** — Different writing style per application
+  - App-specific tone rules that override global rules
+  - Auto-suggested app tones based on usage frequency
+  - Style tab in Settings with app tone management
+- **Language Auto-Detection** — Automatic language detection without manual locale selection
+  - AppleSpeechAutoDetector: parallel multi-locale recognition with confidence scoring
+  - Segment-level confidence averaging across SFSpeechRecognizer instances
+  - Recent locales tracking (last 5 unique) for smarter locale selection
+  - Groq model selection: whisper-large-v3 (multilingual) vs distil-whisper-large-v3-en (English)
+  - VoiceModeConfig autoDetectLanguage toggle (default: enabled)
+- **Enhanced Voice Editing** — 9 edit command types via voice
+  - EditCommandDetector with keyword matching: rephrase, shorten, lengthen, change tone, translate, summarize, explain, fix grammar, custom
+  - Read-only commands (summarize, explain, translate) insert text after selection instead of replacing
+  - Locale-aware edit prompts (Chinese/English)
+  - Style context integration for rephrase and change-tone commands
+- **AI Provider Refactor** — Prompt parameter added to protocol
+  - `process(prompt:text:apiKey:model:)` — system prompt + user text
+  - `translate(prompt:text:from:to:apiKey:model:)` — translation with style context
+  - Hardcoded prompts removed from all 7 providers
+  - removeFillers() removed entirely
+
+### Changed
+
+- **StyleProfileService** — Singleton service for prompt construction
+  - `buildSystemPrompt(appBundleID:)` returns system prompt only (clean system/user split)
+  - `buildEditPrompt(selectedText:command:appBundleID:)` for edit mode
+  - `buildTranslationPrompt(from:to:appBundleID:)` with optional app tone
+- **PopoverViewModel** — Captures frontmost app bundle ID, routes edit commands through EditCommandDetector
+- **TextInsertionService** — `insertTextAfterSelection()` for read-only edit commands
+- **HistoryStore** — 4 new SQLite tables (style_profiles, style_examples, tone_rules, app_tone_rules) with ON DELETE CASCADE
+- **HistoryStore** — ALTER TABLE migration for app_bundle_id column on history table
+- **HistoryEntry** — appBundleID property tracked per entry
+- **SettingsStore** — suggestedAppTones with 90-day pruning, recentLocales with UserDefaults persistence
+
+### Fixed
+
+- **Package.swift** — Utilities target now correctly depends on Models module
+- **VoiceModeConfig** — Codable migration with decodeIfPresent for backward compatibility
+
 ## [0.5.0] - 2026-05-11
 
 ### Added

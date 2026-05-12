@@ -1,96 +1,67 @@
-# OpenType v0.5.0 Release Notes
+# OpenType v0.6.0 Release Notes
 
-## 🎉 Major Improvements
+## 🎯 Typeless Gap Closure — Style, Tone, Language, Editing
 
-### 🎙️ Core Pipeline Complete — All 4 Voice Modes Working
-
-All four voice input modes are now fully functional with proper routing:
-
-| Mode | Pipeline |
-|------|----------|
-| **Basic** | Record → Transcribe → Dictionary → AI Process → Insert |
-| **Translate** | Record → Transcribe → Dictionary → AI Translate → Insert |
-| **Edit Selected** | Get Selection → Record → Transcribe → AI Edit → Replace |
-| **Hands-Free** | Toggle start/stop with proper state management |
-
-### 🎙️ Streaming Transcription (Apple Speech)
-
-Apple Speech provider now supports real-time streaming transcription via `AsyncThrowingStream`. See partial results appear as you speak instead of waiting for the recording to finish.
-
-### 📚 Dictionary System Fully Integrated
-
-Custom dictionary entries now apply to all transcriptions automatically. Longest-match-first replacement prevents partial-match issues.
-
-### 👤 Profile System Active
-
-Switching profiles now updates transcription and AI provider settings in real-time.
-
-### 🔔 Notifications & Launch at Login
-
-- Transcription completion notifications via UserNotifications
-- SMAppService integration for auto-launch at login
-
-### 🎨 Error Banner UI
-
-Toast-style error messages with retry option for transcription failures, microphone permission issues, and API errors.
+v0.6.0 closes the major feature gap with Typeless, bringing personal writing style learning, per-app tone adaptation, automatic language detection, and enhanced voice editing.
 
 ---
 
-## 🐛 Bug Fixes
+## ✨ New Features
 
-### Critical Fixes
-- **LSUIElement** — Fixed to `true` for true menu bar app (no Dock icon)
-- **Hands-Free Toggle** — Now correctly toggles recording on/off via status bar controller
-- **Voice Mode Filtering** — Disabled modes are now hidden from popover and hotkeys are not registered
-- **Hotkey Hot-Reload** — Changing hotkeys in Settings takes effect immediately (no restart needed)
+### 🎨 Style Profile System
 
-### Quality Fixes
-- **Audio Playback** — Replaced timer-based stop with `AVAudioPlayerDelegate` for reliable playback
-- **App Termination** — Proper cleanup on exit: stops recording, cleans temp files, unregisters hotkeys
-- **Temp File Cleanup** — Automatic cleanup of old recording files
-- **Alibaba Cloud ASR** — Upgraded to ACS3-HMAC-SHA256 signature v3 with proper headers
+Learn your writing style and apply it to all AI output:
+
+- **Style Examples** — Save any dictation result as a style example. The AI learns your voice from these examples and reproduces it in future output.
+- **Tone Rules** — Set global instructions like "be concise" or "use active voice" that shape all AI processing.
+- **Tone Presets** — One-click presets: Formal, Casual, Professional, Friendly, Academic, Creative.
+- **Multiple Profiles** — Create named profiles (e.g., "Work Email", "Casual Chat") and switch between them.
+
+### 📱 Per-App Tone Adaptation
+
+Different apps, different style:
+
+- **App-Specific Tones** — Set different tone rules per application (e.g., formal for Slack, casual for Messages).
+- **Auto-Suggested Apps** — Frequently used apps appear as suggestions for quick setup.
+- **Style Tab** — New Style tab in Settings for managing profiles, tones, and examples.
+
+### 🌍 Language Auto-Detection
+
+No more manual locale selection:
+
+- **Apple Speech** — Parallel multi-locale recognition with confidence scoring. Automatically detects which language you're speaking.
+- **Groq Whisper** — Smart model selection: uses `whisper-large-v3` for multilingual audio and `distil-whisper-large-v3-en` for English-only.
+- **Recent Locales** — Tracks your most-used languages for faster detection.
+- **Toggle** — Enable/disable auto-detection per voice mode (default: enabled).
+
+### ✏️ Enhanced Voice Editing
+
+9 edit command types via voice:
+
+| Command | Chinese | English | Action |
+|---------|---------|---------|--------|
+| Rephrase | 改写 / 重述 | rephrase / rewrite | Replace selection |
+| Shorten | 缩短 / 精简 | shorten / condense | Replace selection |
+| Lengthen | 扩写 / 展开 | lengthen / expand | Replace selection |
+| Change Tone | 改正式 / 改口语 | make formal / make casual | Replace selection |
+| Translate | 翻译成英文 | translate to English | Replace selection |
+| Summarize | 总结 | summarize | Insert after |
+| Explain | 解释 / 说明 | explain | Insert after |
+| Fix Grammar | 修正语法 | fix grammar | Replace selection |
+| Custom | (any) | (any) | Replace selection |
+
+Read-only commands (summarize, explain, translate) insert text after your selection instead of replacing it.
 
 ---
 
-## 📊 Technical Stats
+## 🔧 Technical Changes
 
-| Metric | v0.4.0 | v0.5.0 |
-|--------|--------|--------|
-| Transcription Providers | 4 | 4 |
-| AI Providers | 7 | 7 |
-| Voice Modes (functional) | 1/4 | 4/4 ✅ |
-| Unit Tests | 0 | 17 |
-| Dictionary Integration | UI only | Fully wired ✅ |
-| Profile Integration | UI only | Fully wired ✅ |
-| Error Handling | print() only | Toast UI ✅ |
-
----
-
-## 📝 What's New Since v0.4.0
-
-### New Features
-- **Core pipeline routing** — All 4 voice modes fully functional
-- **Dictionary Service** — Real-time word replacement from user dictionary
-- **Profile Service** — Profile switching updates provider settings
-- **Error Banner UI** — Toast-style error display with retry
-- **Notification Service** — Transcription completion notifications
-- **Launch at Login** — SMAppService auto-launch
-- **Streaming Transcription** — `AsyncThrowingStream` protocol + AppleSpeechProvider implementation
-- **About Page** — Version info and links in Settings
-- **Sparkle Update Feed** — SUFeedURL configured
-
-### Bug Fixes
-- Hands-free toggle via status bar controller
-- Voice mode enable/disable filtering
-- Hotkey hot-reload on settings change
-- AVAudioPlayerDelegate for reliable audio playback
-- App termination cleanup
-- Temp file automatic cleanup
-- Alibaba Cloud ASR ACS3-HMAC-SHA256 signature v3
-- LSUIElement set to true
-
-### Testing
-- 17 unit tests (models, settings, dictionary, voice mode configs)
+- **AI Provider Protocol** — `prompt` parameter added as external argument, hardcoded prompts removed from all 7 providers.
+- **StyleProfileService** — Singleton prompt construction with token budget (500 instruction / 800 example tokens).
+- **HistoryStore** — 4 new SQLite tables for style data, ALTER TABLE migration for app_bundle_id.
+- **EditCommandDetector** — Keyword matching with locale-aware prompts (Chinese/English).
+- **AppleSpeechAutoDetector** — Parallel `SFSpeechRecognizer` instances with segment confidence averaging.
+- **38 unit tests passing** (up from 17 in v0.5.0).
 
 ---
 
@@ -127,7 +98,7 @@ swift build -c release
 1. Sign up at [Alibaba Cloud](https://www.alibabacloud.com/)
 2. Create AccessKey ID and Secret in RAM console
 3. Open OpenType → Settings → Transcription
-4. Select "Alibaba Cloud ASR" and enter credentials (separate ID and Secret fields)
+4. Select "Alibaba Cloud ASR" and enter credentials
 
 ---
 
