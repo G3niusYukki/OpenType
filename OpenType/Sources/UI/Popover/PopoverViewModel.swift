@@ -281,9 +281,18 @@ class PopoverViewModel: ObservableObject {
     func insertText() {
         do {
             try textInserter.insertText(transcribedText)
+        } catch let error as TextInsertionError {
+            switch error {
+            case .noAccessibilityPermission:
+                postError("需要辅助功能权限才能插入文本，请在系统设置中授权")
+            case .allMethodsFailed:
+                // Silent fallback: text is already on clipboard from the last-resort path
+                postError("文本已复制到剪贴板，请手动粘贴 (Cmd+V)")
+            default:
+                postError("文本插入失败: \(error.localizedDescription)")
+            }
         } catch {
-            print("Text insertion failed, falling back to clipboard: \(error)")
-            copyToClipboard(transcribedText)
+            postError("文本插入失败: \(error.localizedDescription)")
         }
     }
 
