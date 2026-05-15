@@ -72,9 +72,3 @@ public class AIProcessingService: @unchecked Sendable {
         return getAPIKey(for: providerName) != nil
     }
 }
-
-public enum AIError: Error {
-    case requestFailed
-    case apiKeyNotFound
-    case invalidResponse
-}
