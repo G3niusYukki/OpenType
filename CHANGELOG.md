@@ -5,6 +5,40 @@ All notable changes to OpenType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-05-15
+
+### Added
+
+- **Text Insertion Reliability** — Clipboard-protected text insertion with AX direct injection
+  - ClipboardGuard: saves/restores user clipboard around every insertion attempt
+  - AX direct text injection as preferred method (no clipboard needed)
+  - Strategy chain: Accessibility API → CGEvent paste → AppleScript → clipboard fallback
+  - TextInsertionError typed errors with user-facing Chinese/English feedback
+  - PopoverViewModel shows specific error messages for insertion failures
+- **AI Streaming Output** — Real-time word-by-word text display during AI processing
+  - SSEParser for Server-Sent Events parsing
+  - OpenAIProvider SSE streaming implementation
+  - AIProvider protocol `processStreaming()` with default non-streaming fallback
+  - PopoverViewModel updates `transcribedText` live as AI generates text
+- **AI Error Recovery** — Automatic retry and provider failover
+  - RetryPolicy with exponential backoff and jitter for transient network errors
+  - ProviderFailover: cascading through all 7 AI providers on failure
+  - `process()` tries user's selected provider first, then falls back to others
+  - Streaming gracefully falls back to non-streaming on retryable errors
+  - AIError consolidated into Providers module (single source of truth)
+- **Long-Running Stability** — Production hardening for 24/7 menu bar use
+  - AudioDeviceWatcher: CoreAudio property listener for microphone hot-swap
+  - Graceful recording stop when input device is disconnected
+  - HealthMonitor: periodic memory usage and stale recording state checks
+  - Crash recovery: `isRecordingActive` flag cleared on app restart with temp file cleanup
+- **Tests** — 67 unit tests passing (up from 38 in v0.6.0)
+
+### Changed
+
+- TextInsertionService fully rewritten with clipboard protection and AX injection
+- AIProcessingService now uses retry logic and streaming for all API calls
+- `usleep()` replaced with `Thread.sleep()` for clarity
+
 ## [0.6.0] - 2026-05-12
 
 ### Added

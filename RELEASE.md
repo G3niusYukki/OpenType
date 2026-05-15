@@ -1,3 +1,73 @@
+# OpenType v0.7.0 Release Notes
+
+## Stability & Reliability — Production-Grade Text Insertion, AI Streaming, 24/7 Uptime
+
+v0.7.0 makes OpenType reliable enough for daily use. Text insertion no longer clobbers your clipboard, AI output streams in real-time, and the app stays healthy during long menu bar sessions.
+
+---
+
+## New Features
+
+### Protected Text Insertion
+
+Your clipboard is now safe:
+
+- **ClipboardGuard** — Every text insertion saves and restores your clipboard content automatically. Copy something, dictate, and your original clipboard is preserved.
+- **AX Direct Injection** — New preferred insertion method using the Accessibility API. No clipboard swap needed for native macOS controls (NSTextField, NSTextView, Safari, etc.).
+- **Strategy Chain** — If AX fails, falls back to CGEvent paste → AppleScript keystroke → clipboard copy. Every path preserves your clipboard.
+- **Typed Errors** — Specific error messages when insertion fails: "需要辅助功能权限" for missing accessibility permission, "文本已复制到剪贴板" when fallback to clipboard is needed.
+
+### Real-Time AI Streaming
+
+See your text as the AI writes it:
+
+- **Word-by-Word Output** — AI-processed text now appears progressively in the popover, not all at once after a 3-5 second wait.
+- **SSE Streaming** — OpenAI provider uses Server-Sent Events for streaming. Other providers use the existing request/response with a protocol-level fallback.
+- **Graceful Degradation** — If streaming fails mid-request, automatically falls back to non-streaming mode.
+
+### Automatic Error Recovery
+
+Transient failures no longer break your workflow:
+
+- **Exponential Backoff** — Network timeouts and API errors are retried automatically with exponential backoff (1s → 2s → 4s) and jitter.
+- **Provider Failover** — If your selected AI provider fails, OpenType cascades through all 7 providers (OpenAI → Groq → Anthropic → DeepSeek → Zhipu → MiniMax → Moonshot) until one succeeds.
+- **Dynamic Settings** — Failover always reads your current provider setting, not a stale snapshot.
+
+### Long-Running Stability
+
+Built for 24/7 menu bar use:
+
+- **Microphone Hot-Swap** — Unplugging your USB mic no longer crashes the app. AudioDeviceWatcher detects device changes and gracefully stops recording.
+- **Health Monitor** — Periodic checks every 2 minutes for memory usage (>200 MB threshold) and stale recordings (>5 minute timeout).
+- **Crash Recovery** — If the app crashes mid-recording, the next launch detects the stale state and cleans up orphaned temp files.
+
+---
+
+## Technical Changes
+
+- **TextInsertionService** — Full rewrite with ClipboardGuard integration, AX direct injection, and typed errors.
+- **AIProcessingService** — Streaming + retry + failover. `process()` now cascades through providers; `processStreaming()` yields partial text.
+- **AIProvider Protocol** — `processStreaming()` added with default non-streaming fallback.
+- **AIError** — Consolidated into Providers module (single source of truth).
+- **usleep → Thread.sleep** — Replaced blocking `usleep()` calls with explicit `Thread.sleep()`.
+- **67 unit tests passing** (up from 38 in v0.6.0). New test files: ClipboardGuardTests, TextInsertionServiceTests, SSEParserTests, RetryPolicyTests, AudioDeviceWatcherTests, HealthMonitorTests, ProviderFailoverTests.
+
+---
+
+## New Files
+
+| File | Purpose |
+|------|---------|
+| `ClipboardGuard.swift` | Save/restore pasteboard state around text insertion |
+| `TextInsertionError.swift` | Typed error hierarchy for insertion failures |
+| `SSEParser.swift` | Server-Sent Events parser |
+| `RetryPolicy.swift` | Exponential backoff with jitter |
+| `AudioDeviceWatcher.swift` | CoreAudio property listener for device changes |
+| `HealthMonitor.swift` | Periodic memory and recording state checks |
+| `ProviderFailover.swift` | Cascading AI provider selection |
+
+---
+
 # OpenType v0.6.0 Release Notes
 
 ## 🎯 Typeless Gap Closure — Style, Tone, Language, Editing
