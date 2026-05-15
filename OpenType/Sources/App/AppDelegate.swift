@@ -15,6 +15,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var updaterDelegate: UpdaterDelegate?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Crash recovery: if the app crashed while recording, clean up stale state
+        let defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
+        let wasRecording = defaults.bool(forKey: "isRecordingActive")
+        if wasRecording {
+            print("[CrashRecovery] Detected stale recording state from previous session — cleaning up")
+            defaults.set(false, forKey: "isRecordingActive")
+            AudioCaptureService.shared.cleanupTempFiles(keepingRecent: 5)
+        }
+
         // Run Electron config migration if needed
         if MigrationService.shared.needsMigration {
             do {
@@ -34,6 +43,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         Task {
             _ = await NotificationService.shared.requestPermission()
         }
+
+        // Start health monitoring
+        let healthMonitor = HealthMonitor.shared
+        healthMonitor.onStaleRecording = { [weak self] in
+            Task { @MainActor in
+                // Force-stop any stale recording
+                if AudioCaptureService.shared.isRecording {
+                    _ = try? await AudioCaptureService.shared.stopRecording()
+                }
+            }
+        }
+        healthMonitor.onHighMemory = { memoryMB in
+            // Log but don't crash — let the OS handle memory pressure naturally
+            print("[HealthMonitor] High memory: \(Int(memoryMB)) MB")
+        }
+        healthMonitor.onHealthLog = { message in
+            print("[HealthMonitor] \(message)")
+        }
+        healthMonitor.startMonitoring()
     }
 
     private func setupSettingsWindowObserver() {

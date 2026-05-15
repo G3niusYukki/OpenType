@@ -1,6 +1,7 @@
 import SwiftUI
 import AppKit
 import Models
+import Providers
 import Services
 import Data
 import Utilities
@@ -33,6 +34,9 @@ class PopoverViewModel: ObservableObject {
     }
 
     func startRecording(mode: VoiceMode) {
+        let defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
+        defaults.set(true, forKey: "isRecordingActive")
+
         currentMode = mode
         isRecording = true
         transcribedText = ""
@@ -103,6 +107,10 @@ class PopoverViewModel: ObservableObject {
 
     func stopRecording() {
         isRecording = false
+
+        let defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
+        defaults.set(false, forKey: "isRecordingActive")
+
         isProcessing = true
         streamingTask?.cancel()
         streamingTask = nil
@@ -194,7 +202,21 @@ class PopoverViewModel: ObservableObject {
 
     private func processBasic(_ text: String) async throws -> String {
         guard aiService.isAvailable() else { return text }
-        return try await aiService.process(text: text, appBundleID: lastAppBundleID)
+
+        // Use streaming for real-time UI feedback — iterate AsyncThrowingStream directly
+        // (no continuation wrapper needed since we're already in an async context)
+        var lastResult = text
+        let stream = aiService.processStreaming(text: text, appBundleID: lastAppBundleID)
+        do {
+            for try await partial in stream {
+                lastResult = partial
+                transcribedText = partial // @MainActor — safe since PopoverViewModel is @MainActor
+            }
+        } catch {
+            // If streaming fails completely, rethrow — caller handles error
+            throw error
+        }
+        return lastResult
     }
 
     private func processTranslate(_ text: String) async throws -> String {
@@ -281,9 +303,18 @@ class PopoverViewModel: ObservableObject {
     func insertText() {
         do {
             try textInserter.insertText(transcribedText)
+        } catch let error as TextInsertionError {
+            switch error {
+            case .noAccessibilityPermission:
+                postError("需要辅助功能权限才能插入文本，请在系统设置中授权")
+            case .allMethodsFailed:
+                // Silent fallback: text is already on clipboard from the last-resort path
+                postError("文本已复制到剪贴板，请手动粘贴 (Cmd+V)")
+            default:
+                postError("文本插入失败: \(error.localizedDescription)")
+            }
         } catch {
-            print("Text insertion failed, falling back to clipboard: \(error)")
-            copyToClipboard(transcribedText)
+            postError("文本插入失败: \(error.localizedDescription)")
         }
     }
 

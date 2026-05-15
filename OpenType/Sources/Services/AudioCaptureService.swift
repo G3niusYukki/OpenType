@@ -25,6 +25,7 @@ public class AudioCaptureService: ObservableObject {
     private var recordingStartTime: Date?
     private var _tempRecordingURL: URL?
     private var lastAudioBuffer: AVAudioPCMBuffer?
+    private let deviceWatcher = AudioDeviceWatcher()
 
     private var tempRecordingURL: URL {
         let tempDir = FileManager.default.temporaryDirectory
@@ -79,6 +80,18 @@ public class AudioCaptureService: ObservableObject {
         isRecording = true
         recordingStartTime = Date()
         startLevelMeter()
+
+        // Watch for device changes during recording
+        deviceWatcher.onDeviceChanged = { [weak self] _, newDevice in
+            guard let self = self, self.isRecording else { return }
+            if newDevice == nil {
+                // Device disconnected — gracefully stop recording
+                Task { @MainActor in
+                    _ = try? await self.stopRecording()
+                }
+            }
+        }
+        deviceWatcher.startWatching()
     }
 
     private func processAudioBuffer(_ buffer: AVAudioPCMBuffer, converter: AVAudioConverter) {
@@ -152,6 +165,7 @@ public class AudioCaptureService: ObservableObject {
 
         levelTimer?.invalidate()
         levelTimer = nil
+        deviceWatcher.stopWatching()
 
         inputNode?.removeTap(onBus: 0)
         audioEngine?.stop()
