@@ -4,6 +4,26 @@ public protocol AIProvider: Sendable {
     var name: String { get }
     func process(prompt: String, text: String, apiKey: String, model: String?) async throws -> String
     func translate(prompt: String, text: String, from: String, to: String, apiKey: String, model: String?) async throws -> String
+
+    /// Streaming variant of process(). Yields partial text as it's generated.
+    /// Default implementation calls process() and yields the full result once.
+    func processStreaming(prompt: String, text: String, apiKey: String, model: String?) -> AsyncThrowingStream<String, Error>
+}
+
+extension AIProvider {
+    public func processStreaming(prompt: String, text: String, apiKey: String, model: String?) -> AsyncThrowingStream<String, Error> {
+        AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    let result = try await process(prompt: prompt, text: text, apiKey: apiKey, model: model)
+                    continuation.yield(result)
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
+    }
 }
 
 public enum AIProviderFactory {
@@ -27,7 +47,7 @@ public enum AIProviderFactory {
             return OpenAIProvider()
         }
     }
-    
+
     public static func getAvailableProviders() -> [any AIProvider] {
         return [
             OpenAIProvider(),
