@@ -195,7 +195,21 @@ class PopoverViewModel: ObservableObject {
 
     private func processBasic(_ text: String) async throws -> String {
         guard aiService.isAvailable() else { return text }
-        return try await aiService.process(text: text, appBundleID: lastAppBundleID)
+
+        // Use streaming for real-time UI feedback — iterate AsyncThrowingStream directly
+        // (no continuation wrapper needed since we're already in an async context)
+        var lastResult = text
+        let stream = aiService.processStreaming(text: text, appBundleID: lastAppBundleID)
+        do {
+            for try await partial in stream {
+                lastResult = partial
+                transcribedText = partial // @MainActor — safe since PopoverViewModel is @MainActor
+            }
+        } catch {
+            // If streaming fails completely, rethrow — caller handles error
+            throw error
+        }
+        return lastResult
     }
 
     private func processTranslate(_ text: String) async throws -> String {
