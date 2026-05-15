@@ -27,16 +27,8 @@ public class AIProcessingService: @unchecked Sendable {
     }
 
     public func process(text: String, appBundleID: String? = nil) async throws -> String {
-        let providerName = SettingsStore.shared.selectedAIProvider
-        guard let apiKey = getAPIKey(for: providerName) else { throw AIError.apiKeyNotFound }
-
-        let provider = getProvider()
-        let model = getModel(for: providerName)
         let prompt = StyleProfileService.shared.buildSystemPrompt(appBundleID: appBundleID)
-
-        return try await withRetry {
-            try await provider.process(prompt: prompt, text: text, apiKey: apiKey, model: model)
-        }
+        return try await processWithFailover(text: text, appBundleID: appBundleID, prompt: prompt)
     }
 
     public func processWithPrompt(prompt: String, text: String) async throws -> String {
@@ -121,6 +113,35 @@ public class AIProcessingService: @unchecked Sendable {
             }
         }
         throw lastError ?? AIError.requestFailed
+    }
+
+    /// Try the selected provider first, then cascade to others on failure.
+    private func processWithFailover(
+        text: String,
+        appBundleID: String?,
+        prompt: String
+    ) async throws -> String {
+        let failover = ProviderFailover(selectedProvider: SettingsStore.shared.selectedAIProvider)
+        let order = failover.providerOrder()
+
+        for providerName in order {
+            guard let apiKey = getAPIKey(for: providerName) else { continue }
+
+            let provider = AIProviderFactory.makeProvider(name: providerName)
+            let model = getModel(for: providerName)
+
+            do {
+                return try await withRetry {
+                    try await provider.process(prompt: prompt, text: text, apiKey: apiKey, model: model)
+                }
+            } catch {
+                if !retryPolicy.isRetryable(error) { throw error }
+                // Continue to next provider
+                continue
+            }
+        }
+
+        throw AIError.apiKeyNotFound
     }
 
     public func getAvailableProviders() -> [any AIProvider] {
