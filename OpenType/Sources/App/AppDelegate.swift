@@ -34,6 +34,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         Task {
             _ = await NotificationService.shared.requestPermission()
         }
+
+        // Start health monitoring
+        let healthMonitor = HealthMonitor.shared
+        healthMonitor.onStaleRecording = { [weak self] in
+            Task { @MainActor in
+                // Force-stop any stale recording
+                if AudioCaptureService.shared.isRecording {
+                    _ = try? await AudioCaptureService.shared.stopRecording()
+                }
+            }
+        }
+        healthMonitor.onHighMemory = { memoryMB in
+            // Log but don't crash — let the OS handle memory pressure naturally
+            print("[HealthMonitor] High memory: \(Int(memoryMB)) MB")
+        }
+        healthMonitor.onHealthLog = { message in
+            print("[HealthMonitor] \(message)")
+        }
+        healthMonitor.startMonitoring()
     }
 
     private func setupSettingsWindowObserver() {
