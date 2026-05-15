@@ -34,6 +34,9 @@ class PopoverViewModel: ObservableObject {
     }
 
     func startRecording(mode: VoiceMode) {
+        let defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
+        defaults.set(true, forKey: "isRecordingActive")
+
         currentMode = mode
         isRecording = true
         transcribedText = ""
@@ -104,6 +107,10 @@ class PopoverViewModel: ObservableObject {
 
     func stopRecording() {
         isRecording = false
+
+        let defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
+        defaults.set(false, forKey: "isRecordingActive")
+
         isProcessing = true
         streamingTask?.cancel()
         streamingTask = nil

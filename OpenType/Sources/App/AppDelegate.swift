@@ -15,6 +15,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var updaterDelegate: UpdaterDelegate?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Crash recovery: if the app crashed while recording, clean up stale state
+        let defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
+        let wasRecording = defaults.bool(forKey: "isRecordingActive")
+        if wasRecording {
+            print("[CrashRecovery] Detected stale recording state from previous session — cleaning up")
+            defaults.set(false, forKey: "isRecordingActive")
+            AudioCaptureService.shared.cleanupTempFiles(keepingRecent: 5)
+        }
+
         // Run Electron config migration if needed
         if MigrationService.shared.needsMigration {
             do {
