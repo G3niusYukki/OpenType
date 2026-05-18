@@ -19,6 +19,8 @@ class PopoverViewModel: ObservableObject {
     @Published var canSaveStyleExample = false
     @Published var didSaveStyleExample = false
     @Published var detectedEditCommand: EditCommand?
+    @Published var quickAnswerText = ""
+    @Published var showQuickAnswerActions = false
     private var lastRawText: String = ""
     private var lastAppBundleID: String?
 
@@ -45,6 +47,10 @@ class PopoverViewModel: ObservableObject {
         canSaveStyleExample = false
         didSaveStyleExample = false
         detectedEditCommand = nil
+        quickAnswerText = ""
+        showQuickAnswerActions = false
+
+        NotificationService.shared.playRecordingStartSound()
 
         Task {
             do {
@@ -108,6 +114,8 @@ class PopoverViewModel: ObservableObject {
     func stopRecording() {
         isRecording = false
 
+        NotificationService.shared.playRecordingStopSound()
+
         let defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
         defaults.set(false, forKey: "isRecordingActive")
 
@@ -169,7 +177,7 @@ class PopoverViewModel: ObservableObject {
                 isProcessing = false
 
                 // 自动插入文本
-                if currentMode != .handsFree {
+                if currentMode != .handsFree && currentMode != .quickAnswer {
                     if currentMode == .editSelected {
                         if detectedEditCommand == nil {
                             insertText()
@@ -197,6 +205,8 @@ class PopoverViewModel: ObservableObject {
             return try await processTranslate(text)
         case .editSelected:
             return try await processEditSelected(text)
+        case .quickAnswer:
+            return try await processQuickAnswer(text)
         }
     }
 
@@ -247,6 +257,27 @@ class PopoverViewModel: ObservableObject {
         }
 
         return result
+    }
+
+    private func processQuickAnswer(_ text: String) async throws -> String {
+        guard aiService.isAvailable() else {
+            postError("Quick Answer requires an AI provider to be configured")
+            return text
+        }
+
+        var lastResult = text
+        let stream = aiService.answerQuestionStreaming(text: text, appBundleID: lastAppBundleID)
+        do {
+            for try await partial in stream {
+                lastResult = partial
+                quickAnswerText = partial
+            }
+        } catch {
+            throw error
+        }
+
+        showQuickAnswerActions = true
+        return lastResult
     }
 
     // MARK: - Error Handling
@@ -330,6 +361,29 @@ class PopoverViewModel: ObservableObject {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)
     }
+
+    func insertQuickAnswer() {
+        do {
+            try textInserter.insertText(quickAnswerText)
+        } catch let error as TextInsertionError {
+            switch error {
+            case .noAccessibilityPermission:
+                postError("需要辅助功能权限才能插入文本，请在系统设置中授权")
+            case .allMethodsFailed:
+                postError("文本已复制到剪贴板，请手动粘贴 (Cmd+V)")
+            default:
+                postError("文本插入失败: \(error.localizedDescription)")
+            }
+        } catch {
+            postError("文本插入失败: \(error.localizedDescription)")
+        }
+        showQuickAnswerActions = false
+    }
+
+    func copyQuickAnswer() {
+        copyToClipboard(quickAnswerText)
+        showQuickAnswerActions = false
+    }
 }
 
 extension Notification.Name {
@@ -342,4 +396,5 @@ extension Notification.Name {
     public static let hotkeyHandsFree = Notification.Name("hotkeyHandsFree")
     public static let hotkeyTranslate = Notification.Name("hotkeyTranslate")
     public static let hotkeyEditSelected = Notification.Name("hotkeyEditSelected")
+    public static let hotkeyQuickAnswer = Notification.Name("hotkeyQuickAnswer")
 }

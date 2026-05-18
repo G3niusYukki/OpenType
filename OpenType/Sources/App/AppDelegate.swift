@@ -139,6 +139,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             case "handsFree":    handler = { [weak self] in self?.onHandsFreeHotkey() }
             case "translate":    handler = { [weak self] in self?.onTranslateHotkey() }
             case "editSelected": handler = { [weak self] in self?.onEditSelectedHotkey() }
+            case "quickAnswer":  handler = { [weak self] in self?.onQuickAnswerHotkey() }
             default:             handler = {}
             }
 
@@ -180,6 +181,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func onEditSelectedHotkey() {
         NotificationCenter.default.post(name: .hotkeyEditSelected, object: nil)
+    }
+
+    private func onQuickAnswerHotkey() {
+        NotificationCenter.default.post(name: .hotkeyQuickAnswer, object: nil)
     }
 
     private func setupHotkeyObserver() {

@@ -64,6 +64,11 @@ public class SettingsStore: ObservableObject {
         didSet { defaults.set(recentLocales, forKey: "recentLocales") }
     }
 
+    // MARK: - Sound
+    @Published public var soundFeedbackEnabled: Bool {
+        didSet { defaults.set(soundFeedbackEnabled, forKey: "soundFeedbackEnabled") }
+    }
+
     private init() {
         defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
 
@@ -71,6 +76,7 @@ public class SettingsStore: ObservableObject {
         selectedAIProvider = defaults.string(forKey: "selectedAIProvider") ?? "OpenAI"
         launchAtLogin = defaults.bool(forKey: "launchAtLogin")
         notificationsEnabled = defaults.object(forKey: "notificationsEnabled") as? Bool ?? true
+        soundFeedbackEnabled = defaults.object(forKey: "soundFeedbackEnabled") as? Bool ?? true
         theme = defaults.string(forKey: "theme") ?? "system"
         lastProfileID = defaults.string(forKey: "lastProfileID")
 

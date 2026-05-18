@@ -31,6 +31,7 @@ struct GeneralSettingsView: View {
                     }
                 ))
                 Toggle("Enable Notifications", isOn: $settings.notificationsEnabled)
+                Toggle("Sound Feedback", isOn: $settings.soundFeedbackEnabled)
             } header: {
                 Text("Startup")
             }

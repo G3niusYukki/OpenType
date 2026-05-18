@@ -1,5 +1,6 @@
 import SwiftUI
 import Models
+import Services
 
 struct RecordingControlsView: View {
     @Binding var isRecording: Bool
@@ -20,21 +21,10 @@ struct RecordingControlsView: View {
                     onStartRecording()
                 }
             }) {
-                ZStack {
-                    Circle()
-                        .fill(isRecording ? Color.red : Color.accentColor)
-                        .frame(width: 64, height: 64)
-
-                    if isRecording {
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.white)
-                            .frame(width: 20, height: 20)
-                    } else {
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 24, height: 24)
-                    }
-                }
+                AudioLevelIndicator(
+                    audioService: AudioCaptureService.shared,
+                    isRecording: isRecording
+                )
             }
             .buttonStyle(.plain)
 

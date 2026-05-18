@@ -29,7 +29,7 @@ final class SettingsStoreTests: XCTestCase {
     }
 
     func testVoiceModeAllCasesCount() {
-        XCTAssertEqual(VoiceMode.allCases.count, 4)
+        XCTAssertEqual(VoiceMode.allCases.count, 5)
     }
 
     func testVoiceModeRawValues() {

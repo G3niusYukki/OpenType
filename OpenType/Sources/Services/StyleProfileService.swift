@@ -114,6 +114,24 @@ Process the following transcribed text:
         return parts.joined(separator: "\n")
     }
 
+    public func buildQuickAnswerPrompt(appBundleID: String?) -> String {
+        var parts = [
+            "You are a quick answer assistant. The user asked a question via voice input.",
+            "Provide a clear, concise, and accurate answer.",
+            "If the question is ambiguous, provide the most likely interpretation.",
+            "Keep answers brief unless detail is requested.",
+            "Return ONLY the answer text, without prefixes or decorative formatting."
+        ]
+
+        if let profile = getActiveProfile(),
+           let bundleID = appBundleID,
+           let appTone = (try? store.getAppToneRules(for: profile.id))?.first(where: { $0.bundleID == bundleID }) {
+            parts.append(appTone.instructions)
+        }
+
+        return parts.joined(separator: " ")
+    }
+
     private func commandDescription(for command: EditCommand, isChinese: Bool) -> String {
         switch command {
         case .rephrase: return isChinese ? "改写" : "Rephrase the text in different words while preserving the meaning"

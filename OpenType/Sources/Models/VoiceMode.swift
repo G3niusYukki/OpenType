@@ -5,6 +5,7 @@ public enum VoiceMode: String, CaseIterable, Identifiable, Codable {
     case handsFree
     case translate
     case editSelected
+    case quickAnswer
 
     public var id: String { rawValue }
 
@@ -14,6 +15,7 @@ public enum VoiceMode: String, CaseIterable, Identifiable, Codable {
         case .handsFree: return "Hands-Free"
         case .translate: return "Translate"
         case .editSelected: return "Edit"
+        case .quickAnswer: return "Quick Answer"
         }
     }
 
@@ -23,6 +25,7 @@ public enum VoiceMode: String, CaseIterable, Identifiable, Codable {
         case .handsFree: return "⌘⇧Space"
         case .translate: return "⌘⇧T"
         case .editSelected: return "⌘⇧E"
+        case .quickAnswer: return "⌘⇧Q"
         }
     }
 }

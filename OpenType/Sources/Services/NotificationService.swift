@@ -1,4 +1,5 @@
 import UserNotifications
+import AppKit
 import Data
 import Utilities
 
@@ -36,5 +37,17 @@ public class NotificationService {
                 print("Failed to send notification: \(error)")
             }
         }
+    }
+
+    // MARK: - Sound Feedback
+
+    public func playRecordingStartSound() {
+        guard SettingsStore.shared.soundFeedbackEnabled else { return }
+        NSSound(named: "Tink")?.play()
+    }
+
+    public func playRecordingStopSound() {
+        guard SettingsStore.shared.soundFeedbackEnabled else { return }
+        NSSound(named: "Pop")?.play()
     }
 }

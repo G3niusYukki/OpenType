@@ -64,6 +64,14 @@ struct PopoverView: View {
                 isProcessing: viewModel.isProcessing
             )
 
+            if viewModel.showQuickAnswerActions && !viewModel.quickAnswerText.isEmpty {
+                QuickAnswerView(
+                    answerText: viewModel.quickAnswerText,
+                    onInsert: { viewModel.insertQuickAnswer() },
+                    onCopy: { viewModel.copyQuickAnswer() }
+                )
+            }
+
             if let command = viewModel.detectedEditCommand {
                 Text(command.displayLabel)
                     .font(.caption)

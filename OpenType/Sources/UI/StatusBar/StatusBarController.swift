@@ -1,11 +1,13 @@
 import AppKit
 import SwiftUI
+import Combine
 import Utilities
 
 public class StatusBarController: NSObject, ObservableObject {
     private var statusItem: NSStatusItem
     private var popover: NSPopover
     private var popoverViewModel: PopoverViewModel?
+    private var cancellables = Set<AnyCancellable>()
     @Published public var currentIcon: StatusBarIcon = .idle
 
     public override init() {
@@ -26,12 +28,28 @@ public class StatusBarController: NSObject, ObservableObject {
             name: .hotkeyHandsFree,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleQuickAnswerHotkey),
+            name: .hotkeyQuickAnswer,
+            object: nil
+        )
     }
 
     @objc private func handleHandsFreeHotkey() {
         guard let viewModel = popoverViewModel else { return }
         Task { @MainActor in
             viewModel.toggleHandsFree()
+        }
+    }
+
+    @objc private func handleQuickAnswerHotkey() {
+        Task { @MainActor in
+            if !popover.isShown {
+                showPopover()
+            }
+            guard let viewModel = popoverViewModel else { return }
+            viewModel.startRecording(mode: .quickAnswer)
         }
     }
 
@@ -98,10 +116,42 @@ public class StatusBarController: NSObject, ObservableObject {
         self.popoverViewModel = viewModel
         popover.contentViewController = NSHostingController(rootView: PopoverView(viewModel: viewModel))
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        observeViewModelState(viewModel)
+    }
+
+    @MainActor private func observeViewModelState(_ viewModel: PopoverViewModel) {
+        cancellables.removeAll()
+
+        // Map recording/processing state to status bar icon
+        Publishers.CombineLatest(viewModel.$isRecording, viewModel.$isProcessing)
+            .map { (isRecording, isProcessing) -> StatusBarIcon in
+                if isRecording { return .recording }
+                if isProcessing { return .processing }
+                return .idle
+            }
+            .removeDuplicates()
+            .sink { [weak self] icon in
+                self?.updateIcon(icon)
+            }
+            .store(in: &cancellables)
+
+        // Error state: show error icon for 3 seconds then revert
+        NotificationCenter.default.publisher(for: .transcriptionError)
+            .map { _ in StatusBarIcon.error }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] icon in
+                self?.updateIcon(icon)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+                    self?.updateIcon(.idle)
+                }
+            }
+            .store(in: &cancellables)
     }
 
     public func closePopover() {
         popover.performClose(nil)
+        // Keep icon reflecting state (hands-free may still be recording)
+        // Cancellables persist so icon updates continue
     }
 
     public func updateIcon(_ icon: StatusBarIcon) {

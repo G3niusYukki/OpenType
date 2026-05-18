@@ -94,6 +94,49 @@ public class AIProcessingService: @unchecked Sendable {
         }
     }
 
+    // MARK: - Quick Answer
+
+    public func answerQuestion(text: String, appBundleID: String? = nil) async throws -> String {
+        let prompt = StyleProfileService.shared.buildQuickAnswerPrompt(appBundleID: appBundleID)
+        return try await processWithFailover(text: text, appBundleID: appBundleID, prompt: prompt)
+    }
+
+    public func answerQuestionStreaming(text: String, appBundleID: String? = nil) -> AsyncThrowingStream<String, Error> {
+        AsyncThrowingStream { continuation in
+            Task {
+                let providerName = SettingsStore.shared.selectedAIProvider
+                guard let apiKey = self.getAPIKey(for: providerName) else {
+                    continuation.finish(throwing: AIError.apiKeyNotFound)
+                    return
+                }
+
+                let provider = self.getProvider()
+                let model = self.getModel(for: providerName)
+                let prompt = StyleProfileService.shared.buildQuickAnswerPrompt(appBundleID: appBundleID)
+
+                do {
+                    let stream = provider.processStreaming(prompt: prompt, text: text, apiKey: apiKey, model: model)
+                    for try await partial in stream {
+                        continuation.yield(partial)
+                    }
+                    continuation.finish()
+                } catch {
+                    if self.retryPolicy.isRetryable(error) {
+                        do {
+                            let result = try await self.answerQuestion(text: text, appBundleID: appBundleID)
+                            continuation.yield(result)
+                            continuation.finish()
+                        } catch {
+                            continuation.finish(throwing: error)
+                        }
+                    } else {
+                        continuation.finish(throwing: error)
+                    }
+                }
+            }
+        }
+    }
+
     // MARK: - Retry Logic
 
     private func withRetry<T>(_ operation: @escaping () async throws -> T) async throws -> T {
