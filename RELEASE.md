@@ -1,3 +1,50 @@
+# OpenType v0.8.0 Release Notes
+
+## Typeless Gap Closure — Audio Waveform, Status Bar Icons, Sound Feedback, Quick Answer
+
+v0.8.0 closes 4 remaining easy-to-address gaps with Typeless: real-time audio visualization, dynamic status bar state, recording sound feedback, and a new Quick Answer mode for conversational AI interaction.
+
+---
+
+## New Features
+
+### Audio Waveform Visualization
+
+See your voice while you speak:
+
+- **Pulsing Ring** — The recording button now has an outer ring that scales and brightens with your voice. Silent pauses → ring shrinks; speaking → ring expands.
+- **Real-Time** — RMS audio level sampled every 50ms with exponential smoothing, displayed smoothly via SwiftUI animation.
+
+### Dynamic Status Bar Icons
+
+The menu bar icon now reflects what's happening:
+
+- **Red mic** — recording in progress
+- **Blue spinner** — AI processing
+- **Orange exclamation mic** — error (auto-reverts after 3s)
+- **Gray mic** — idle
+
+No more guessing whether your hotkey press was registered.
+
+### Recording Sound Feedback
+
+Press a hotkey, hear a confirmation:
+
+- **Start recording** — subtle "Tink" sound
+- **Stop recording** — satisfying "Pop" sound
+- **Toggle** — disable in Settings > General if you prefer silence
+
+### Quick Answer Mode (⌘⇧Q)
+
+Ask a question via voice, get an AI answer:
+
+- **New Voice Mode** — ⌘⇧Q opens Quick Answer. Speak your question.
+- **Streaming AI Answer** — Answer appears word-by-word in the popover.
+- **Review Before Insert** — Unlike Basic mode, answers are NOT auto-inserted. You review, then click "Insert" or "Copy".
+- **QA-Optimized Prompt** — Dedicated system prompt instructs the AI to give concise, accurate answers.
+
+---
+
 # OpenType v0.7.0 Release Notes
 
 ## Stability & Reliability — Production-Grade Text Insertion, AI Streaming, 24/7 Uptime

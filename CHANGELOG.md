@@ -5,6 +5,31 @@ All notable changes to OpenType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-05-18
+
+### Added
+
+- **Audio Waveform Visualization** — Real-time audio level indicator during recording
+  - `AudioLevelIndicator` SwiftUI view with pulsing ring that tracks microphone input
+  - Outer ring scales 1.0-1.4x with opacity 0.3-1.0 based on RMS audio level
+  - Smooth 50ms animation transitions for fluid visual feedback
+- **Status Bar Icon Dynamic Updates** — Menu bar icon now reflects app state
+  - `.recording` — red mic during active recording
+  - `.processing` — blue spinner during AI processing
+  - `.error` — orange exclamation mic for 3 seconds on error
+  - `.idle` — gray mic when inactive (hands-free still shows recording)
+  - Combine-based state observation from PopoverViewModel
+- **Recording Sound Feedback** — Audio confirmation on recording start/stop
+  - Start recording: `NSSound(named: "Tink")` — subtle high-pitched click
+  - Stop recording: `NSSound(named: "Pop")` — satisfying pop confirmation
+  - Sound Feedback toggle in Settings > General (default: enabled)
+- **Quick Answer Mode** (⌘⇧Q) — Conversational AI Q&A via voice
+  - New `VoiceMode.quickAnswer` with dedicated hotkey
+  - AI streaming answer displayed in popover for review (not auto-inserted)
+  - Insert/Copy action buttons after answer is generated
+  - QA-specific prompt via `StyleProfileService.buildQuickAnswerPrompt()`
+  - `answerQuestionStreaming()` with failover fallback
+
 ## [0.7.0] - 2026-05-15
 
 ### Added
