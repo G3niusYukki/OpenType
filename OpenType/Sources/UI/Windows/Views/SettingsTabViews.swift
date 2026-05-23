@@ -37,6 +37,21 @@ struct GeneralSettingsView: View {
             }
 
             Section {
+                Toggle(isOn: $settings.whisperModeEnabled) {
+                    HStack {
+                        Text("Whisper Mode")
+                        Image(systemName: "waveform.badge.mic")
+                            .foregroundColor(.accentColor)
+                    }
+                }
+                Text("Boosts quiet speech and suppresses background noise. Useful for dictating in public spaces without disturbing others.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            } header: {
+                Text("Audio")
+            }
+
+            Section {
                 ForEach(Constants.Hotkeys.defaultHotkeys, id: \.id) { item in
                     HStack {
                         Text(item.name)

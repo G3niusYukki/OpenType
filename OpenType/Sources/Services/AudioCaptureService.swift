@@ -1,5 +1,7 @@
 import AVFoundation
 import Foundation
+import Accelerate
+import Data
 import Utilities
 
 public enum AudioCaptureError: Error {
@@ -17,6 +19,11 @@ public class AudioCaptureService: ObservableObject {
 
     @Published public private(set) var isRecording = false
     @Published public private(set) var audioLevel: Float = 0.0
+
+    /// Callback fired on each audio buffer from the microphone tap.
+    /// Used by RealtimeTranscriptionService to feed live audio to Apple Speech.
+    /// Called on MainActor from the tap closure.
+    public var onBufferReceived: ((AVAudioPCMBuffer) -> Void)?
 
     private var audioEngine: AVAudioEngine?
     private var inputNode: AVAudioInputNode?
@@ -73,6 +80,7 @@ public class AudioCaptureService: ObservableObject {
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
             Task { @MainActor in
                 self?.processAudioBuffer(buffer, converter: converter)
+                self?.onBufferReceived?(buffer)
             }
         }
 
@@ -117,7 +125,62 @@ public class AudioCaptureService: ObservableObject {
         converter.convert(to: convertedBuffer, error: &error, withInputFrom: inputBlock)
 
         if error == nil {
+            // Apply Whisper Mode processing if enabled
+            if SettingsStore.shared.whisperModeEnabled {
+                applyWhisperProcessing(to: convertedBuffer)
+            }
             try? audioFile.write(from: convertedBuffer)
+        }
+    }
+
+    // MARK: - Whisper Mode Audio Processing
+
+    /// Applies noise gate + AGC (Automatic Gain Control) to boost quiet speech
+    /// and suppress background noise for Whisper Mode.
+    private func applyWhisperProcessing(to buffer: AVAudioPCMBuffer) {
+        guard let channelData = buffer.floatChannelData else { return }
+        let frameLength = Int(buffer.frameLength)
+        let samples = channelData[0]
+
+        // --- Noise Gate ---
+        // Compute RMS of the buffer to estimate ambient noise floor
+        var rms: Float = 0
+        vDSP_rmsqv(samples, 1, &rms, vDSP_Length(frameLength))
+
+        // Adaptive noise gate threshold: slightly above the estimated noise floor
+        // For whisper mode, we use a very low threshold to capture quiet speech
+        let noiseGateThreshold: Float = max(rms * 0.3, 0.002)
+
+        // Apply soft noise gate (gradual attenuation below threshold, not hard cutoff)
+        for i in 0..<frameLength {
+            let absSample = abs(samples[i])
+            if absSample < noiseGateThreshold {
+                // Attenuate noise below threshold (soft knee)
+                let attenuation = absSample / noiseGateThreshold
+                samples[i] *= attenuation * attenuation
+            }
+        }
+
+        // --- Automatic Gain Control (AGC) ---
+        // Boost quiet signals to make whispered speech audible
+        // Target RMS for comfortable speech level
+        let targetRMS: Float = 0.12
+        var currentRMS: Float = 0
+        vDSP_rmsqv(samples, 1, &currentRMS, vDSP_Length(frameLength))
+
+        if currentRMS > 0.001 { // Only apply gain if there's actual signal
+            let gain = min(targetRMS / currentRMS, 6.0) // Cap at 6x to avoid distortion
+
+            // Apply gain
+            var gainValue = gain
+            vDSP_vsmul(samples, 1, &gainValue, samples, 1, vDSP_Length(frameLength))
+
+            // Soft clip to prevent distortion (tanh-based limiter)
+            for i in 0..<frameLength {
+                if abs(samples[i]) > 0.9 {
+                    samples[i] = tanh(samples[i])
+                }
+            }
         }
     }
 
@@ -153,7 +216,12 @@ public class AudioCaptureService: ObservableObject {
         // Convert to logarithmic scale (dB) and normalize to 0.0-1.0
         // Typical range: -60dB (quiet) to 0dB (loud)
         let db = 20.0 * log10(max(rms, 0.0001))
-        let normalizedLevel = (db + 60.0) / 60.0
+
+        // In Whisper Mode, use a wider dynamic range to show quieter sounds
+        let whisperMode = SettingsStore.shared.whisperModeEnabled
+        let dbFloor: Float = whisperMode ? -70.0 : -60.0
+        let dbRange: Float = whisperMode ? 70.0 : 60.0
+        let normalizedLevel = (db - dbFloor) / dbRange
         
         // Apply smoothing and clamp to valid range
         let targetLevel = max(0.0, min(1.0, normalizedLevel))

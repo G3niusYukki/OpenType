@@ -46,10 +46,14 @@ coverage/
 .swiftpm/
 *.xcodeproj/
 *.xcworkspace/
+.xcbuild/
 
 # OpenSpec
 openspec/
 .worktrees/
+
+# OMC
+.omc/
 
 # Deprecated Electron code
 deprecated/

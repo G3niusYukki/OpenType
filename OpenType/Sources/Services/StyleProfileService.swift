@@ -7,26 +7,107 @@ public class StyleProfileService: @unchecked Sendable {
 
     private let store = HistoryStore.shared
     private let charsPerToken = 4
-    private let maxInstructionTokens = 500
-    private let maxExampleTokens = 800
-    private let maxSingleExampleTokens = 300
+    private let maxInstructionTokens = 800
+    private let maxExampleTokens = 1200
+    private let maxSingleExampleTokens = 400
 
     private var baseSystemPrompt: String {
         """
-Process the following transcribed text:
-1. Remove filler words (um, uh, 嗯, 啊)
-2. Fix repetitions and self-corrections
-3. Auto-format: organize lists, steps, and key points into structured text
-4. Preserve the original meaning and tone
-"""
+        You are a voice-to-text post-processor. Transform raw speech transcription into polished, natural writing.
+        Return ONLY the processed text. No explanations, no prefixes, no markdown code fences.
+
+        ## Core Rules
+
+        1. **Remove filler words**: Delete "um", "uh", "like", "you know", "I mean", "嗯", "啊", "那个", "就是", "然后就是", "怎么说呢" and similar hesitations.
+
+        2. **Remove repetitions**: "the the" → "the", "I think I think" → "I think", "你好你好" → "你好". Only remove true accidental repetitions, not intentional emphasis.
+
+        3. **Detect self-correction**: When the speaker corrects themselves mid-sentence, keep ONLY the corrected version.
+           - "I went to the store— I mean the library" → "I went to the library"
+           - "Send it to John, no wait, send it to Sarah" → "Send it to Sarah"
+           - "用Python写, 不对, 用Go写" → "用Go写"
+
+        4. **Understand intent, not just words**: Rephrase awkward spoken phrasing into natural written text while preserving the speaker's meaning and voice.
+
+        ## Auto-Formatting Rules
+
+        Detect the speaker's structural intent and format accordingly:
+
+        - **Numbered steps**: When the speaker lists sequential actions ("first... then... finally..." / "第一步... 第二步..."), format as a numbered list:
+          1. Step one
+          2. Step two
+          3. Step three
+
+        - **Bullet points**: When listing non-sequential items ("we need X, Y, and Z" / "关于A, B, C"), format as a bulleted list:
+          • Item A
+          • Item B
+          • Item C
+
+        - **Paragraphs**: For narrative or conversational text, use clean paragraphs. Do NOT force list formatting when the speaker is telling a story or making a point.
+
+        - **Short messages**: For chat/messaging context (under ~30 words), keep it as a single clean sentence without formatting.
+
+        ## Important Constraints
+
+        - Preserve the original language. Do not translate.
+        - Preserve proper nouns, technical terms, and brand names exactly.
+        - Do NOT add information the speaker didn't say.
+        - Do NOT remove information the speaker clearly intended.
+        - Keep the speaker's personality — don't make casual speech sound corporate.
+        - Add basic punctuation where missing (periods, commas, question marks).
+        """
+    }
+
+    /// Context-aware additions based on the target application
+    private func appContextPrompt(for bundleID: String?) -> String? {
+        guard let bundleID = bundleID else { return nil }
+
+        // Email apps
+        let emailApps = ["com.apple.mail", "com.microsoft.Outlook", "com.google.Chrome", "org.mozilla.firefox",
+                         "com.superhuman.electron", "com.readdle.Spark", "com.mailbird.mailbird"]
+        if emailApps.contains(bundleID) || bundleID.contains("mail") || bundleID.contains("outlook") {
+            return "Context: This text is for an email. Use professional tone, proper paragraph structure, and appropriate greetings/sign-offs if the speaker implies them."
+        }
+
+        // Chat/messaging apps
+        let chatApps = ["com.apple.iChat", "com.tinyspeck.slackmacgap", "us.zoom.xos",
+                        "com.microsoft.teams2", "org.telegram.desktop", "com.discord"]
+        if chatApps.contains(bundleID) || bundleID.contains("slack") || bundleID.contains("telegram") || bundleID.contains("discord") || bundleID.contains("wechat") {
+            return "Context: This text is for a chat message. Keep it concise and conversational. Avoid overly formal language. Prefer short sentences."
+        }
+
+        // Code editors / IDEs
+        let codeApps = ["com.microsoft.VSCode", "com.jetbrains.intellij", "com.apple.dt.Xcode",
+                        "com.jetbrains.pycharm", "com.sublimetext.4"]
+        if codeApps.contains(bundleID) || bundleID.contains("code") || bundleID.contains("jetbrains") {
+            return "Context: This text is for a code editor (likely comments, commit messages, or documentation). Preserve technical terms, variable names, and code references exactly. Use concise, technical language."
+        }
+
+        // Note-taking apps
+        let noteApps = ["com.apple.Notes", "com.evernote.Evernote", "notion.id", "md.obsidian",
+                        "com.craftdocs.craftlauncher"]
+        if noteApps.contains(bundleID) || bundleID.contains("notes") || bundleID.contains("notion") || bundleID.contains("obsidian") {
+            return "Context: This text is for a note-taking app. Use clear structure with headers, lists, and paragraphs as appropriate. Organize information for easy scanning."
+        }
+
+        return nil
     }
 
     public func buildSystemPrompt(appBundleID: String?) -> String {
         var parts = [baseSystemPrompt]
         var tokenCount = parts.joined(separator: " ").count / charsPerToken
 
+        // Add app-context-aware prompt (before user style rules)
+        if let appContext = appContextPrompt(for: appBundleID) {
+            let contextTokens = appContext.count / charsPerToken
+            if tokenCount + contextTokens <= maxInstructionTokens {
+                parts.append(appContext)
+                tokenCount += contextTokens
+            }
+        }
+
         guard let profile = getActiveProfile() else {
-            return parts.joined(separator: " ")
+            return parts.joined(separator: "\n")
         }
 
         // Add global tone rules

@@ -5,6 +5,57 @@ All notable changes to OpenType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-05-23
+
+### Added
+
+- **Real-time Streaming Transcription** — See words appear as you speak (Typeless-level experience)
+  - `RealtimeTranscriptionService`: feeds live audio buffers directly to `SFSpeechAudioBufferRecognitionRequest`
+  - Near-instant partial results displayed in `liveText` as you speak
+  - `VADDetector`: Voice Activity Detection with adaptive silence threshold (1.2s pause)
+  - Two-layer processing architecture:
+    - Layer 1: Real-time partial transcription (low latency, ~50ms)
+    - Layer 2: AI post-processing triggered on speech pause (async refinement)
+  - On stop: uses VAD-processed text if available, falls back to file-based transcription
+  - Audio buffer tap exposed via `AudioCaptureService.onBufferReceived` callback
+  - Combine-based audio level → VAD pipeline
+
+- **Onboarding Wizard** — First-launch setup guide for new users
+  - 5-step walkthrough: Welcome → Permissions → Transcription → AI Provider → Ready
+  - Permission status indicators with one-click grant/open-settings actions
+  - Transcription provider selection with feature badges (Free/Offline/Cloud/Accurate/Fast)
+  - AI provider selection with skip option
+  - Hotkey reference card on final step
+  - Smooth slide transitions between steps with progress indicators
+  - `OnboardingWindowController` with transparent titlebar
+  - `hasCompletedOnboarding` flag in SettingsStore (UserDefaults-backed)
+  - "Skip Setup" option for users who prefer to explore on their own
+
+- **AI Prompt Overhaul** — Deeper intent understanding and auto-formatting
+  - Rewritten `baseSystemPrompt` with detailed Core Rules, Auto-Formatting Rules, and Important Constraints
+  - Self-correction detection: "I went to the store— I mean the library" → "I went to the library"
+  - Auto-formatting: numbered steps, bullet points, paragraphs, short messages
+  - App-context-aware prompts: detects email/chat/code/notes apps and adjusts tone
+  - Token budget increased: instructions 500→800, examples 800→1200
+  - 25+ app bundle IDs recognized for context-aware formatting
+
+- **Whisper Mode** — Dictate quietly in public spaces
+  - Adaptive noise gate with soft knee (suppresses background noise)
+  - Automatic Gain Control (AGC) boosts quiet speech up to 6x
+  - Tanh-based soft clipper prevents distortion
+  - Accelerate/vDSP for efficient real-time audio processing
+  - Level meter sensitivity increased in Whisper Mode (-70dB floor vs -60dB)
+  - Purple status bar icon + "Whisper Mode" badge in popover
+  - Toggle via Settings → General → Audio or right-click menu bar icon
+
+- **Dictionary Enhancements** — Import, export, and smart suggestions
+  - Import from file (CSV, TSV, one-word-per-line formats)
+  - Import from clipboard
+  - Export to clipboard (TSV format)
+  - Smart Suggestions: analyzes history to find frequently misrecognized words
+  - `SmartSuggestionSheet` UI with accept/accept-all/dismiss actions
+  - Stop-word filtering for both English and Chinese
+
 ## [0.8.0] - 2026-05-18
 
 ### Added

@@ -25,6 +25,24 @@ struct PopoverView: View {
             .padding(.horizontal)
             .padding(.top, 12)
 
+            // Whisper Mode indicator
+            if SettingsStore.shared.whisperModeEnabled {
+                HStack(spacing: 4) {
+                    Image(systemName: "waveform.badge.mic")
+                        .font(.caption2)
+                    Text("Whisper Mode")
+                        .font(.caption2)
+                }
+                .foregroundColor(.purple)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 2)
+                .background(
+                    Capsule()
+                        .fill(Color.purple.opacity(0.12))
+                )
+                .padding(.top, 4)
+            }
+
             RecordingControlsView(
                 isRecording: $viewModel.isRecording,
                 currentMode: $selectedMode,

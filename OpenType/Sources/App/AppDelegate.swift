@@ -11,6 +11,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private let hotkeyService = HotkeyService.shared
     private var settingsWindowController: SettingsWindowController?
     private var mainWindowController: MainWindowController?
+    private var onboardingWindowController: OnboardingWindowController?
     private var updaterController: SPUStandardUpdaterController?
     private var updaterDelegate: UpdaterDelegate?
 
@@ -62,6 +63,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             print("[HealthMonitor] \(message)")
         }
         healthMonitor.startMonitoring()
+
+        // Show onboarding on first launch
+        if !SettingsStore.shared.hasCompletedOnboarding {
+            showOnboarding()
+        }
+    }
+
+    private func showOnboarding() {
+        onboardingWindowController = OnboardingWindowController(onComplete: { [weak self] in
+            self?.onboardingWindowController = nil
+            // Reload hotkeys now that providers are configured
+            self?.reloadHotkeys()
+        })
+        onboardingWindowController?.window?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     private func setupSettingsWindowObserver() {

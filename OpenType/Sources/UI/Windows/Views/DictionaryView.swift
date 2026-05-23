@@ -1,7 +1,9 @@
 import SwiftUI
 import Data
+import Services
 import Utilities
 import Models
+import UniformTypeIdentifiers
 
 struct DictionaryView: View {
     @State private var entries: [DictionaryEntry] = []
@@ -10,6 +12,9 @@ struct DictionaryView: View {
     @State private var newTerm = ""
     @State private var newReplacement = ""
     @State private var newCategory = ""
+    @State private var showImportOptions = false
+    @State private var showSmartSuggestions = false
+    @State private var smartSuggestions: [SmartSuggestion] = []
 
     var filteredEntries: [DictionaryEntry] {
         if searchText.isEmpty {
@@ -31,6 +36,24 @@ struct DictionaryView: View {
                     .foregroundColor(.secondary)
 
                 Spacer()
+
+                // Smart Suggestions
+                Button(action: analyzeSmartSuggestions) {
+                    Label("Suggestions", systemImage: "lightbulb")
+                }
+                .buttonStyle(.bordered)
+                .help("Detect frequently corrected words")
+
+                // Import menu
+                Menu {
+                    Button("Import from File...") { importFromFile() }
+                    Button("Import from Clipboard") { importFromClipboard() }
+                    Divider()
+                    Button("Export to Clipboard") { exportToClipboard() }
+                } label: {
+                    Label("Import", systemImage: "square.and.arrow.down")
+                }
+                .menuStyle(.borderlessButton)
 
                 Button(action: { showAddSheet = true }) {
                     Label("Add", systemImage: "plus")
@@ -107,6 +130,25 @@ struct DictionaryView: View {
                 onCancel: { showAddSheet = false; clearForm() }
             )
         }
+        .sheet(isPresented: $showSmartSuggestions) {
+            SmartSuggestionsSheet(
+                suggestions: smartSuggestions,
+                onAccept: { suggestion in
+                    do {
+                        try HistoryStore.shared.saveDictionaryEntry(
+                            term: suggestion.detectedTerm,
+                            replacement: suggestion.suggestedReplacement,
+                            category: "Suggested"
+                        )
+                        smartSuggestions.removeAll { $0.id == suggestion.id }
+                        refreshEntries()
+                    } catch {
+                        print("Failed to save suggestion: \(error)")
+                    }
+                },
+                onDismiss: { showSmartSuggestions = false }
+            )
+        }
     }
 
     private func refreshEntries() {
@@ -142,6 +184,65 @@ struct DictionaryView: View {
         newTerm = ""
         newReplacement = ""
         newCategory = ""
+    }
+
+    // MARK: - Import / Export
+
+    private func importFromFile() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.plainText, .commaSeparatedText]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.message = "Select a text or CSV file to import dictionary entries"
+
+        if panel.runModal() == .OK, let url = panel.url {
+            do {
+                let content = try String(contentsOf: url, encoding: .utf8)
+                let count = DictionaryService.shared.importFromText(content)
+                refreshEntries()
+                showImportAlert(title: "Import Complete", message: "Successfully imported \(count) entries.")
+            } catch {
+                showImportAlert(title: "Import Failed", message: "Could not read file: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func importFromClipboard() {
+        guard let text = NSPasteboard.general.string(forType: .string) else {
+            showImportAlert(title: "Empty Clipboard", message: "No text found in clipboard.")
+            return
+        }
+        let count = DictionaryService.shared.importFromText(text)
+        refreshEntries()
+        showImportAlert(title: "Import Complete", message: "Successfully imported \(count) entries from clipboard.")
+    }
+
+    private func exportToClipboard() {
+        let text = DictionaryService.shared.exportAsText()
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+        showImportAlert(title: "Exported", message: "\(entries.count) entries copied to clipboard.")
+    }
+
+    private func showImportAlert(title: String, message: String) {
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = message
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
+    }
+
+    // MARK: - Smart Suggestions
+
+    private func analyzeSmartSuggestions() {
+        let suggestions = DictionaryService.shared.analyzeSmartSuggestions()
+        if suggestions.isEmpty {
+            showImportAlert(title: "No Suggestions", message: "No frequently corrected words found in your history.")
+            return
+        }
+        smartSuggestions = suggestions
+        showSmartSuggestions = true
     }
 }
 
@@ -219,5 +320,99 @@ struct AddDictionaryEntrySheet: View {
         }
         .padding(24)
         .frame(width: 360)
+    }
+}
+
+// MARK: - SmartSuggestionsSheet
+
+struct SmartSuggestionsSheet: View {
+    @State var suggestions: [SmartSuggestion]
+    let onAccept: (SmartSuggestion) -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Image(systemName: "lightbulb.fill")
+                    .foregroundColor(.yellow)
+                Text("Smart Suggestions")
+                    .font(.headline)
+                Spacer()
+                Text("\(suggestions.count) found")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Text("These words appear frequently in your transcriptions and may benefit from a dictionary entry.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.leading)
+
+            if suggestions.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle")
+                        .font(.system(size: 32))
+                        .foregroundColor(.green)
+                    Text("No suggestions — your dictionary looks good!")
+                        .font(.callout)
+                }
+                .frame(maxHeight: .infinity)
+            } else {
+                List {
+                    ForEach(suggestions) { suggestion in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack(spacing: 6) {
+                                    Text(suggestion.detectedTerm)
+                                        .font(.headline)
+                                    Image(systemName: "arrow.right")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    Text(suggestion.suggestedReplacement)
+                                        .font(.body)
+                                        .foregroundColor(.secondary)
+                                }
+                                Text(suggestion.context)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(1)
+                            }
+
+                            Spacer()
+
+                            HStack(spacing: 4) {
+                                Text("\(suggestion.frequency)×")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+
+                                Button(action: { onAccept(suggestion) }) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .foregroundColor(.green)
+                                }
+                                .buttonStyle(.borderless)
+                                .help("Add to dictionary")
+                            }
+                        }
+                        .padding(.vertical, 2)
+                    }
+                }
+                .listStyle(.inset)
+            }
+
+            HStack {
+                Spacer()
+                if !suggestions.isEmpty {
+                    Button("Accept All") {
+                        for s in suggestions { onAccept(s) }
+                        suggestions.removeAll()
+                    }
+                    .buttonStyle(.bordered)
+                }
+                Button("Close", action: onDismiss)
+                    .keyboardShortcut(.cancelAction)
+            }
+        }
+        .padding(24)
+        .frame(width: 480, height: 420)
     }
 }

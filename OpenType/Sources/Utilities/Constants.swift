@@ -4,7 +4,7 @@ import CoreGraphics
 public enum Constants {
     public static let appBundleIdentifier = "com.opentype.macos"
     public static let appName = "OpenType"
-    public static let appVersion = "0.8.0"
+    public static let appVersion = "0.9.0"
 
     public enum Keychain {
         public static let service = "com.opentype.macos"
@@ -48,5 +48,7 @@ public enum Constants {
         public static let settingsWindowHeight: CGFloat = 550
         public static let diagnosticsWindowWidth: CGFloat = 500
         public static let diagnosticsWindowHeight: CGFloat = 400
+        public static let onboardingWindowWidth: CGFloat = 580
+        public static let onboardingWindowHeight: CGFloat = 520
     }
 }

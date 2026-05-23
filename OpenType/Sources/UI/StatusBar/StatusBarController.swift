@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 import Combine
+import Data
 import Utilities
 
 public class StatusBarController: NSObject, ObservableObject {
@@ -80,6 +81,16 @@ public class StatusBarController: NSObject, ObservableObject {
 
         menu.addItem(NSMenuItem(title: "Open OpenType", action: #selector(openApp), keyEquivalent: "o"))
         menu.addItem(NSMenuItem.separator())
+
+        // Whisper Mode toggle
+        let whisperItem = NSMenuItem(
+            title: SettingsStore.shared.whisperModeEnabled ? "✓ Whisper Mode" : "Whisper Mode",
+            action: #selector(toggleWhisperMode),
+            keyEquivalent: ""
+        )
+        menu.addItem(whisperItem)
+
+        menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit OpenType", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
@@ -89,6 +100,10 @@ public class StatusBarController: NSObject, ObservableObject {
         DispatchQueue.main.async { [weak self] in
             self?.statusItem.menu = nil
         }
+    }
+
+    @objc private func toggleWhisperMode() {
+        SettingsStore.shared.whisperModeEnabled.toggle()
     }
 
     @objc private func openApp() {
@@ -125,7 +140,9 @@ public class StatusBarController: NSObject, ObservableObject {
         // Map recording/processing state to status bar icon
         Publishers.CombineLatest(viewModel.$isRecording, viewModel.$isProcessing)
             .map { (isRecording, isProcessing) -> StatusBarIcon in
-                if isRecording { return .recording }
+                if isRecording {
+                    return SettingsStore.shared.whisperModeEnabled ? .whisperRecording : .recording
+                }
                 if isProcessing { return .processing }
                 return .idle
             }

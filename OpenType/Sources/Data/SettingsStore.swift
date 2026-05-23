@@ -69,6 +69,16 @@ public class SettingsStore: ObservableObject {
         didSet { defaults.set(soundFeedbackEnabled, forKey: "soundFeedbackEnabled") }
     }
 
+    // MARK: - Whisper Mode
+    @Published public var whisperModeEnabled: Bool {
+        didSet { defaults.set(whisperModeEnabled, forKey: "whisperModeEnabled") }
+    }
+
+    // MARK: - Onboarding
+    @Published public var hasCompletedOnboarding: Bool {
+        didSet { defaults.set(hasCompletedOnboarding, forKey: "hasCompletedOnboarding") }
+    }
+
     private init() {
         defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
 
@@ -77,6 +87,8 @@ public class SettingsStore: ObservableObject {
         launchAtLogin = defaults.bool(forKey: "launchAtLogin")
         notificationsEnabled = defaults.object(forKey: "notificationsEnabled") as? Bool ?? true
         soundFeedbackEnabled = defaults.object(forKey: "soundFeedbackEnabled") as? Bool ?? true
+        whisperModeEnabled = defaults.object(forKey: "whisperModeEnabled") as? Bool ?? false
+        hasCompletedOnboarding = defaults.object(forKey: "hasCompletedOnboarding") as? Bool ?? false
         theme = defaults.string(forKey: "theme") ?? "system"
         lastProfileID = defaults.string(forKey: "lastProfileID")
 
