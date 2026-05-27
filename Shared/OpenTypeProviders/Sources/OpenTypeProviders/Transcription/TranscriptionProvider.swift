@@ -1,6 +1,6 @@
 import Foundation
-import Models
-import Data
+import OpenTypeModels
+import OpenTypeData
 
 public protocol TranscriptionProvider: Sendable {
     var name: String { get }

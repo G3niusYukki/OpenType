@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
-import Models
-import Utilities
+import OpenTypeModels
+import OpenTypeCore
 
 public class SettingsStore: ObservableObject {
     public static let shared = SettingsStore()

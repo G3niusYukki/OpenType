@@ -230,6 +230,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         hotkeyService.unregisterAll()
         AudioCaptureService.shared.cleanupTempFiles(keepingRecent: 0)
+        HistoryStore.shared.close()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

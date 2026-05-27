@@ -269,7 +269,16 @@ struct TranscriptionSettingsView: View {
         case idle, saved, error
     }
 
-    private let providers = ["Apple Speech", "OpenAI Whisper", "Groq", "Alibaba Cloud ASR"]
+    private let providers = [
+        "Apple Speech",
+        "OpenAI Whisper",
+        "Groq",
+        "Alibaba Cloud ASR",
+        "Tencent Cloud ASR",
+        "Baidu Cloud ASR",
+        "iFlytek ASR",
+        "Whisper.cpp"
+    ]
 
     var body: some View {
         Form {
@@ -301,7 +310,8 @@ struct TranscriptionSettingsView: View {
                 Text("When enabled, the transcription language is detected automatically. Disable to set a specific source language per voice mode.")
             }
 
-            if settings.selectedTranscriptionProvider != "Apple Speech" {
+            if settings.selectedTranscriptionProvider != "Apple Speech"
+                && settings.selectedTranscriptionProvider != "Whisper.cpp" {
                 Section {
                     SecureField("API Key", text: $apiKeyInput)
                         .textFieldStyle(.roundedBorder)
@@ -322,6 +332,26 @@ struct TranscriptionSettingsView: View {
                     }
                 } header: {
                     Text("API Key")
+                }
+            }
+
+            if settings.selectedTranscriptionProvider == "Whisper.cpp" {
+                Section {
+                    TextField("Model path", text: Binding(
+                        get: { settings.whisperModelPath ?? "" },
+                        set: { settings.whisperModelPath = $0.isEmpty ? nil : $0 }
+                    ))
+                    .textFieldStyle(.roundedBorder)
+
+                    TextField("Binary path", text: Binding(
+                        get: { settings.whisperBinaryPath ?? "" },
+                        set: { settings.whisperBinaryPath = $0.isEmpty ? nil : $0 }
+                    ))
+                    .textFieldStyle(.roundedBorder)
+                } header: {
+                    Text("Whisper.cpp Configuration")
+                } footer: {
+                    Text("Download a GGML model from huggingface.co/ggerganov/whisper.cpp. Install whisper-cpp via Homebrew: brew install whisper-cpp.")
                 }
             }
         }

@@ -299,6 +299,46 @@ struct OnboardingView: View {
                     description: "Ultra-fast Whisper inference. Requires Groq API key.",
                     badges: ["Fast", "Cloud"]
                 )
+
+                providerCard(
+                    id: "Alibaba Cloud ASR",
+                    name: "Alibaba Cloud",
+                    icon: "globe.asia.australia",
+                    description: "Chinese-optimized speech recognition. Requires Alibaba Cloud credentials.",
+                    badges: ["Chinese", "Cloud"]
+                )
+
+                providerCard(
+                    id: "Tencent Cloud ASR",
+                    name: "Tencent Cloud",
+                    icon: "message.fill",
+                    description: "Tencent Cloud sentence recognition. Supports Chinese, English, Cantonese.",
+                    badges: ["Chinese", "Cloud"]
+                )
+
+                providerCard(
+                    id: "Baidu Cloud ASR",
+                    name: "Baidu Cloud",
+                    icon: "waveform.circle.fill",
+                    description: "Baidu AI speech recognition. Good Chinese accuracy at low cost.",
+                    badges: ["Chinese", "Cloud"]
+                )
+
+                providerCard(
+                    id: "iFlytek ASR",
+                    name: "iFlytek",
+                    icon: "mic.badge.plus",
+                    description: "Industry-leading Chinese ASR with streaming support.",
+                    badges: ["Chinese", "Streaming"]
+                )
+
+                providerCard(
+                    id: "Whisper.cpp",
+                    name: "Whisper.cpp",
+                    icon: "cpu",
+                    description: "Local offline transcription. Requires model download. Fully private.",
+                    badges: ["Local", "Offline", "Private"]
+                )
             }
 
             Spacer()
