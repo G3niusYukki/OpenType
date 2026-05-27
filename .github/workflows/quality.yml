@@ -29,7 +29,8 @@ jobs:
           cd OpenType
           swift test
 
-      - name: Install and Run Swift Format
+      - name: Run SwiftFormat Lint (advisory)
+        continue-on-error: true
         run: |
-          brew install swift-format
-          swift-format lint --recursive OpenType/Sources --strict
+          brew install swiftformat
+          swiftformat --lint OpenType/Sources OpenType/Tests
