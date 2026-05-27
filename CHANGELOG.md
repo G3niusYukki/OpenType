@@ -5,6 +5,37 @@ All notable changes to OpenType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-05-27
+
+### Changed
+
+- **Architecture Refactor** — Three major code-quality improvements
+  - `RecordingCoordinator` extracted from `PopoverViewModel` (561→496 lines): handles audio capture, realtime transcription, and VAD lifecycle independently
+  - `DictionaryStore` extracted from `HistoryStore` (444 lines split): dedicated dictionary CRUD with own SQLite connection
+  - `@UserDefault` property wrapper replaces 25 `didSet` blocks in `SettingsStore` (130→85 lines)
+
+- **Provider Layer Hardened** — 14 new provider integration tests
+  - Factory coverage: all 7 AI providers, all 8 transcription providers
+  - `ChatCompletionRequest`/`ChatCompletionResponse` encoding/decoding tests
+  - `AIError` localization and equality contracts
+  - `TranscriptionProvider.supportsStreaming` default behavior verified
+
+### Documentation
+
+- `CHANGELOG.md` now includes v0.9.1, v0.10.0, and v1.0.0 entries
+- `RELEASE.md` updated with architecture and quality notes
+- `IMPROVEMENT_PLAN.md` progress tracked through Phase 3
+
+---
+
+## [0.10.0] - 2026-05-27
+
+### Changed
+
+- **RecordingCoordinator** — Recording lifecycle extracted from PopoverViewModel
+- **@UserDefault** — Property wrapper eliminates SettingsStore boilerplate
+- **Provider Tests** — 14 integration tests for provider factory and request/response types
+
 ## [0.9.1] - 2026-05-27
 
 ### Changed
