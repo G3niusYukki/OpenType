@@ -106,7 +106,7 @@ public class StyleProfileService: @unchecked Sendable {
             }
         }
 
-        guard let profile = getActiveProfile() else {
+        guard let profile = getActiveProfile(forBundleID: appBundleID) else {
             return parts.joined(separator: "\n")
         }
 
@@ -153,7 +153,7 @@ public class StyleProfileService: @unchecked Sendable {
 
     public func buildTranslationPrompt(from: String, to: String, appBundleID: String?) -> String {
         var parts = ["Translate the following text from \(from) to \(to). Return ONLY the translation."]
-        if let profile = getActiveProfile(),
+        if let profile = getActiveProfile(forBundleID: appBundleID),
            let bundleID = appBundleID,
            let appTone = (try? store.getAppToneRules(for: profile.id))?.first(where: { $0.bundleID == bundleID }) {
             parts.append(appTone.instructions)
@@ -173,13 +173,13 @@ public class StyleProfileService: @unchecked Sendable {
             parts.append("Edit command: \(commandDescription(for: command, isChinese: false))")
         }
 
-        if let profile = getActiveProfile(),
+        if let profile = getActiveProfile(forBundleID: appBundleID),
            let bundleID = appBundleID,
            let appTone = (try? store.getAppToneRules(for: profile.id))?.first(where: { $0.bundleID == bundleID }) {
             parts.append(appTone.instructions)
         }
 
-        if case .rephrase = command, let profile = getActiveProfile() {
+        if case .rephrase = command, let profile = getActiveProfile(forBundleID: appBundleID) {
             let examples = (try? store.getStyleExamples(for: profile.id)) ?? []
             if let example = examples.first {
                 parts.append("Style reference — Input: \(example.rawText) Output: \(example.polishedText)")
@@ -195,6 +195,20 @@ public class StyleProfileService: @unchecked Sendable {
         return parts.joined(separator: "\n")
     }
 
+    public func buildPresetPrompt(selectedText: String, instruction: String, bundleID: String?) -> String {
+        var parts = [instruction, "Text:\n\(selectedText)"]
+
+        if let profile = getActiveProfile(forBundleID: bundleID),
+           let bundleID,
+           let appTone = (try? store.getAppToneRules(for: profile.id))?.first(where: { $0.bundleID == bundleID }) {
+            parts.append(appTone.instructions)
+        } else if let appContext = appContextPrompt(for: bundleID) {
+            parts.append(appContext)
+        }
+
+        return parts.joined(separator: "\n\n")
+    }
+
     public func buildQuickAnswerPrompt(appBundleID: String?) -> String {
         var parts = [
             "You are a quick answer assistant. The user asked a question via voice input.",
@@ -204,7 +218,7 @@ public class StyleProfileService: @unchecked Sendable {
             "Return ONLY the answer text, without prefixes or decorative formatting."
         ]
 
-        if let profile = getActiveProfile(),
+        if let profile = getActiveProfile(forBundleID: appBundleID),
            let bundleID = appBundleID,
            let appTone = (try? store.getAppToneRules(for: profile.id))?.first(where: { $0.bundleID == bundleID }) {
             parts.append(appTone.instructions)
@@ -232,6 +246,15 @@ public class StyleProfileService: @unchecked Sendable {
     private func getActiveProfile() -> StyleProfile? {
         let profiles = (try? store.getAllStyleProfiles()) ?? []
         return profiles.first { $0.isActive }
+    }
+
+    public func getActiveProfile(forBundleID bundleID: String?) -> StyleProfile? {
+        if let bundleID,
+           let binding = AppProfileBindingStore.shared.binding(for: bundleID),
+           let profile = (try? store.getAllStyleProfiles())?.first(where: { $0.id == binding.profileID }) {
+            return profile
+        }
+        return getActiveProfile()
     }
 
     public func saveStyleProfile(_ profile: StyleProfile) throws { try store.saveStyleProfile(profile) }
