@@ -138,11 +138,7 @@ struct DictionaryView: View {
                 suggestions: smartSuggestions,
                 onAccept: { suggestion in
                     do {
-                        try HistoryStore.shared.saveDictionaryEntry(
-                            term: suggestion.detectedTerm,
-                            replacement: suggestion.suggestedReplacement,
-                            category: "Suggested"
-                        )
+                        try DictionaryStore.shared.saveEntry(term: suggestion.detectedTerm, replacement: suggestion.suggestedReplacement, category: "Suggested")
                         smartSuggestions.removeAll { $0.id == suggestion.id }
                         refreshEntries()
                     } catch {
@@ -165,17 +161,13 @@ struct DictionaryView: View {
     }
 
     private func refreshEntries() {
-        entries = HistoryStore.shared.getAllDictionaryEntries()
+        entries = DictionaryStore.shared.getAllEntries()
     }
 
     private func saveEntry() {
         guard !newTerm.isEmpty, !newReplacement.isEmpty else { return }
         do {
-            try HistoryStore.shared.saveDictionaryEntry(
-                term: newTerm,
-                replacement: newReplacement,
-                category: newCategory.isEmpty ? "General" : newCategory
-            )
+            try DictionaryStore.shared.saveEntry(term: newTerm, replacement: newReplacement, category: newCategory.isEmpty ? "General" : newCategory)
             showAddSheet = false
             clearForm()
             refreshEntries()
@@ -186,7 +178,7 @@ struct DictionaryView: View {
 
     private func deleteEntry(id: String) {
         do {
-            try HistoryStore.shared.deleteDictionaryEntry(id: id)
+            try DictionaryStore.shared.deleteEntry(id: id)
             refreshEntries()
         } catch {
             print("Failed to delete dictionary entry: \(error)")
@@ -239,11 +231,7 @@ struct DictionaryView: View {
 
     private func addDocumentImportCandidates() {
         for entry in documentImportCandidates {
-            try? HistoryStore.shared.saveDictionaryEntry(
-                term: entry.term,
-                replacement: entry.replacement,
-                category: entry.category
-            )
+            try? DictionaryStore.shared.saveEntry(term: entry.term, replacement: entry.replacement, category: entry.category)
         }
         showDocumentImportPreview = false
         documentImportCandidates.removeAll()

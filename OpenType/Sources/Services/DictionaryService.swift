@@ -11,7 +11,7 @@ public class DictionaryService {
     /// 对转写文本应用词典替换
     /// 按 term 长度降序替换，避免部分匹配问题（如 "你好世界" 不会被 "你好" 先替换掉）
     public func applyReplacements(to text: String) -> String {
-        let entries = HistoryStore.shared.getAllDictionaryEntries()
+        let entries = DictionaryStore.shared.getAllEntries()
         guard !entries.isEmpty else { return text }
 
         var result = text
@@ -28,7 +28,7 @@ public class DictionaryService {
 
     /// 从文本中自动学习新词条 — 使用 NSLinguisticTagger 提取专有名词
     public func learnFromText(_ text: String) {
-        let existingEntries = HistoryStore.shared.getAllDictionaryEntries()
+        let existingEntries = DictionaryStore.shared.getAllEntries()
         let existingTerms = Set(existingEntries.map { $0.term.lowercased() })
 
         let tagger = NSLinguisticTagger(tagSchemes: [.nameType], options: 0)
@@ -45,11 +45,7 @@ public class DictionaryService {
         }
 
         for (term, count) in detectedTerms where count >= 2 && !existingTerms.contains(term.lowercased()) {
-            try? HistoryStore.shared.saveDictionaryEntry(
-                term: term,
-                replacement: term,
-                category: "Auto"
-            )
+            try? DictionaryStore.shared.saveEntry(term: term, replacement: term, category: "Auto")
         }
     }
 
@@ -66,7 +62,7 @@ public class DictionaryService {
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
 
-        let existingEntries = HistoryStore.shared.getAllDictionaryEntries()
+        let existingEntries = DictionaryStore.shared.getAllEntries()
         var existingTerms = Set(existingEntries.map { $0.term.lowercased() })
         var importCount = 0
 
@@ -87,7 +83,7 @@ public class DictionaryService {
                     replacement = line
                     category = "Imported"
                     if existingTerms.contains(term.lowercased()) { continue }
-                    try? HistoryStore.shared.saveDictionaryEntry(term: term, replacement: replacement, category: category)
+                    try? DictionaryStore.shared.saveEntry(term: term, replacement: replacement, category: category)
                     existingTerms.insert(term.lowercased())
                     importCount += 1
                     continue
@@ -111,7 +107,7 @@ public class DictionaryService {
             guard !term.isEmpty else { continue }
             if existingTerms.contains(term.lowercased()) { continue }
 
-            try? HistoryStore.shared.saveDictionaryEntry(term: term, replacement: replacement, category: category)
+            try? DictionaryStore.shared.saveEntry(term: term, replacement: replacement, category: category)
             existingTerms.insert(term.lowercased())
             importCount += 1
         }
@@ -124,7 +120,7 @@ public class DictionaryService {
     /// Skips terms already present in the dictionary.
     public func extractTermsFromDocument(at url: URL) throws -> [DictionaryEntry] {
         let content = try String(contentsOf: url, encoding: .utf8)
-        let existingTerms = Set(HistoryStore.shared.getAllDictionaryEntries().map { $0.term.lowercased() })
+        let existingTerms = Set(DictionaryStore.shared.getAllEntries().map { $0.term.lowercased() })
         let fileExtension = url.pathExtension.lowercased()
         let candidates: [String]
 
@@ -159,7 +155,7 @@ public class DictionaryService {
 
     /// Export all dictionary entries as tab-separated text
     public func exportAsText() -> String {
-        let entries = HistoryStore.shared.getAllDictionaryEntries()
+        let entries = DictionaryStore.shared.getAllEntries()
         var lines = ["# OpenType Dictionary Export", "# Format: term\\treplacement\\tcategory", ""]
         for entry in entries {
             lines.append("\(entry.term)\t\(entry.replacement)\t\(entry.category)")
@@ -176,7 +172,7 @@ public class DictionaryService {
         let history = HistoryStore.shared.getAllHistory()
         guard !history.isEmpty else { return [] }
 
-        let existingEntries = HistoryStore.shared.getAllDictionaryEntries()
+        let existingEntries = DictionaryStore.shared.getAllEntries()
         let existingTerms = Set(existingEntries.map { $0.term.lowercased() })
 
         // Track words that differ between original and processed text
