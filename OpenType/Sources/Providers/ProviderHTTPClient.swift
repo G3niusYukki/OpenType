@@ -1,9 +1,9 @@
 import Foundation
 
-// MARK: - Shared HTTP Client for AI Providers
+// MARK: - Shared HTTP Client for Providers
 
-/// Protocol providing shared HTTP request/response handling for AI providers.
-/// Adopting types get `performChatCompletion` and `performJSONPost` for free.
+/// Protocol providing shared HTTP request/response handling for AI and Transcription providers.
+/// Adopting types get `performJSONPost`, `performMultipartUpload` for free.
 public protocol ProviderHTTPClient: Sendable {
     var session: URLSession { get }
     var decoder: JSONDecoder { get }
@@ -63,7 +63,6 @@ public struct ChatCompletionResponse: Decodable {
 extension ProviderHTTPClient {
 
     /// Perform a JSON POST request with Bearer token auth.
-    /// Uses `SnakeCase` key strategy for both encoding and decoding.
     public func performJSONPost<T: Decodable>(
         url: URL,
         body: some Encodable,
@@ -88,6 +87,59 @@ extension ProviderHTTPClient {
 
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
             throw AIError.requestFailed
+        }
+
+        return try decoder.decode(T.self, from: data)
+    }
+
+    /// Upload a file via multipart/form-data (used by Transcription providers).
+    /// - Parameters:
+    ///   - url: API endpoint
+    ///   - fields: Form field name→value pairs (e.g., "model": "whisper-1")
+    ///   - file: The audio file to upload as a form field
+    ///   - apiKey: Auth token
+    ///   - authHeaderName: Header name for the token
+    ///   - authPrefix: Prefix before the token value (e.g., "Bearer ")
+    ///   - extraHeaders: Additional HTTP headers
+    public func performMultipartUpload<T: Decodable>(
+        url: URL,
+        fields: [String: String],
+        file: (fieldName: String, fileName: String, mimeType: String, data: Data),
+        apiKey: String,
+        authHeaderName: String = "Authorization",
+        authPrefix: String = "Bearer ",
+        extraHeaders: [String: String] = [:]
+    ) async throws -> T {
+        let boundary = UUID().uuidString
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("\(authPrefix)\(apiKey)", forHTTPHeaderField: authHeaderName)
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        for (key, value) in extraHeaders {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
+
+        var body = Data()
+
+        for (name, value) in fields {
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n".data(using: .utf8)!)
+            body.append("\(value)\r\n".data(using: .utf8)!)
+        }
+
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"\(file.fieldName)\"; filename=\"\(file.fileName)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(file.mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append(file.data)
+        body.append("\r\n".data(using: .utf8)!)
+        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+
+        request.httpBody = body
+
+        let (data, response) = try await session.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            throw TranscriptionError.recognitionFailed
         }
 
         return try decoder.decode(T.self, from: data)

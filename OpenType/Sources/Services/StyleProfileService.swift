@@ -277,4 +277,75 @@ public class StyleProfileService: @unchecked Sendable {
     public func deleteToneRule(_ id: UUID) throws { try store.deleteToneRule(id) }
     public func saveAppToneRule(_ rule: AppToneRule) throws { try store.saveAppToneRule(rule) }
     public func deleteAppToneRule(_ id: UUID) throws { try store.deleteAppToneRule(id) }
+    // MARK: - Auto Style Learning
+
+    /// Analyze recent history to suggest style examples from user corrections.
+    /// Returns pairs of (raw, polished) where the user manually edited AI output.
+    public func learnStyleExamplesFromHistory(limit: Int = 50) -> [(raw: String, polished: String)] {
+        let history = HistoryStore.shared.getAllHistory().prefix(limit)
+        var suggestions: [(String, String)] = []
+
+        for entry in history {
+            let raw = entry.originalText.trimmingCharacters(in: .whitespacesAndNewlines)
+            let polished = entry.processedText.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            // Only consider entries where text was meaningfully changed
+            guard !raw.isEmpty, !polished.isEmpty, raw != polished else { continue }
+
+            // Skip trivial differences (case-only, whitespace-only)
+            let distance = levenshteinDistance(raw.lowercased(), polished.lowercased())
+            let maxLen = max(raw.count, polished.count)
+            guard maxLen > 0, Double(distance) / Double(maxLen) > 0.05 else { continue }
+
+            suggestions.append((raw, polished))
+            if suggestions.count >= 10 { break }
+        }
+
+        return suggestions
+    }
+
+    /// Auto-save learned style examples to the active profile.
+    @discardableResult
+    public func autoLearnAndSave(bundleID: String?) -> Int {
+        guard let profile = getActiveProfile(forBundleID: bundleID) else { return 0 }
+        let suggestions = learnStyleExamplesFromHistory()
+        var saved = 0
+        for (raw, polished) in suggestions {
+            let example = StyleExample(
+                rawText: raw,
+                polishedText: polished,
+                appBundleID: bundleID,
+                profileID: profile.id
+            )
+            do {
+                try store.saveExample(example)
+                saved += 1
+            } catch {
+                print("Failed to save auto-learned example: \(error)")
+            }
+        }
+        return saved
+    }
+
+    /// Levenshtein distance between two strings (for change detection).
+    private func levenshteinDistance(_ a: String, _ b: String) -> Int {
+        let aChars = Array(a), bChars = Array(b)
+        let m = aChars.count, n = bChars.count
+        guard m > 0 else { return n }
+        guard n > 0 else { return m }
+
+        var prev = Array(0...n)
+        var curr = Array(repeating: 0, count: n + 1)
+
+        for i in 1...m {
+            curr[0] = i
+            for j in 1...n {
+                curr[j] = aChars[i - 1] == bChars[j - 1]
+                    ? prev[j - 1]
+                    : min(prev[j], curr[j - 1], prev[j - 1]) + 1
+            }
+            swap(&prev, &curr)
+        }
+        return prev[n]
+    }
 }
