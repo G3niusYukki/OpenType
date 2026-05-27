@@ -60,7 +60,6 @@ jobs:
           swift build -c release
 
       - name: Create App Bundle
-      - name: Create App Bundle
         run: |
           mkdir -p OpenType.app/Contents/MacOS
           mkdir -p OpenType.app/Contents/Resources
