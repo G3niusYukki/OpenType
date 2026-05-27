@@ -7,6 +7,7 @@ struct PopoverView: View {
     @ObservedObject var viewModel: PopoverViewModel
     @State private var selectedMode: VoiceMode = .basic
     @State private var errorState: ErrorBannerState?
+    @State private var showPromptLibrary = false
 
     private var enabledModes: [VoiceMode] {
         VoiceMode.allCases.filter { mode in
@@ -43,11 +44,24 @@ struct PopoverView: View {
                 .padding(.top, 4)
             }
 
+            HStack {
+                Spacer()
+                Button(action: { showPromptLibrary = true }) {
+                    Label("Prompt Library", systemImage: "text.book.closed")
+                }
+                .buttonStyle(.borderless)
+                .font(.caption)
+                Spacer()
+            }
+            .padding(.top, 8)
+
             RecordingControlsView(
                 isRecording: $viewModel.isRecording,
+                isProcessing: $viewModel.isProcessing,
                 currentMode: $selectedMode,
                 onStartRecording: { viewModel.startRecording(mode: selectedMode) },
-                onStopRecording: { viewModel.stopRecording() }
+                onStopRecording: { viewModel.stopRecording() },
+                onCancelProcessing: { viewModel.cancelProcessing() }
             )
 
             // Language indicator
@@ -162,6 +176,11 @@ struct PopoverView: View {
         .onReceive(NotificationCenter.default.publisher(for: .transcriptionError)) { notification in
             if let message = notification.userInfo?["message"] as? String {
                 errorState = ErrorBannerState(title: "操作失败", message: message)
+            }
+        }
+        .sheet(isPresented: $showPromptLibrary) {
+            PromptLibraryView(isPresented: $showPromptLibrary) { preset in
+                viewModel.applyPromptPreset(preset)
             }
         }
     }

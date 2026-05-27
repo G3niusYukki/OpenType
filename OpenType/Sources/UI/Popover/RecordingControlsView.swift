@@ -4,9 +4,11 @@ import Services
 
 struct RecordingControlsView: View {
     @Binding var isRecording: Bool
+    @Binding var isProcessing: Bool
     @Binding var currentMode: VoiceMode
     let onStartRecording: () -> Void
     let onStopRecording: () -> Void
+    let onCancelProcessing: () -> Void
 
     var body: some View {
         VStack(spacing: 12) {
@@ -31,6 +33,17 @@ struct RecordingControlsView: View {
             Text(isRecording ? "Tap to stop" : "Tap to start")
                 .font(.caption)
                 .foregroundColor(.secondary)
+
+            if isProcessing {
+                Button(action: onCancelProcessing) {
+                    Label {
+                        Text("Cancel")
+                    } icon: {
+                        Image(systemName: "xmark.circle.fill")
+                    }
+                }
+                .buttonStyle(.borderless)
+            }
         }
         .padding()
     }

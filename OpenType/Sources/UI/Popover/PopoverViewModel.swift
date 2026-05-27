@@ -22,6 +22,7 @@ class PopoverViewModel: ObservableObject {
     @Published var detectedEditCommand: EditCommand?
     @Published var quickAnswerText = ""
     @Published var showQuickAnswerActions = false
+    @Published var originalText: String = ""
     private var lastRawText: String = ""
     private var lastAppBundleID: String?
 
@@ -33,7 +34,7 @@ class PopoverViewModel: ObservableObject {
     private let realtimeTranscription = RealtimeTranscriptionService.shared
     private let vadDetector = VADDetector.shared
     private var streamingTask: Task<Void, Never>?
-    private var aiProcessingTask: Task<Void, Never>?
+    var aiProcessingTask: Task<Void, Never>?
     private var accumulatedLiveText = ""
     private var didPauseProcess = false
     private var levelCancellable: AnyCancellable?
@@ -203,31 +204,32 @@ class PopoverViewModel: ObservableObject {
         let alreadyProcessed = didPauseProcess
         let processedText = transcribedText
 
-        Task {
+        aiProcessingTask?.cancel()
+        aiProcessingTask = Task {
             do {
                 let (url, duration) = try await audioService.stopRecording()
+                guard !Task.isCancelled else { return }
 
                 let finalText: String
 
                 if alreadyProcessed && !processedText.isEmpty {
                     // VAD-triggered AI processing already happened — wait for it to complete
-                    aiProcessingTask?.cancel() // cancel is safe if already done
                     finalText = processedText
                     lastRawText = realtimeTranscription.fullText.isEmpty ? accumulatedLiveText : realtimeTranscription.fullText
+                    originalText = lastRawText
 
                     // Get language from realtime transcription
                     detectedLang = SettingsStore.shared.recentLocales.first
                 } else {
                     // No VAD processing happened — do full file-based transcription
-                    aiProcessingTask?.cancel()
-                    aiProcessingTask = nil
-
                     // Determine language: nil for auto-detect, or configured source language
                     let autoDetect = SettingsStore.shared.voiceModeConfigs[currentMode]?.autoDetectLanguage ?? true
                     let language: String? = autoDetect ? nil : SettingsStore.shared.voiceModeConfigs[currentMode]?.sourceLanguage
 
                     let result = try await transcriptionService.transcribe(audioURL: url, language: language)
+                    guard !Task.isCancelled else { return }
                     lastRawText = result.text
+                    originalText = result.text
 
                     // Use realtime text if available, otherwise file transcription
                     let realtimeFullText = realtimeTranscription.fullText.isEmpty ? accumulatedLiveText : realtimeTranscription.fullText
@@ -241,6 +243,7 @@ class PopoverViewModel: ObservableObject {
 
                     // 按模式分流处理
                     finalText = try await processForMode(dictionaryText, audioURL: url)
+                    guard !Task.isCancelled else { return }
                 }
 
                 if currentMode != .editSelected {
@@ -313,6 +316,7 @@ class PopoverViewModel: ObservableObject {
         let stream = aiService.processStreaming(text: text, appBundleID: lastAppBundleID)
         do {
             for try await partial in stream {
+                guard !Task.isCancelled else { return lastResult }
                 lastResult = partial
                 transcribedText = partial // @MainActor — safe since PopoverViewModel is @MainActor
             }
@@ -326,7 +330,9 @@ class PopoverViewModel: ObservableObject {
     private func processTranslate(_ text: String) async throws -> String {
         guard aiService.isAvailable() else { return text }
         let targetLanguage = SettingsStore.shared.voiceModeConfigs[.translate]?.targetLanguage ?? "en"
-        return try await aiService.translate(text: text, from: "auto", to: targetLanguage, appBundleID: lastAppBundleID)
+        let result = try await aiService.translate(text: text, from: "auto", to: targetLanguage, appBundleID: lastAppBundleID)
+        guard !Task.isCancelled else { return text }
+        return result
     }
 
     private func processEditSelected(_ voiceCommand: String) async throws -> String {
@@ -342,6 +348,7 @@ class PopoverViewModel: ObservableObject {
         let command = EditCommandDetector.detect(from: voiceCommand)
         let prompt = StyleProfileService.shared.buildEditPrompt(selectedText: selectedText, command: command, appBundleID: lastAppBundleID)
         let result = try await aiService.processWithPrompt(prompt: prompt, text: selectedText)
+        guard !Task.isCancelled else { return selectedText }
         detectedEditCommand = command
 
         if command.isReadOnly {
@@ -350,6 +357,20 @@ class PopoverViewModel: ObservableObject {
             textInserter.replaceSelectedText(with: result)
         }
 
+        return result
+    }
+
+    private func processPresetEdit(selectedText: String, instruction: String) async throws -> String {
+        guard aiService.isAvailable() else { return selectedText }
+
+        let prompt = StyleProfileService.shared.buildPresetPrompt(
+            selectedText: selectedText,
+            instruction: instruction,
+            bundleID: lastAppBundleID
+        )
+        let result = try await aiService.processWithPrompt(prompt: prompt, text: selectedText)
+        guard !Task.isCancelled else { return selectedText }
+        textInserter.replaceSelectedText(with: result)
         return result
     }
 
@@ -363,6 +384,7 @@ class PopoverViewModel: ObservableObject {
         let stream = aiService.answerQuestionStreaming(text: text, appBundleID: lastAppBundleID)
         do {
             for try await partial in stream {
+                guard !Task.isCancelled else { return lastResult }
                 lastResult = partial
                 quickAnswerText = partial
             }
@@ -412,8 +434,52 @@ class PopoverViewModel: ObservableObject {
 
     // MARK: - Actions
 
+    public func cancelProcessing() {
+        guard isProcessing else { return }
+        let task = aiProcessingTask
+        aiProcessingTask = nil
+        task?.cancel()
+        isProcessing = false
+
+        if !originalText.isEmpty {
+            Task { @MainActor in
+                do {
+                    try textInserter.insertText(originalText)
+                } catch {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(originalText, forType: .string)
+                }
+            }
+        }
+    }
+
+    public func applyPromptPreset(_ preset: PromptPreset) {
+        guard let selectedText = textInserter.getSelectedText(), !selectedText.isEmpty else {
+            postError("No text selected")
+            return
+        }
+
+        lastAppBundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+        originalText = selectedText
+        transcribedText = ""
+        detectedEditCommand = nil
+        isProcessing = true
+
+        aiProcessingTask?.cancel()
+        aiProcessingTask = Task {
+            do {
+                let result = try await processPresetEdit(selectedText: selectedText, instruction: preset.instruction)
+                guard !Task.isCancelled else { return }
+                transcribedText = result
+                isProcessing = false
+            } catch {
+                handleError(error)
+            }
+        }
+    }
+
     func saveAsStyleExample() {
-        guard let profile = try? StyleProfileService.shared.getAllStyleProfiles().first(where: { $0.isActive }) else { return }
+        guard let profile = StyleProfileService.shared.getActiveProfile(forBundleID: lastAppBundleID) else { return }
         let example = StyleExample(
             rawText: lastRawText,
             polishedText: transcribedText,
