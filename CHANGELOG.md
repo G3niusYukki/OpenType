@@ -5,6 +5,35 @@ All notable changes to OpenType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.1] - 2026-05-27
+
+### Changed
+
+- **CI Pipeline Fixed** — Quality workflow no longer silently suppresses test failures
+  - Removed `2>/dev/null` stderr suppression from `swift test` step
+  - Swift Format lint is now enforced (`--strict` mode) with automatic `brew install`
+  - Removed `"APPL????"` placeholder from DMG creation step
+  - Added Dependabot config for weekly SPM and GitHub Actions dependency updates
+
+- **Provider Code Deduplication** — ~150 lines of duplicate code eliminated
+  - Added `ProviderHTTPClient` protocol with shared JSON POST + Bearer token helper
+  - Added shared `ChatCompletionRequest` / `ChatCompletionResponse` types for OpenAI-compatible APIs
+  - `AIProvider.translate()` now has default protocol extension that delegates to `process()`
+  - Removed 6 duplicate `translate()` implementations (DeepSeek, Groq, Moonshot, MiniMax, Zhipu, Anthropic)
+  - AnthropicProvider default model updated: `claude-3-sonnet-20240229` → `claude-3-5-sonnet-20241022`
+
+- **Project Hygiene**
+  - `project.yml` version bumped from 0.1.0 to 0.9.1
+  - Added `OpenType-iOS/README.md` documenting planned cross-platform status
+  - Updated `.gitignore` to exclude `.build-scratch` and `.build-native`
+
+### Documentation
+
+- Replaced feature-gap-only `IMPROVEMENT_PLAN.md` with comprehensive quality-first roadmap
+  - New 5-phase plan: Quality Foundation → Architecture Refactor → Testing Depth → Feature Parity → Production Hardening
+  - Target: 7.0/10 → 9.0/10 over 214h of planned work
+  - Detailed task breakdowns, parallel execution graphs, and scoring milestones
+
 ## [0.9.0] - 2026-05-23
 
 ### Added

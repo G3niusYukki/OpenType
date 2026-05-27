@@ -1,3 +1,40 @@
+# OpenType v0.9.1 Release Notes
+
+## Quality Foundation — CI Fixes, Provider Deduplication, Project Hygiene
+
+v0.9.1 is the first release of the quality-first improvement plan. No user-facing features; this release fixes systemic engineering issues and establishes the foundation for future development speed.
+
+---
+
+## Changes
+
+### CI Pipeline Fixed
+
+The quality CI workflow was silently suppressing test failures:
+
+- **`swift test 2>/dev/null` removed** — test failures now block CI, as they should
+- **Swift Format enforced** — `brew install swift-format && swift-format lint --strict` now runs on every push
+- **Dependabot added** — weekly dependency updates for SPM packages and GitHub Actions
+- **`"APPL????"` placeholder removed** from DMG creation step
+
+### Provider Code Deduplication
+
+~150 lines of duplicated code eliminated across 7 AI providers:
+
+- **`ProviderHTTPClient` protocol** — shared JSON POST helper with Bearer token auth
+- **`ChatCompletionRequest` / `ChatCompletionResponse`** — shared types for OpenAI-compatible providers
+- **`translate()` default** — protocol extension delegates to `process()`; 6 duplicated translate implementations removed
+- **Model updated** — Anthropic Claude default model bumped to `claude-3-5-sonnet-20241022`
+
+### Project Hygiene
+
+- `project.yml` version bumped from 0.1.0 → 0.9.1
+- `OpenType-iOS/` now has a README documenting planned status
+- `.gitignore` updated to cover `.build-scratch` and `.build-native`
+- `IMPROVEMENT_PLAN.md` rewritten as comprehensive quality-first roadmap
+
+---
+
 # OpenType v0.8.0 Release Notes
 
 ## Typeless Gap Closure — Audio Waveform, Status Bar Icons, Sound Feedback, Quick Answer
