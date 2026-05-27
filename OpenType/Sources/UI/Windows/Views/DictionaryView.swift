@@ -15,6 +15,8 @@ struct DictionaryView: View {
     @State private var showImportOptions = false
     @State private var showSmartSuggestions = false
     @State private var smartSuggestions: [SmartSuggestion] = []
+    @State private var showDocumentImportPreview = false
+    @State private var documentImportCandidates: [DictionaryEntry] = []
 
     var filteredEntries: [DictionaryEntry] {
         if searchText.isEmpty {
@@ -47,6 +49,7 @@ struct DictionaryView: View {
                 // Import menu
                 Menu {
                     Button("Import from File...") { importFromFile() }
+                    Button("Import from Document...") { importFromDocument() }
                     Button("Import from Clipboard") { importFromClipboard() }
                     Divider()
                     Button("Export to Clipboard") { exportToClipboard() }
@@ -149,6 +152,16 @@ struct DictionaryView: View {
                 onDismiss: { showSmartSuggestions = false }
             )
         }
+        .sheet(isPresented: $showDocumentImportPreview) {
+            DocumentImportPreviewSheet(
+                entries: documentImportCandidates,
+                onConfirm: addDocumentImportCandidates,
+                onCancel: {
+                    showDocumentImportPreview = false
+                    documentImportCandidates.removeAll()
+                }
+            )
+        }
     }
 
     private func refreshEntries() {
@@ -205,6 +218,36 @@ struct DictionaryView: View {
                 showImportAlert(title: "Import Failed", message: "Could not read file: \(error.localizedDescription)")
             }
         }
+    }
+
+    private func importFromDocument() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.plainText, .commaSeparatedText, .text]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.message = "Select a text, Markdown, or CSV file to scan for dictionary terms"
+
+        if panel.runModal() == .OK, let url = panel.url {
+            do {
+                documentImportCandidates = try DictionaryService.shared.extractTermsFromDocument(at: url)
+                showDocumentImportPreview = true
+            } catch {
+                showImportAlert(title: "Import Failed", message: error.localizedDescription)
+            }
+        }
+    }
+
+    private func addDocumentImportCandidates() {
+        for entry in documentImportCandidates {
+            try? HistoryStore.shared.saveDictionaryEntry(
+                term: entry.term,
+                replacement: entry.replacement,
+                category: entry.category
+            )
+        }
+        showDocumentImportPreview = false
+        documentImportCandidates.removeAll()
+        refreshEntries()
     }
 
     private func importFromClipboard() {
@@ -320,6 +363,79 @@ struct AddDictionaryEntrySheet: View {
         }
         .padding(24)
         .frame(width: 360)
+    }
+}
+
+struct DocumentImportPreviewSheet: View {
+    let entries: [DictionaryEntry]
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Image(systemName: "doc.text.magnifyingglass")
+                    .foregroundColor(.accentColor)
+                Text("Import from Document")
+                    .font(.headline)
+                Spacer()
+                Text("\(entries.count) found")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Text("Review the likely dictionary terms found in this document before adding them.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.leading)
+
+            if entries.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "doc.text")
+                        .font(.system(size: 32))
+                        .foregroundColor(.secondary)
+                    Text("No new terms found")
+                        .font(.callout)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, minHeight: 120)
+            } else {
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 8) {
+                        ForEach(entries) { entry in
+                            HStack(spacing: 8) {
+                                Text(entry.term)
+                                    .font(.body)
+                                Image(systemName: "arrow.right")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Text(entry.replacement)
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
+                    .padding(8)
+                }
+                .frame(maxHeight: 300)
+                .background(Color(NSColor.textBackgroundColor))
+                .cornerRadius(6)
+            }
+
+            HStack(spacing: 12) {
+                Spacer()
+                Button("Cancel", action: onCancel)
+                    .keyboardShortcut(.cancelAction)
+
+                Button("Add \(entries.count) terms", action: onConfirm)
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(entries.isEmpty)
+            }
+        }
+        .padding(24)
+        .frame(width: 480)
     }
 }
 

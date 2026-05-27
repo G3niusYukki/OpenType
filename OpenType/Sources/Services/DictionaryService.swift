@@ -119,6 +119,44 @@ public class DictionaryService {
         return importCount
     }
 
+    /// Extract likely dictionary terms from a plain-text document.
+    /// Returns deduplicated `DictionaryEntry` candidates with category="Imported".
+    /// Skips terms already present in the dictionary.
+    public func extractTermsFromDocument(at url: URL) throws -> [DictionaryEntry] {
+        let content = try String(contentsOf: url, encoding: .utf8)
+        let existingTerms = Set(HistoryStore.shared.getAllDictionaryEntries().map { $0.term.lowercased() })
+        let fileExtension = url.pathExtension.lowercased()
+        let candidates: [String]
+
+        if fileExtension == "csv" {
+            candidates = extractImportTerms(from: content)
+        } else {
+            candidates = extractDocumentTerms(from: content)
+        }
+
+        var seenTerms: Set<String> = []
+        var entries: [DictionaryEntry] = []
+
+        for term in candidates {
+            let normalized = term.trimmingCharacters(in: .whitespacesAndNewlines)
+            let lowercased = normalized.lowercased()
+            guard normalized.count > 1 else { continue }
+            guard !commonStopWords.contains(lowercased) else { continue }
+            guard !existingTerms.contains(lowercased) else { continue }
+            guard !seenTerms.contains(lowercased) else { continue }
+
+            seenTerms.insert(lowercased)
+            entries.append(DictionaryEntry(
+                id: UUID().uuidString,
+                term: normalized,
+                replacement: normalized,
+                category: "Imported"
+            ))
+        }
+
+        return entries.sorted { $0.term.localizedCaseInsensitiveCompare($1.term) == .orderedAscending }
+    }
+
     /// Export all dictionary entries as tab-separated text
     public func exportAsText() -> String {
         let entries = HistoryStore.shared.getAllDictionaryEntries()
@@ -208,6 +246,56 @@ public class DictionaryService {
             }
         }
         return word
+    }
+
+    private func extractImportTerms(from content: String) -> [String] {
+        let lines = content.components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        var terms: [String] = []
+
+        for line in lines {
+            if line.hasPrefix("#") || line.hasPrefix("//") { continue }
+
+            if line.contains(",") {
+                let parts = line.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+                terms.append(parts.first ?? line)
+            } else if line.contains("\t") {
+                let parts = line.components(separatedBy: "\t").map { $0.trimmingCharacters(in: .whitespaces) }
+                terms.append(parts.first ?? line)
+            } else {
+                terms.append(line)
+            }
+        }
+
+        return terms
+    }
+
+    private func extractDocumentTerms(from text: String) -> [String] {
+        var terms: [String] = []
+        let tagger = NSLinguisticTagger(tagSchemes: [.nameType], options: 0)
+        tagger.string = text
+        let range = NSRange(location: 0, length: text.utf16.count)
+
+        tagger.enumerateTags(in: range, unit: .word, scheme: .nameType, options: [.omitWhitespace]) { tag, tokenRange, _ in
+            if tag == .personalName || tag == .placeName || tag == .organizationName {
+                terms.append((text as NSString).substring(with: tokenRange))
+            }
+        }
+
+        var capitalizedCounts: [String: Int] = [:]
+        text.enumerateSubstrings(in: text.startIndex..., options: .byWords) { substring, _, _, _ in
+            guard let word = substring, let first = word.unicodeScalars.first else { return }
+            if CharacterSet.uppercaseLetters.contains(first) {
+                capitalizedCounts[word, default: 0] += 1
+            }
+        }
+
+        for (word, count) in capitalizedCounts where count >= 2 {
+            terms.append(word)
+        }
+
+        return terms
     }
 
     private var commonStopWords: Set<String> {
