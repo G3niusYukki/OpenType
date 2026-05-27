@@ -2,6 +2,10 @@ import Foundation
 import Models
 import Data
 
+/// Protocol for speech-to-text transcription providers.
+/// Implementations include Apple Speech (on-device), OpenAI Whisper, Groq, and Chinese ASR services.
+/// - Note: `supportsStreaming` defaults to `false`; real-time providers should override it.
+/// - Note: `transcribeStreaming` defaults to a batch fallback that calls `transcribe()`.
 public protocol TranscriptionProvider: Sendable {
     var name: String { get }
     var supportsStreaming: Bool { get }

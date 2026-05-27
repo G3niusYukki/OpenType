@@ -5,7 +5,7 @@ import Data
 public class StyleProfileService: @unchecked Sendable {
     public static let shared = StyleProfileService()
 
-    private let store = HistoryStore.shared
+    private let store = StyleStore.shared
     private let charsPerToken = 4
     private let maxInstructionTokens = 800
     private let maxExampleTokens = 1200
@@ -131,7 +131,7 @@ public class StyleProfileService: @unchecked Sendable {
         }
 
         // Add style examples (few-shot)
-        let examples = (try? store.getStyleExamples(for: profile.id)) ?? []
+        let examples = (try? store.getExamples(for: profile.id)) ?? []
         let sortedExamples = examples
             .sorted { ($0.appBundleID == appBundleID ? 0 : 1) < ($1.appBundleID == appBundleID ? 0 : 1) }
         var exampleTokens = 0
@@ -180,7 +180,7 @@ public class StyleProfileService: @unchecked Sendable {
         }
 
         if case .rephrase = command, let profile = getActiveProfile(forBundleID: appBundleID) {
-            let examples = (try? store.getStyleExamples(for: profile.id)) ?? []
+            let examples = (try? store.getExamples(for: profile.id)) ?? []
             if let example = examples.first {
                 parts.append("Style reference — Input: \(example.rawText) Output: \(example.polishedText)")
             }
@@ -244,35 +244,35 @@ public class StyleProfileService: @unchecked Sendable {
     // MARK: - Profile CRUD
 
     private func getActiveProfile() -> StyleProfile? {
-        let profiles = (try? store.getAllStyleProfiles()) ?? []
+        let profiles = (try? store.getAllProfiles()) ?? []
         return profiles.first { $0.isActive }
     }
 
     public func getActiveProfile(forBundleID bundleID: String?) -> StyleProfile? {
         if let bundleID,
            let binding = AppProfileBindingStore.shared.binding(for: bundleID),
-           let profile = (try? store.getAllStyleProfiles())?.first(where: { $0.id == binding.profileID }) {
+           let profile = (try? store.getAllProfiles())?.first(where: { $0.id == binding.profileID }) {
             return profile
         }
         return getActiveProfile()
     }
 
-    public func saveStyleProfile(_ profile: StyleProfile) throws { try store.saveStyleProfile(profile) }
-    public func deleteStyleProfile(_ id: UUID) throws { try store.deleteStyleProfile(id) }
-    public func getAllStyleProfiles() throws -> [StyleProfile] { try store.getAllStyleProfiles() }
+    public func saveStyleProfile(_ profile: StyleProfile) throws { try store.saveProfile(profile) }
+    public func deleteStyleProfile(_ id: UUID) throws { try store.deleteProfile(id) }
+    public func getAllStyleProfiles() throws -> [StyleProfile] { try store.getAllProfiles() }
 
     public func setActiveProfile(_ id: UUID) throws {
-        let profiles = try store.getAllStyleProfiles()
+        let profiles = try store.getAllProfiles()
         for profile in profiles {
             var updated = profile
             updated.isActive = (profile.id == id)
             updated.updatedAt = Date()
-            try store.saveStyleProfile(updated)
+            try store.saveProfile(updated)
         }
     }
 
-    public func saveStyleExample(_ example: StyleExample) throws { try store.saveStyleExample(example) }
-    public func deleteStyleExample(_ id: UUID) throws { try store.deleteStyleExample(id) }
+    public func saveStyleExample(_ example: StyleExample) throws { try store.saveExample(example) }
+    public func deleteStyleExample(_ id: UUID) throws { try store.deleteExample(id) }
     public func saveToneRule(_ rule: ToneRule) throws { try store.saveToneRule(rule) }
     public func deleteToneRule(_ id: UUID) throws { try store.deleteToneRule(id) }
     public func saveAppToneRule(_ rule: AppToneRule) throws { try store.saveAppToneRule(rule) }
