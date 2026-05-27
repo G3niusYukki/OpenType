@@ -27,13 +27,9 @@ jobs:
       - name: Run Swift Tests
         run: |
           cd OpenType
-          swift test 2>/dev/null || echo "No tests configured yet"
+          swift test
 
-      - name: Check Swift Format
+      - name: Install and Run Swift Format
         run: |
-          # Install swift-format if available
-          if command -v swift-format &> /dev/null; then
-            swift-format lint --recursive OpenType/Sources 2>/dev/null || true
-          else
-            echo "swift-format not installed, skipping format check"
-          fi
+          brew install swift-format
+          swift-format lint --recursive OpenType/Sources --strict

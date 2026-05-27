@@ -8,3 +8,5 @@ xcodeproj/
 DerivedData/
 .playground/
 .swiftpm/
+/.build-scratch
+/.build-native

@@ -43,7 +43,7 @@ targets:
         CFBundleDisplayName: OpenType
         CFBundleIdentifier: com.opentype.macos
         CFBundleVersion: "1"
-        CFBundleShortVersionString: "0.1.0"
+        CFBundleShortVersionString: "0.9.1"
         CFBundlePackageType: APPL
         CFBundleExecutable: OpenType
         LSMinimumSystemVersion: "13.0"

@@ -60,12 +60,12 @@ jobs:
           swift build -c release
 
       - name: Create App Bundle
+      - name: Create App Bundle
         run: |
           mkdir -p OpenType.app/Contents/MacOS
           mkdir -p OpenType.app/Contents/Resources
           cp OpenType/.build/release/OpenType OpenType.app/Contents/MacOS/
           cp OpenType/Resources/Info.plist OpenType.app/Contents/
-          echo "APPL????" > OpenType.app/Contents/PkgInfo
 
       - name: Create DMG
         run: |
