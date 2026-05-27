@@ -1,6 +1,9 @@
 import SwiftUI
+import AppKit
+import UniformTypeIdentifiers
 import Models
 import Data
+import Services
 import Utilities
 
 struct ProfilesView: View {
@@ -9,6 +12,9 @@ struct ProfilesView: View {
     @State private var newProfileName = ""
     @State private var newTranscriptionProvider = "Apple Speech"
     @State private var newAIProvider = "OpenAI"
+    @State private var styleProfiles: [StyleProfile] = []
+    @State private var appBindings: [AppProfileBinding] = []
+    @State private var showAddBindingSheet = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -63,6 +69,15 @@ struct ProfilesView: View {
                             onDelete: { deleteProfile(profile: profile) }
                         )
                     }
+
+                    Section("App Bindings") {
+                        AppBindingsSection(
+                            bindings: appBindings,
+                            styleProfiles: styleProfiles,
+                            onDelete: deleteBinding,
+                            onAdd: { showAddBindingSheet = true }
+                        )
+                    }
                 }
                 .listStyle(.inset)
             }
@@ -77,10 +92,19 @@ struct ProfilesView: View {
                 onCancel: { showNewProfileSheet = false; clearForm() }
             )
         }
+        .sheet(isPresented: $showAddBindingSheet) {
+            AddAppBindingSheet(
+                profiles: styleProfiles,
+                onSave: saveBinding,
+                onCancel: { showAddBindingSheet = false }
+            )
+        }
     }
 
     private func refreshProfiles() {
         profiles = ProfileStore.shared.getAllProfiles()
+        styleProfiles = (try? StyleProfileService.shared.getAllStyleProfiles()) ?? []
+        appBindings = AppProfileBindingStore.shared.getAllBindings()
     }
 
     private func saveProfile() {
@@ -105,10 +129,95 @@ struct ProfilesView: View {
         refreshProfiles()
     }
 
+    private func saveBinding(bundleID: String, appName: String, profileID: UUID) {
+        _ = AppProfileBindingStore.shared.addBinding(bundleID: bundleID, appName: appName, profileID: profileID)
+        showAddBindingSheet = false
+        refreshProfiles()
+    }
+
+    private func deleteBinding(_ binding: AppProfileBinding) {
+        AppProfileBindingStore.shared.deleteBinding(id: binding.id)
+        refreshProfiles()
+    }
+
     private func clearForm() {
         newProfileName = ""
         newTranscriptionProvider = "Apple Speech"
         newAIProvider = "OpenAI"
+    }
+}
+
+struct AppBindingsSection: View {
+    let bindings: [AppProfileBinding]
+    let styleProfiles: [StyleProfile]
+    let onDelete: (AppProfileBinding) -> Void
+    let onAdd: () -> Void
+
+    var body: some View {
+        if bindings.isEmpty {
+            Text("No app bindings")
+                .foregroundColor(.secondary)
+        } else {
+            ForEach(bindings) { binding in
+                AppBindingRowView(
+                    binding: binding,
+                    profileName: profileName(for: binding.profileID),
+                    onDelete: { onDelete(binding) }
+                )
+            }
+        }
+
+        Button("Add Binding…", action: onAdd)
+            .disabled(styleProfiles.isEmpty)
+    }
+
+    private func profileName(for id: UUID) -> String {
+        styleProfiles.first { $0.id == id }?.name ?? "Missing Profile"
+    }
+}
+
+struct AppBindingRowView: View {
+    let binding: AppProfileBinding
+    let profileName: String
+    let onDelete: () -> Void
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(nsImage: appIcon(for: binding.bundleID))
+                .resizable()
+                .frame(width: 24, height: 24)
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text(binding.appName)
+                    Image(systemName: "arrow.right")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(profileName)
+                        .fontWeight(.medium)
+                }
+                Text(binding.bundleID)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            Button(action: onDelete) {
+                Image(systemName: "trash")
+                    .foregroundColor(.red)
+            }
+            .buttonStyle(.borderless)
+            .help("Delete binding")
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func appIcon(for bundleID: String) -> NSImage {
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) {
+            return NSWorkspace.shared.icon(forFile: url.path)
+        }
+        return NSWorkspace.shared.icon(for: .applicationBundle)
     }
 }
 
@@ -208,5 +317,89 @@ struct NewProfileSheet: View {
         }
         .padding(24)
         .frame(width: 380)
+    }
+}
+
+struct AddAppBindingSheet: View {
+    let profiles: [StyleProfile]
+    let onSave: (String, String, UUID) -> Void
+    let onCancel: () -> Void
+
+    @State private var selectedBundleID = ""
+    @State private var selectedAppName = ""
+    @State private var selectedProfileID: UUID?
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Add App Binding")
+                .font(.headline)
+
+            Form {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(selectedAppName.isEmpty ? "No app selected" : selectedAppName)
+                        if !selectedBundleID.isEmpty {
+                            Text(selectedBundleID)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    Spacer()
+                    Button("Pick App…", action: pickApp)
+                }
+
+                Picker("Profile:", selection: Binding(
+                    get: { selectedProfileID ?? profiles.first?.id },
+                    set: { selectedProfileID = $0 }
+                )) {
+                    ForEach(profiles) { profile in
+                        Text(profile.name).tag(profile.id as UUID?)
+                    }
+                }
+            }
+
+            HStack(spacing: 12) {
+                Button("Cancel", action: onCancel)
+                    .keyboardShortcut(.cancelAction)
+
+                Button("Save") {
+                    guard let profileID = selectedProfileID ?? profiles.first?.id else { return }
+                    onSave(selectedBundleID, selectedAppName, profileID)
+                }
+                .keyboardShortcut(.defaultAction)
+                .disabled(selectedBundleID.isEmpty || selectedAppName.isEmpty || profiles.isEmpty)
+            }
+        }
+        .padding(24)
+        .frame(width: 420)
+        .onAppear {
+            selectedProfileID = selectedProfileID ?? profiles.first?.id
+        }
+    }
+
+    private func pickApp() {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = false
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = true
+        panel.allowedContentTypes = [.applicationBundle]
+
+        guard panel.runModal() == .OK,
+              let url = panel.url,
+              let bundle = Bundle(url: url),
+              let bundleID = bundle.bundleIdentifier else { return }
+
+        selectedBundleID = bundleID
+        selectedAppName = appName(from: bundle, url: url)
+    }
+
+    private func appName(from bundle: Bundle, url: URL) -> String {
+        if let name = bundle.localizedInfoDictionary?["CFBundleName"] as? String, !name.isEmpty {
+            return name
+        }
+        if let name = bundle.infoDictionary?["CFBundleName"] as? String, !name.isEmpty {
+            return name
+        }
+        return url.deletingPathExtension().lastPathComponent
     }
 }

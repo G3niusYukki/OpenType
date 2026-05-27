@@ -61,3 +61,47 @@ public class ProfileStore: @unchecked Sendable {
         defaults.set(data, forKey: profilesKey)
     }
 }
+
+public final class AppProfileBindingStore {
+    public static let shared = AppProfileBindingStore()
+
+    private let defaults: UserDefaults
+    private let bindingsKey = "app_profile_bindings_v1"
+
+    public init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
+
+    public func getAllBindings() -> [AppProfileBinding] {
+        guard let data = defaults.data(forKey: bindingsKey),
+              let bindings = try? JSONDecoder().decode([AppProfileBinding].self, from: data) else {
+            return []
+        }
+        return bindings
+    }
+
+    public func addBinding(bundleID: String, appName: String, profileID: UUID) -> AppProfileBinding {
+        var bindings = getAllBindings()
+        bindings.removeAll { $0.bundleID == bundleID }
+
+        let binding = AppProfileBinding(bundleID: bundleID, appName: appName, profileID: profileID)
+        bindings.append(binding)
+        saveBindings(bindings)
+        return binding
+    }
+
+    public func deleteBinding(id: UUID) {
+        var bindings = getAllBindings()
+        bindings.removeAll { $0.id == id }
+        saveBindings(bindings)
+    }
+
+    public func binding(for bundleID: String) -> AppProfileBinding? {
+        getAllBindings().first { $0.bundleID == bundleID }
+    }
+
+    private func saveBindings(_ bindings: [AppProfileBinding]) {
+        guard let data = try? JSONEncoder().encode(bindings) else { return }
+        defaults.set(data, forKey: bindingsKey)
+    }
+}
