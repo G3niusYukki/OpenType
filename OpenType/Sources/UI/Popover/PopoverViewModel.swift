@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 import AppKit
 import Combine
 import Models
@@ -8,7 +9,9 @@ import Data
 import Utilities
 
 @MainActor
-class PopoverViewModel: ObservableObject {
+final class PopoverViewModel: ObservableObject {
+    // MARK: - Published State (UI-bound)
+
     @Published var isRecording = false
     @Published var isProcessing = false
     @Published var transcribedText = ""
@@ -26,22 +29,26 @@ class PopoverViewModel: ObservableObject {
     private var lastRawText: String = ""
     private var lastAppBundleID: String?
 
-    private let audioService = AudioCaptureService.shared
+    // MARK: - Dependencies
+
+    private let recording = RecordingCoordinator()
     private let transcriptionService = TranscriptionService.shared
     private let aiService = AIProcessingService.shared
     private let textInserter = TextInsertionService.shared
     private let dictionaryService = DictionaryService.shared
-    private let realtimeTranscription = RealtimeTranscriptionService.shared
-    private let vadDetector = VADDetector.shared
-    private var streamingTask: Task<Void, Never>?
     var aiProcessingTask: Task<Void, Never>?
-    private var accumulatedLiveText = ""
-    private var didPauseProcess = false
-    private var levelCancellable: AnyCancellable?
+
+    // MARK: - Init
 
     init() {
         recentHistory = HistoryStore.shared.getRecentHistory(limit: 3)
+
+        // Mirror recording coordinator state
+        recording.$isRecording.assign(to: &$isRecording)
+        recording.$liveText.assign(to: &$liveText)
     }
+
+    // MARK: - Recording
 
     func startRecording(mode: VoiceMode) {
         let defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
@@ -57,51 +64,16 @@ class PopoverViewModel: ObservableObject {
         detectedEditCommand = nil
         quickAnswerText = ""
         showQuickAnswerActions = false
-        accumulatedLiveText = ""
-        didPauseProcess = false
 
         NotificationService.shared.playRecordingStartSound()
 
+        recording.onPauseDetected = { [weak self] in
+            self?.onPauseDetected()
+        }
+
         Task {
             do {
-                try await audioService.startRecording()
-
-                // Wire audio buffer to realtime transcription
-                audioService.onBufferReceived = { [weak self] buffer in
-                    self?.realtimeTranscription.appendBuffer(buffer)
-                }
-
-                // Start realtime transcription (Apple Speech)
-                try realtimeTranscription.start()
-
-                // Wire callbacks
-                realtimeTranscription.onPartialResult = { [weak self] text in
-                    Task { @MainActor in
-                        self?.liveText = text
-                    }
-                }
-
-                realtimeTranscription.onSegmentFinalized = { [weak self] segment in
-                    Task { @MainActor in
-                        guard let self = self else { return }
-                        self.accumulatedLiveText += (self.accumulatedLiveText.isEmpty ? "" : " ") + segment
-                    }
-                }
-
-                // Start VAD detector for pause-based AI processing
-                vadDetector.onPauseDetected = { [weak self] in
-                    Task { @MainActor in
-                        self?.onPauseDetected()
-                    }
-                }
-                vadDetector.start()
-
-                // Feed audio levels to VAD (via Combine observation)
-                levelCancellable = audioService.$audioLevel
-                    .sink { [weak self] level in
-                        self?.vadDetector.updateAudioLevel(level)
-                    }
-
+                try await recording.start(mode: mode)
             } catch {
                 print("Failed to start recording: \(error)")
                 isRecording = false
@@ -111,28 +83,20 @@ class PopoverViewModel: ObservableObject {
     }
 
     /// Called when VAD detects a pause in speech.
-    /// Triggers AI post-processing on the accumulated text so far.
     private func onPauseDetected() {
-        // Only process once per recording session (avoid repeated processing)
-        guard !didPauseProcess else { return }
+        guard !recording.didPauseProcess else { return }
 
-        let textToProcess = realtimeTranscription.fullText.isEmpty
-            ? accumulatedLiveText
-            : realtimeTranscription.fullText
-
+        let textToProcess = recording.fullText
         guard !textToProcess.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
 
-        didPauseProcess = true
+        recording.didPauseProcess = true
 
-        // Apply dictionary replacements
         let dictionaryText = dictionaryService.applyReplacements(to: textToProcess)
 
-        // Trigger AI processing in background
         aiProcessingTask?.cancel()
         aiProcessingTask = Task {
             do {
                 guard aiService.isAvailable() else {
-                    // No AI provider — show raw text
                     transcribedText = dictionaryText
                     return
                 }
@@ -140,17 +104,12 @@ class PopoverViewModel: ObservableObject {
                 let frontmostBundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
                 lastAppBundleID = frontmostBundleID
 
-                // Stream AI result
                 let stream = aiService.processStreaming(text: dictionaryText, appBundleID: frontmostBundleID)
                 for try await partial in stream {
                     guard !Task.isCancelled else { return }
                     transcribedText = partial
                 }
-
-                // AI processing done — the text is already displayed
-                // When recording stops, we'll use this result
             } catch {
-                // AI processing failed — keep the raw text
                 transcribedText = dictionaryText
             }
         }
@@ -176,72 +135,49 @@ class PopoverViewModel: ObservableObject {
         stopRecording()
     }
 
-    // MARK: - Stop Recording (Mode Routing)
+    // MARK: - Stop Recording
 
     func stopRecording() {
-        isRecording = false
-
         NotificationService.shared.playRecordingStopSound()
 
         let defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
         defaults.set(false, forKey: "isRecordingActive")
 
-        // Stop realtime transcription and VAD
-        realtimeTranscription.stop()
-        vadDetector.stop()
-        levelCancellable?.cancel()
-        levelCancellable = nil
-        audioService.onBufferReceived = nil
-        streamingTask?.cancel()
-        streamingTask = nil
+        let alreadyPauseProcessed = recording.didPauseProcess
+        let processedText = transcribedText
 
+        aiProcessingTask?.cancel()
         isProcessing = true
 
         let frontmostBundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
         lastAppBundleID = frontmostBundleID
 
-        // If VAD already triggered AI processing, wait for it to finish and use that result
-        let alreadyProcessed = didPauseProcess
-        let processedText = transcribedText
-
-        aiProcessingTask?.cancel()
         aiProcessingTask = Task {
             do {
-                let (url, duration) = try await audioService.stopRecording()
+                let (url, duration) = try await recording.stop()
                 guard !Task.isCancelled else { return }
 
                 let finalText: String
 
-                if alreadyProcessed && !processedText.isEmpty {
-                    // VAD-triggered AI processing already happened — wait for it to complete
+                if alreadyPauseProcessed, !processedText.isEmpty {
                     finalText = processedText
-                    lastRawText = realtimeTranscription.fullText.isEmpty ? accumulatedLiveText : realtimeTranscription.fullText
+                    lastRawText = recording.fullText
                     originalText = lastRawText
-
-                    // Get language from realtime transcription
                     detectedLang = SettingsStore.shared.recentLocales.first
                 } else {
-                    // No VAD processing happened — do full file-based transcription
-                    // Determine language: nil for auto-detect, or configured source language
+                    // Full file-based transcription fallback
                     let autoDetect = SettingsStore.shared.voiceModeConfigs[currentMode]?.autoDetectLanguage ?? true
                     let language: String? = autoDetect ? nil : SettingsStore.shared.voiceModeConfigs[currentMode]?.sourceLanguage
 
                     let result = try await transcriptionService.transcribe(audioURL: url, language: language)
                     guard !Task.isCancelled else { return }
+
+                    let rawText = recording.fullText.isEmpty ? result.text : recording.fullText
                     lastRawText = result.text
                     originalText = result.text
 
-                    // Use realtime text if available, otherwise file transcription
-                    let realtimeFullText = realtimeTranscription.fullText.isEmpty ? accumulatedLiveText : realtimeTranscription.fullText
-                    let rawText = realtimeFullText.isEmpty ? result.text : realtimeFullText
-
-                    // 词典替换
                     let dictionaryText = dictionaryService.applyReplacements(to: rawText)
-
-                    // 语言检测
                     detectedLang = result.detectedLanguage ?? result.language
-
-                    // 按模式分流处理
                     finalText = try await processForMode(dictionaryText, audioURL: url)
                     guard !Task.isCancelled else { return }
                 }
@@ -251,7 +187,7 @@ class PopoverViewModel: ObservableObject {
                     didSaveStyleExample = false
                 }
 
-                // 保存历史
+                // Save history
                 let entry = HistoryEntry(
                     audioPath: url.path,
                     originalText: lastRawText,
@@ -264,32 +200,36 @@ class PopoverViewModel: ObservableObject {
                 )
                 try? HistoryStore.shared.saveHistoryEntry(entry)
 
-                // 自动学习词典
+                // Auto-learn dictionary
                 dictionaryService.learnFromText(lastRawText)
 
-                // UI 更新
+                // UI updates
                 transcribedText = finalText
                 liveText = ""
                 recentHistory = HistoryStore.shared.getRecentHistory(limit: 3)
                 isProcessing = false
 
-                // 自动插入文本
-                if currentMode != .handsFree && currentMode != .quickAnswer {
+                // Auto-insert text
+                if currentMode != .handsFree, currentMode != .quickAnswer {
                     if currentMode == .editSelected {
                         if detectedEditCommand == nil {
                             insertText()
                         }
-                        // Otherwise, insertion already handled in processEditSelected
                     } else {
                         insertText()
                     }
                 }
 
-                audioService.cleanupTempFiles(keepingRecent: 20)
+                recording.reset()
+                audioServiceCleanup(keepingRecent: 20)
             } catch {
                 handleError(error)
             }
         }
+    }
+
+    private func audioServiceCleanup(keepingRecent count: Int) {
+        AudioCaptureService.shared.cleanupTempFiles(keepingRecent: count)
     }
 
     // MARK: - Mode Processing
@@ -310,18 +250,15 @@ class PopoverViewModel: ObservableObject {
     private func processBasic(_ text: String) async throws -> String {
         guard aiService.isAvailable() else { return text }
 
-        // Use streaming for real-time UI feedback — iterate AsyncThrowingStream directly
-        // (no continuation wrapper needed since we're already in an async context)
         var lastResult = text
         let stream = aiService.processStreaming(text: text, appBundleID: lastAppBundleID)
         do {
             for try await partial in stream {
                 guard !Task.isCancelled else { return lastResult }
                 lastResult = partial
-                transcribedText = partial // @MainActor — safe since PopoverViewModel is @MainActor
+                transcribedText = partial
             }
         } catch {
-            // If streaming fails completely, rethrow — caller handles error
             throw error
         }
         return lastResult
@@ -336,10 +273,8 @@ class PopoverViewModel: ObservableObject {
     }
 
     private func processEditSelected(_ voiceCommand: String) async throws -> String {
-        // 获取选中的文本
         guard let selectedText = textInserter.getSelectedText(), !selectedText.isEmpty else {
             detectedEditCommand = nil
-            // 没有选中文本时当作普通语音输入
             return try await processBasic(voiceCommand)
         }
 
@@ -499,7 +434,6 @@ class PopoverViewModel: ObservableObject {
             case .noAccessibilityPermission:
                 postError("需要辅助功能权限才能插入文本，请在系统设置中授权")
             case .allMethodsFailed:
-                // Silent fallback: text is already on clipboard from the last-resort path
                 postError("文本已复制到剪贴板，请手动粘贴 (Cmd+V)")
             default:
                 postError("文本插入失败: \(error.localizedDescription)")
@@ -545,6 +479,8 @@ class PopoverViewModel: ObservableObject {
         showQuickAnswerActions = false
     }
 }
+
+// MARK: - Notification Names
 
 extension Notification.Name {
     public static let openHistoryWindow = Notification.Name("openHistoryWindow")
