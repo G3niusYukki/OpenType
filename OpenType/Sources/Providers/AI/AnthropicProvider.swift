@@ -15,7 +15,7 @@ public actor AnthropicProvider: AIProvider {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let body: [String: Any] = [
-            "model": model ?? "claude-3-sonnet-20240229",
+            "model": model ?? "claude-3-5-sonnet-20241022",
             "max_tokens": 4096,
             "system": prompt,
             "messages": [
@@ -39,38 +39,6 @@ public actor AnthropicProvider: AIProvider {
         return text
     }
 
-    public func translate(prompt: String, text: String, from: String, to: String, apiKey: String, model: String?) async throws -> String {
-        let url = URL(string: "\(baseURL)/messages")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("\(apiKey)", forHTTPHeaderField: "x-api-key")
-        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let body: [String: Any] = [
-            "model": model ?? "claude-3-sonnet-20240229",
-            "max_tokens": 4096,
-            "system": prompt,
-            "messages": [
-                ["role": "user", "content": text]
-            ],
-            "temperature": 0.3
-        ]
-
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw AIError.requestFailed
-        }
-
-        let result = try JSONDecoder().decode(AnthropicResponse.self, from: data)
-        if let content = result.content.first, content.type == "text" {
-            return content.text
-        }
-        return text
-    }
 }
 
 private struct AnthropicResponse: Codable {

@@ -3,6 +3,9 @@ import Foundation
 public protocol AIProvider: Sendable {
     var name: String { get }
     func process(prompt: String, text: String, apiKey: String, model: String?) async throws -> String
+
+    /// Translate text from one language to another.
+    /// Default implementation delegates to `process()` with the translation prompt.
     func translate(prompt: String, text: String, from: String, to: String, apiKey: String, model: String?) async throws -> String
 
     /// Streaming variant of process(). Yields partial text as it's generated.
@@ -11,6 +14,12 @@ public protocol AIProvider: Sendable {
 }
 
 extension AIProvider {
+    /// Default: translation uses the same endpoint as processing.
+    /// Override if the provider has a dedicated translation API.
+    public func translate(prompt: String, text: String, from: String, to: String, apiKey: String, model: String?) async throws -> String {
+        return try await process(prompt: prompt, text: text, apiKey: apiKey, model: model)
+    }
+
     public func processStreaming(prompt: String, text: String, apiKey: String, model: String?) -> AsyncThrowingStream<String, Error> {
         AsyncThrowingStream { continuation in
             Task {
