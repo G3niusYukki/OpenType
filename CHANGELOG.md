@@ -5,6 +5,26 @@ All notable changes to OpenType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-05-27
+
+### Added
+
+- **Multipart Upload Helper** — `performMultipartUpload` added to `ProviderHTTPClient`
+  - Eliminates hand-rolled multipart form-data across all 8 Transcription providers
+  - `OpenAIWhisperProvider` refactored from 81 to 50 lines as reference
+
+- **Auto Style Learning** — Analyze dictation history to suggest style examples
+  - `learnStyleExamplesFromHistory()` finds user correction pairs (raw→polished)
+  - Levenshtein distance filter ignores trivial changes (<5% difference)
+  - `autoLearnAndSave()` persists up to 10 style examples to active profile
+
+### Security
+
+- **Response Validation Tests** — 13 new security-focused tests (126 total)
+  - Malformed JSON, missing keys, empty content, XSS, Unicode handling
+  - AIError no-sensitive-data-in-messages verification
+
+---
 ## [1.1.0] - 2026-05-27
 
 ### Changed
