@@ -5,6 +5,29 @@ All notable changes to OpenType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-05-27
+
+### Changed
+
+- **StyleStore Extraction** — Style CRUD extracted from `HistoryStore` into dedicated `StyleStore`
+  - Manages style profiles, examples, tone rules, and per-app tone rules independently
+  - `StyleProfileService` migrated (13 call sites)
+  - `HistoryStore` now focused on history + dictionary CRUD only
+
+- **DocC Documentation** — Symbol-level documentation added to core protocols
+  - `AIProvider` protocol: implementation guide, parameter docs, error contracts
+  - `TranscriptionProvider` protocol: streaming defaults, provider notes
+
+- **Boundary Tests** — 14 new edge-case tests (113 total)
+  - `HistoryEntry`: empty text, very long text
+  - `VoiceMode`: all-cases enumeration, raw value round-trip
+  - `TranscriptionResult`: nil confidence, detected language fallback
+  - `PromptPreset`: deterministic IDs, built-in count verification
+  - `ProviderFactory`: unique name enforcement
+  - `ChatCompletionRequest`: minimal field encoding
+
+---
+
 ## [1.0.0] - 2026-05-27
 
 ### Changed
