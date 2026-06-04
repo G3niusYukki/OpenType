@@ -68,6 +68,9 @@ jobs:
         run: |
           cd OpenType
           APP_PATH=$(find build/Build/Products/Release -maxdepth 2 -name "OpenType.app" -type d | head -n 1)
+          # Convert to absolute path so downstream steps can use it without
+          # needing to `cd` into OpenType/ first.
+          APP_PATH="$(pwd)/$APP_PATH"
           echo "app_path=$APP_PATH" >> $GITHUB_OUTPUT
           echo "Built app: $APP_PATH"
 
