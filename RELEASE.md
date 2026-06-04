@@ -1,5 +1,7 @@
 # OpenType v1.3.0 — Real-usability release
 
+> **Install note (ad-hoc-signed DMG):** The first time you launch OpenType from the downloaded DMG, macOS will block the app with "OpenType is damaged and cannot be opened" or "developer cannot be verified". To run it: drag `OpenType.app` to `/Applications`, then in Finder right-click (or Control-click) `OpenType.app` and choose **Open** from the menu, then click **Open** in the dialog. You only need to do this once.
+
 ## Quality Foundation — CI Fixes, Provider Deduplication, Project Hygiene
 
 v0.9.1 is the first release of the quality-first improvement plan. No user-facing features; this release fixes systemic engineering issues and establishes the foundation for future development speed.
