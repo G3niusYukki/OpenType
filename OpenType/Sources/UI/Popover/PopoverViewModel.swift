@@ -66,6 +66,7 @@ public final class PopoverViewModel: ObservableObject {
         showQuickAnswerActions = false
 
         NotificationService.shared.playRecordingStartSound()
+        lastAppBundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
 
         recording.onPauseDetected = { [weak self] in
             self?.onPauseDetected()
@@ -150,7 +151,9 @@ public final class PopoverViewModel: ObservableObject {
         isProcessing = true
 
         let frontmostBundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
-        lastAppBundleID = frontmostBundleID
+        // Note: lastAppBundleID was already captured in startRecording; we
+        // re-read here only to check whether the user switched windows.
+        let focusDecision = InsertionFocusGuard.decide(captured: lastAppBundleID, current: frontmostBundleID)
 
         aiProcessingTask = Task {
             do {
@@ -209,8 +212,9 @@ public final class PopoverViewModel: ObservableObject {
                 recentHistory = HistoryStore.shared.getRecentHistory(limit: 3)
                 isProcessing = false
 
-                // Auto-insert text
-                if currentMode != .handsFree, currentMode != .quickAnswer {
+                // Auto-insert text — but only if the user hasn't switched apps.
+                if focusDecision == .insert,
+                   currentMode != .handsFree, currentMode != .quickAnswer {
                     if currentMode == .editSelected {
                         if detectedEditCommand == nil {
                             insertText()
@@ -218,6 +222,12 @@ public final class PopoverViewModel: ObservableObject {
                     } else {
                         insertText()
                     }
+                } else if focusDecision == .fallbackToClipboard, !transcribedText.isEmpty {
+                    // The user moved to a different app. Don't risk a wrong
+                    // paste — copy to clipboard and tell them.
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(transcribedText, forType: .string)
+                    postError("You switched apps during processing — text copied to clipboard, paste manually (⌘V).")
                 }
 
                 recording.reset()
