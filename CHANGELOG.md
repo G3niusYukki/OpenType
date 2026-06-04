@@ -5,6 +5,23 @@ All notable changes to OpenType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-06-04
+
+### Fixed
+
+- **Three dead global hotkeys** — ⌘⇧D (Basic), ⌘⇧T (Translate), ⌘⇧E (Edit Selected) now start recording; pressing again stops and inserts.
+- **Focus drift on insertion** — captures the frontmost app at recording start and validates it before inserting, falling back to clipboard if the user switched windows.
+- **Clipboard-paste race** — deferred clipboard restore now waits for the target app to consume the pasteboard before restoring.
+- **Silent-transcription hang** — Apple Speech auto-detect now has a 12 s timeout, an in-flight cancellation, and the spinner can be cleared by Cancel.
+
+### Changed
+
+- **Provider picker** — Alibaba/Tencent/Baidu/iFlytek/Whisper.cpp temporarily hidden (the credential UI for multi-field providers and signature fixes land in a follow-up release).
+
+### Notes for end users
+
+- The DMG remains ad-hoc-signed; first launch requires right-click → Open, or System Settings → Privacy & Security → Open Anyway.
+
 ## [1.2.0] - 2026-05-27
 
 ### Added

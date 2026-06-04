@@ -1,4 +1,4 @@
-# OpenType v0.9.1 Release Notes
+# OpenType v1.3.0 — Real-usability release
 
 ## Quality Foundation — CI Fixes, Provider Deduplication, Project Hygiene
 
