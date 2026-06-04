@@ -102,9 +102,12 @@ public final class PopoverViewModel: ObservableObject {
                     return
                 }
 
+                // Use the *current* frontmost for the AI style prompt (per-app
+                // tone rules want the app the user is in *right now*), but
+                // DO NOT clobber lastAppBundleID — it stays at the value
+                // captured at startRecording so the focus-drift guard in
+                // stopRecording can detect a window switch.
                 let frontmostBundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
-                lastAppBundleID = frontmostBundleID
-
                 let stream = aiService.processStreaming(text: dictionaryText, appBundleID: frontmostBundleID)
                 for try await partial in stream {
                     guard !Task.isCancelled else { return }
