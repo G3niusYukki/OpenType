@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The DMG remains ad-hoc-signed; first launch requires right-click → Open, or System Settings → Privacy & Security → Open Anyway.
 
+[1.3.0]: https://github.com/G3niusYukki/OpenType/compare/v1.2.0...v1.3.0
+
 ## [1.2.0] - 2026-05-27
 
 ### Added
