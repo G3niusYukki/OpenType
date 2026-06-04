@@ -2,9 +2,10 @@ import AppKit
 import SwiftUI
 import Combine
 import Data
+import Models
 import Utilities
 
-public class StatusBarController: NSObject, ObservableObject {
+public class StatusBarController: NSObject, ObservableObject, PopoverViewModelFactory {
     private var statusItem: NSStatusItem
     private var popover: NSPopover
     private var popoverViewModel: PopoverViewModel?
@@ -35,6 +36,11 @@ public class StatusBarController: NSObject, ObservableObject {
             name: .hotkeyQuickAnswer,
             object: nil
         )
+        // The other three modes (basic/translate/editSelected) are routed
+        // through HotkeyRouter so the routing can be unit-tested.
+        Task { @MainActor in
+            _ = HotkeyRouter(viewModelFactory: self)
+        }
     }
 
     @objc private func handleHandsFreeHotkey() {
@@ -182,5 +188,19 @@ public class StatusBarController: NSObject, ObservableObject {
                 button.contentTintColor = icon.tintColor
             }
         }
+    }
+
+    // MARK: - PopoverViewModelFactory
+
+    public func makeViewModel() -> PopoverViewModel {
+        PopoverViewModel()
+    }
+
+    public func openPopoverAndStart(mode: VoiceMode) {
+        if !popover.isShown {
+            showPopover()
+        }
+        guard let viewModel = popoverViewModel else { return }
+        viewModel.startRecording(mode: mode)
     }
 }

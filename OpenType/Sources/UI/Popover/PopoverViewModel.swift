@@ -9,7 +9,7 @@ import Data
 import Utilities
 
 @MainActor
-final class PopoverViewModel: ObservableObject {
+public final class PopoverViewModel: ObservableObject {
     // MARK: - Published State (UI-bound)
 
     @Published var isRecording = false
@@ -50,7 +50,7 @@ final class PopoverViewModel: ObservableObject {
 
     // MARK: - Recording
 
-    func startRecording(mode: VoiceMode) {
+    public func startRecording(mode: VoiceMode) {
         let defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
         defaults.set(true, forKey: "isRecordingActive")
 
