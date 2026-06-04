@@ -136,17 +136,20 @@ targets:
         CFBundleShortVersionString: "1.3.0"
         CFBundlePackageType: APPL
         CFBundleExecutable: OpenType
+        CFBundleIconFile: OpenType.icns
         LSMinimumSystemVersion: "13.0"
         LSUIElement: true
         NSPrincipalClass: NSApplication
         NSMicrophoneUsageDescription: "OpenType needs microphone access to record your voice for transcription."
         NSSpeechRecognitionUsageDescription: "OpenType uses speech recognition to transcribe your voice."
+        SUFeedURL: "https://github.com/G3niusYukki/OpenType/releases/latest/download/appcast.xml"
     entitlements:
       path: Resources/OpenType.entitlements
       properties:
         com.apple.security.device.microphone: true
         com.apple.security.device.audio-input: true
         com.apple.security.automation.apple-events: true
+        com.apple.security.network.client: true
     settings:
       base:
         SWIFT_VERSION: "5.9"
