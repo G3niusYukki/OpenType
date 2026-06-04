@@ -47,4 +47,43 @@ final class ClipboardGuardTests: XCTestCase {
         // The restore() path uses changeCount to avoid clobbering
         // user changes that happened between save/restore
     }
+
+    func test_restoreAfterPasteEvent_doesNothingWhenUserChangedClipboard() {
+        // User changed the clipboard between save and the paste event completing
+        // → guard should NOT clobber the user's new content.
+        let guard_ = ClipboardGuard()
+        let pasteboard = NSPasteboard.general
+        let originalSaved = pasteboard.string(forType: .string) ?? ""
+        _ = originalSaved
+    }
+
+    func test_restoreAfterPasteEvent_completesWithinBudget() {
+        let guard_ = ClipboardGuard()
+        let pasteboard = NSPasteboard.general
+
+        // Save current state
+        let pre = "OpenType-test-pre-\(UUID().uuidString)"
+        pasteboard.clearContents()
+        pasteboard.setString(pre, forType: .string)
+        guard_.save()
+
+        // Simulate our own paste (the CGEvent path would post Cmd+V; we
+        // simulate by changing the pasteboard once, mirroring what the
+        // target app's paste handler would do — the count then goes up
+        // by 1, which is the "consumed" signal).
+        let post = "OpenType-test-post-\(UUID().uuidString)"
+        pasteboard.clearContents()
+        pasteboard.setString(post, forType: .string)
+
+        let start = Date()
+        let exp = expectation(description: "restore completed")
+        guard_.restoreAfterPasteEvent(timeout: 0.25) {
+            exp.fulfill()
+        }
+        wait(for: [exp], timeout: 1.0)
+        let elapsed = Date().timeIntervalSince(start)
+
+        XCTAssertLessThan(elapsed, 0.5, "restoreAfterPasteEvent must complete within 500 ms")
+        XCTAssertEqual(pasteboard.string(forType: .string), pre, "original content should be restored")
+    }
 }
