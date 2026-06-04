@@ -53,29 +53,46 @@ public class AppleSpeechProvider: TranscriptionProvider, @unchecked Sendable {
         request.shouldReportPartialResults = false
         request.addsPunctuation = true
 
-        return try await withCheckedThrowingContinuation { continuation in
-            recognizer.recognitionTask(with: request) { result, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
+        let timeout: TimeInterval = 12.0
+        return try await withThrowingTaskGroup(of: TranscriptionResult.self) { group in
+            group.addTask {
+                try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<TranscriptionResult, Error>) in
+                    self.recognizer.recognitionTask(with: request) { result, error in
+                        if let error = error {
+                            let ns = error as NSError
+                            if ns.code == 1110 || ns.code == 203 || ns.code == 301 {
+                                continuation.resume(throwing: TranscriptionError.speechPermissionDenied)
+                            } else {
+                                continuation.resume(throwing: error)
+                            }
+                            return
+                        }
+                        guard let result = result, result.isFinal else { return }
+                        let text = result.bestTranscription.formattedString
+                        let detected = self.recognizer.locale.identifier
+                        let r = TranscriptionResult(
+                            text: text,
+                            language: language,
+                            detectedLanguage: detected,
+                            confidence: nil,
+                            segments: nil,
+                            duration: 0,
+                            provider: self.name
+                        )
+                        continuation.resume(returning: r)
+                    }
                 }
-
-                guard let result = result, result.isFinal else { return }
-
-                let text = result.bestTranscription.formattedString
-                let detected = self.recognizer.locale.identifier
-
-                let transcriptionResult = TranscriptionResult(
-                    text: text,
-                    language: language,
-                    detectedLanguage: detected,
-                    confidence: nil,
-                    segments: nil,
-                    duration: 0,
-                    provider: self.name
-                )
-                continuation.resume(returning: transcriptionResult)
             }
+            group.addTask {
+                try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+                throw TranscriptionError.recognitionFailed
+            }
+            // The first task to complete wins; the other is cancelled.
+            guard let first = try await group.next() else {
+                throw TranscriptionError.recognitionFailed
+            }
+            group.cancelAll()
+            return first
         }
     }
 
