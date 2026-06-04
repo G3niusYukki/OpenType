@@ -17,22 +17,112 @@ packages:
     url: https://github.com/kishikawakatsumi/KeychainAccess
     from: 4.2.0
 
+# Mirrors Package.swift's strict layer DAG:
+#   Models → Utilities → Data → Providers → Services → OpenTypeUI → App
+# Circular dependencies are prevented by only declaring deps from upper → lower.
 targets:
+  Models:
+    type: framework
+    platform: macOS
+    deploymentTarget: 13.0
+    sources:
+      - path: Sources/Models
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_NAME: Models
+
+  Utilities:
+    type: framework
+    platform: macOS
+    deploymentTarget: 13.0
+    sources:
+      - path: Sources/Utilities
+    dependencies:
+      - target: Models
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_NAME: Utilities
+
+  Data:
+    type: framework
+    platform: macOS
+    deploymentTarget: 13.0
+    sources:
+      - path: Sources/Data
+    dependencies:
+      - target: Models
+      - target: Utilities
+      - package: SQLite
+      - package: KeychainAccess
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_NAME: Data
+
+  Providers:
+    type: framework
+    platform: macOS
+    deploymentTarget: 13.0
+    sources:
+      - path: Sources/Providers
+    dependencies:
+      - target: Models
+      - target: Utilities
+      - target: Data
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_NAME: Providers
+
+  Services:
+    type: framework
+    platform: macOS
+    deploymentTarget: 13.0
+    sources:
+      - path: Sources/Services
+    dependencies:
+      - target: Models
+      - target: Providers
+      - target: Utilities
+      - target: Data
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_NAME: Services
+
+  OpenTypeUI:
+    type: framework
+    platform: macOS
+    deploymentTarget: 13.0
+    sources:
+      - path: Sources/UI
+    dependencies:
+      - target: Utilities
+      - target: Models
+      - target: Data
+      - target: Services
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_NAME: OpenTypeUI
+
   OpenType:
     type: application
     platform: macOS
     deploymentTarget: 13.0
     sources:
       - path: Sources/App
-      - path: Sources/UI
-      - path: Sources/Services
-      - path: Sources/Providers
-      - path: Sources/Models
-      - path: Sources/Data
-      - path: Sources/Utilities
     resources:
       - path: Resources
     dependencies:
+      - target: Services
+      - target: Providers
+      - target: Models
+      - target: Data
+      - target: Utilities
+      - target: OpenTypeUI
       - package: SQLite
       - package: Sparkle
       - package: KeychainAccess
