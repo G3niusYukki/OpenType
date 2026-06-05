@@ -273,11 +273,6 @@ struct TranscriptionSettingsView: View {
         "Apple Speech",
         "OpenAI Whisper",
         "Groq",
-        "Alibaba Cloud ASR",
-        "Tencent Cloud ASR",
-        "Baidu Cloud ASR",
-        "iFlytek ASR",
-        "Whisper.cpp"
     ]
 
     var body: some View {

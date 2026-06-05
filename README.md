@@ -84,6 +84,13 @@ curl -L -o OpenType.dmg https://github.com/G3niusYukki/OpenType/releases/latest/
 open OpenType.dmg
 ```
 
+> **First launch (ad-hoc-signed):** Because OpenType is not notarized by Apple, the first time you launch it Gatekeeper will block the app with "OpenType is damaged and can't be opened" or "cannot be opened because the developer cannot be verified". To run it:
+> 1. Open the DMG and **drag OpenType.app to /Applications**.
+> 2. Eject the DMG.
+> 3. In Finder, go to `/Applications`, right-click (or Control-click) **OpenType.app**, and choose **Open** from the menu. Click **Open** in the dialog.
+> 4. Or, if you prefer, open **System Settings → Privacy & Security → Open Anyway** within an hour of the blocked launch attempt, then click **Open Anyway**.
+> 5. Subsequent launches work normally (no more Gatekeeper prompts).
+
 ### Build from Source
 
 ```bash
@@ -214,6 +221,10 @@ On first launch, OpenType automatically migrates settings from the legacy Electr
 ---
 
 ## Troubleshooting
+
+### "OpenType is damaged and can't be opened" or "developer cannot be verified"
+
+This is Gatekeeper blocking an ad-hoc-signed app. See the install note above. Once you've opened the app once via right-click → Open, you won't see the prompt again.
 
 ### "Accessibility Permission Required" alert
 

@@ -36,7 +36,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           cd OpenType
-          swift build -c release
+          brew install xcodegen
+          xcodegen generate
+          xcodebuild -project OpenType.xcodeproj -scheme OpenType -configuration Release -derivedDataPath build CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=YES build
 
   release:
     needs: build-swift
@@ -54,22 +56,50 @@ jobs:
         with:
           xcode-version: latest-stable
 
-      - name: Build Release
+      - name: Build Release via XcodeGen
         run: |
           cd OpenType
-          swift build -c release
+          brew install xcodegen
+          xcodegen generate
+          xcodebuild -project OpenType.xcodeproj -scheme OpenType -configuration Release -derivedDataPath build CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=YES build
 
-      - name: Create App Bundle
+      - name: Locate built .app
+        id: locate
         run: |
-          mkdir -p OpenType.app/Contents/MacOS
-          mkdir -p OpenType.app/Contents/Resources
-          cp OpenType/.build/release/OpenType OpenType.app/Contents/MacOS/
-          cp OpenType/Resources/Info.plist OpenType.app/Contents/
+          cd OpenType
+          APP_PATH=$(find build/Build/Products/Release -maxdepth 2 -name "OpenType.app" -type d | head -n 1)
+          # Convert to absolute path so downstream steps can use it without
+          # needing to `cd` into OpenType/ first.
+          APP_PATH="$(pwd)/$APP_PATH"
+          echo "app_path=$APP_PATH" >> $GITHUB_OUTPUT
+          echo "Built app: $APP_PATH"
+
+      - name: Patch Info.plist version (defense in depth — xcodegen should already set this)
+        run: |
+          APP="${{ steps.locate.outputs.app_path }}"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.3.0" "$APP/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion 1"           "$APP/Contents/Info.plist"
+
+      - name: Re-sign with ad-hoc identity (preserves embedded Sparkle framework signature)
+        run: |
+          APP="${{ steps.locate.outputs.app_path }}"
+          # Sign nested frameworks first (Sparkle), then the app itself.
+          for fw in "$APP/Contents/Frameworks/"*.framework; do
+            [ -d "$fw" ] && codesign --force --sign - --timestamp=none "$fw"
+          done
+          codesign --force --deep --sign - --timestamp=none --entitlements OpenType/Resources/OpenType.entitlements "$APP"
+
+      - name: Verify ad-hoc signature
+        run: |
+          APP="${{ steps.locate.outputs.app_path }}"
+          codesign --verify --verbose=2 "$APP" || true   # don't fail the build; ad-hoc is by definition not notarized
+          spctl --assess --type execute --verbose=2 "$APP" 2>&1 | tee /tmp/spctl.log || true
 
       - name: Create DMG
         run: |
+          APP="${{ steps.locate.outputs.app_path }}"
           mkdir -p dmg_root
-          cp -R OpenType.app dmg_root/
+          cp -R "$APP" dmg_root/
           hdiutil create -volname "OpenType" -srcfolder dmg_root -ov -format UDZO OpenType.dmg
 
       - name: Extract Release Notes

@@ -47,6 +47,7 @@ coverage/
 *.xcodeproj/
 *.xcworkspace/
 .xcbuild/
+build/
 
 # OpenSpec
 openspec/

@@ -31,4 +31,37 @@ public final class ClipboardGuard: @unchecked Sendable {
             pasteboard.clearContents()
         }
     }
+
+    /// Restore the pasteboard, but first wait for the target app to consume
+    /// the Cmd+V paste. The CGEvent paste in `TextInsertionService` is async:
+    /// if we restore synchronously, the target reads the user's old content
+    /// or nothing at all. This method polls the pasteboard's `changeCount`
+    /// (which the target increments by 1 when it reads) up to `timeout`
+    /// seconds, then restores.
+    public func restoreAfterPasteEvent(timeout: TimeInterval, completion: @escaping () -> Void) {
+        let startCount = pasteboard.changeCount
+        let deadline = Date().addingTimeInterval(timeout)
+        let pollInterval: TimeInterval = 0.05
+
+        func poll() {
+            // Our own write incremented changeCount by 1; the target's paste
+            // handler increments it by another 1. So we expect delta == 2
+            // when the paste has been consumed.
+            let delta = pasteboard.changeCount - startCount
+            if delta >= 2 {
+                restore()
+                completion()
+                return
+            }
+            if Date() >= deadline {
+                // Give up: restore anyway, better a stale clipboard than
+                // pasted-into-the-wrong-app.
+                restore()
+                completion()
+                return
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + pollInterval, execute: poll)
+        }
+        poll()
+    }
 }

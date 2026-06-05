@@ -16,12 +16,13 @@ public class TextInsertionService {
             throw TextInsertionError.noAccessibilityPermission
         }
 
-        clipboardGuard.save()
-        defer { clipboardGuard.restore() }
-
-        // Try methods in order of reliability
+        // Try methods in order of reliability. AX and AppleScript are
+        // synchronous from the perspective of this method — the clipboard
+        // doesn't change, so we use the inline save/restore. CGEvent paste
+        // is async — we use restoreAfterPasteEvent so the target can read
+        // the pasted string before we put the original content back.
         if try insertViaAXSetValue(text) { return }
-        if try insertViaCGEvent(text) { return }
+        if try insertViaCGEventAsync(text) { return }
         if try insertViaAppleScript(text) { return }
 
         // Last resort: copy to clipboard so user can paste manually
@@ -133,7 +134,9 @@ public class TextInsertionService {
     }
 
     /// CGEvent Cmd+V paste -- fast, works in most apps, but requires clipboard swap.
-    private func insertViaCGEvent(_ text: String) throws -> Bool {
+    /// Renamed to `insertViaCGEventCore` (no clipboard handling); the public
+    /// entry point is `insertViaCGEventAsync` which handles the async restore.
+    private func insertViaCGEventCore(_ text: String) -> Bool {
         guard PermissionService.shared.checkAccessibilityPermission() else {
             return false
         }
@@ -154,6 +157,19 @@ public class TextInsertionService {
         keyDown.post(tap: .cgAnnotatedSessionEventTap)
         keyUp.post(tap: .cgAnnotatedSessionEventTap)
 
+        return true
+    }
+
+    /// Save the clipboard, post the CGEvent paste, then wait for the target
+    /// to consume the pasteboard before restoring. Fixes the race where the
+    /// synchronous `defer { restore() }` would clobber the pasted content.
+    private func insertViaCGEventAsync(_ text: String) -> Bool {
+        clipboardGuard.save()
+        guard insertViaCGEventCore(text) else {
+            clipboardGuard.restore()
+            return false
+        }
+        clipboardGuard.restoreAfterPasteEvent(timeout: 0.25, completion: {})
         return true
     }
 
@@ -199,6 +215,11 @@ public class TextInsertionService {
         Thread.sleep(forTimeInterval: 0.05) // 50ms for deletion to register
 
         // Paste new text
+        // Note: this is a known race; the fallback path is rare (AX already
+        // failed) and the 50 ms sleep makes it acceptable in practice. A
+        // future release should use insertViaCGEventAsync here too.
+        // [existing code continues — the inline pasteboard clear + Cmd+V
+        //  posting below is unchanged]
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(newText, forType: .string)

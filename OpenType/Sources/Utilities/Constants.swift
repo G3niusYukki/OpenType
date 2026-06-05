@@ -4,7 +4,7 @@ import CoreGraphics
 public enum Constants {
     public static let appBundleIdentifier = "com.opentype.macos"
     public static let appName = "OpenType"
-    public static let appVersion = "0.9.0"
+    public static let appVersion = "1.3.0"
 
     public enum Keychain {
         public static let service = "com.opentype.macos"

@@ -17,22 +17,112 @@ packages:
     url: https://github.com/kishikawakatsumi/KeychainAccess
     from: 4.2.0
 
+# Mirrors Package.swift's strict layer DAG:
+#   Models → Utilities → Data → Providers → Services → OpenTypeUI → App
+# Circular dependencies are prevented by only declaring deps from upper → lower.
 targets:
+  Models:
+    type: framework
+    platform: macOS
+    deploymentTarget: 13.0
+    sources:
+      - path: Sources/Models
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_NAME: Models
+
+  Utilities:
+    type: framework
+    platform: macOS
+    deploymentTarget: 13.0
+    sources:
+      - path: Sources/Utilities
+    dependencies:
+      - target: Models
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_NAME: Utilities
+
+  Data:
+    type: framework
+    platform: macOS
+    deploymentTarget: 13.0
+    sources:
+      - path: Sources/Data
+    dependencies:
+      - target: Models
+      - target: Utilities
+      - package: SQLite
+      - package: KeychainAccess
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_NAME: Data
+
+  Providers:
+    type: framework
+    platform: macOS
+    deploymentTarget: 13.0
+    sources:
+      - path: Sources/Providers
+    dependencies:
+      - target: Models
+      - target: Utilities
+      - target: Data
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_NAME: Providers
+
+  Services:
+    type: framework
+    platform: macOS
+    deploymentTarget: 13.0
+    sources:
+      - path: Sources/Services
+    dependencies:
+      - target: Models
+      - target: Providers
+      - target: Utilities
+      - target: Data
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_NAME: Services
+
+  OpenTypeUI:
+    type: framework
+    platform: macOS
+    deploymentTarget: 13.0
+    sources:
+      - path: Sources/UI
+    dependencies:
+      - target: Utilities
+      - target: Models
+      - target: Data
+      - target: Services
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_NAME: OpenTypeUI
+
   OpenType:
     type: application
     platform: macOS
     deploymentTarget: 13.0
     sources:
       - path: Sources/App
-      - path: Sources/UI
-      - path: Sources/Services
-      - path: Sources/Providers
-      - path: Sources/Models
-      - path: Sources/Data
-      - path: Sources/Utilities
     resources:
       - path: Resources
     dependencies:
+      - target: Services
+      - target: Providers
+      - target: Models
+      - target: Data
+      - target: Utilities
+      - target: OpenTypeUI
       - package: SQLite
       - package: Sparkle
       - package: KeychainAccess
@@ -43,20 +133,23 @@ targets:
         CFBundleDisplayName: OpenType
         CFBundleIdentifier: com.opentype.macos
         CFBundleVersion: "1"
-        CFBundleShortVersionString: "0.9.1"
+        CFBundleShortVersionString: "1.3.0"
         CFBundlePackageType: APPL
         CFBundleExecutable: OpenType
+        CFBundleIconFile: OpenType.icns
         LSMinimumSystemVersion: "13.0"
         LSUIElement: true
         NSPrincipalClass: NSApplication
         NSMicrophoneUsageDescription: "OpenType needs microphone access to record your voice for transcription."
         NSSpeechRecognitionUsageDescription: "OpenType uses speech recognition to transcribe your voice."
+        SUFeedURL: "https://github.com/G3niusYukki/OpenType/releases/latest/download/appcast.xml"
     entitlements:
       path: Resources/OpenType.entitlements
       properties:
         com.apple.security.device.microphone: true
         com.apple.security.device.audio-input: true
         com.apple.security.automation.apple-events: true
+        com.apple.security.network.client: true
     settings:
       base:
         SWIFT_VERSION: "5.9"
