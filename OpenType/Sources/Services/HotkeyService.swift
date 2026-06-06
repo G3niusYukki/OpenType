@@ -1,6 +1,6 @@
-import Foundation
-import CoreGraphics
 import AppKit
+import CoreGraphics
+import Foundation
 
 public class HotkeyService {
     public static let shared = HotkeyService()
@@ -11,6 +11,7 @@ public class HotkeyService {
         let modifiers: CGEventFlags
         let handler: () -> Void
     }
+
     private var registrations: [CGKeyCode: Registration] = [:]
 
     private init() {}
@@ -59,7 +60,7 @@ public class HotkeyService {
         return true
     }
 
-    private func handleEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+    private func handleEvent(proxy _: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             if let tap = eventTap {
                 CGEvent.tapEnable(tap: tap, enable: true)

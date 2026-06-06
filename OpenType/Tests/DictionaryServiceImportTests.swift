@@ -1,6 +1,6 @@
-import XCTest
-@testable import Services
 @testable import Data
+@testable import Services
+import XCTest
 
 final class DictionaryServiceImportTests: XCTestCase {
     private var temporaryFiles: [URL] = []

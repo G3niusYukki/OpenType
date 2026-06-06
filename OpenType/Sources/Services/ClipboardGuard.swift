@@ -21,7 +21,7 @@ public final class ClipboardGuard: @unchecked Sendable {
         // Our own CGEvent paste increments changeCount by 1.
         // If it changed by more, the user did something — don't overwrite.
         let delta = pasteboard.changeCount - savedChangeCount
-        guard delta >= 0 && delta <= 2 else { return }
+        guard delta >= 0, delta <= 2 else { return }
 
         if let content = savedContent {
             pasteboard.clearContents()

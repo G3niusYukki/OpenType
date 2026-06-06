@@ -1,8 +1,8 @@
-import SwiftUI
 import AppKit
 import AVFoundation
-import Models
 import Data
+import Models
+import SwiftUI
 import Utilities
 
 struct HistoryView: View {
@@ -287,8 +287,11 @@ struct HistoryDetailPanel: View {
 
 private class AudioPlayerDelegate: NSObject, AVAudioPlayerDelegate {
     let onFinish: () -> Void
-    init(onFinish: @escaping () -> Void) { self.onFinish = onFinish }
-    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+    init(onFinish: @escaping () -> Void) {
+        self.onFinish = onFinish
+    }
+
+    func audioPlayerDidFinishPlaying(_: AVAudioPlayer, successfully _: Bool) {
         onFinish()
     }
 }

@@ -1,8 +1,7 @@
-import XCTest
 @testable import Services
+import XCTest
 
 final class ClipboardGuardTests: XCTestCase {
-
     func testSaveAndRestoreClipboardContent() {
         let pasteboard = NSPasteboard.general
         // Set up known clipboard content

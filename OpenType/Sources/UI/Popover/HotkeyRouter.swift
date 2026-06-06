@@ -10,7 +10,7 @@ public final class HotkeyRouter {
     private var observers: [NSObjectProtocol] = []
 
     public init(viewModelFactory: PopoverViewModelFactory) {
-        self.factory = viewModelFactory
+        factory = viewModelFactory
         observe()
     }
 

@@ -1,8 +1,7 @@
-import XCTest
 @testable import Utilities
+import XCTest
 
 final class SSEParserTests: XCTestCase {
-
     func testParseSingleDataLine() {
         let input = "data: {\"choices\":[{\"delta\":{\"content\":\"Hello\"}}]}\n\n"
         let events = SSEParser.parse(input)

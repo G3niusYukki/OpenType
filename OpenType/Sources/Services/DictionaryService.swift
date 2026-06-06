@@ -1,7 +1,7 @@
-import Foundation
-import NaturalLanguage
 import Data
+import Foundation
 import Models
+import NaturalLanguage
 
 public class DictionaryService {
     public static let shared = DictionaryService()
@@ -304,7 +304,7 @@ public class DictionaryService {
             "i", "me", "my", "we", "our", "you", "your", "he", "she", "they",
             "的", "了", "是", "在", "我", "有", "和", "就", "不", "人", "都", "一",
             "一个", "上", "也", "很", "到", "说", "要", "去", "你", "会", "着",
-            "没有", "看", "好", "自己", "这", "他", "她", "它", "吗", "呢", "啊", "嗯"
+            "没有", "看", "好", "自己", "这", "他", "她", "它", "吗", "呢", "啊", "嗯",
         ]
     }
 }

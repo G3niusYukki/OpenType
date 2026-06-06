@@ -1,10 +1,9 @@
-import XCTest
-@testable import Services
-@testable import Providers
 @testable import Models
+@testable import Providers
+@testable import Services
+import XCTest
 
 final class ProviderFailoverTests: XCTestCase {
-
     func testProviderOrderStartsWithSelected() {
         let failover = ProviderFailover(selectedProvider: "Groq")
         let order = failover.providerOrder()
@@ -31,11 +30,11 @@ final class ProviderFailoverTests: XCTestCase {
         XCTAssertNotEqual(next, "OpenAI")
     }
 
-    func testNextProviderReturnsNilAtEnd() {
+    func testNextProviderReturnsNilAtEnd() throws {
         let failover = ProviderFailover(selectedProvider: "OpenAI")
         // After all providers exhausted, nextProvider should return nil
         let allProviders = failover.providerOrder()
-        let last = allProviders.last!
+        let last = try XCTUnwrap(allProviders.last)
         let next = failover.nextProvider(after: last)
         XCTAssertNil(next)
     }

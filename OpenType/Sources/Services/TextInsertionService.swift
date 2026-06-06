@@ -1,6 +1,6 @@
-import Foundation
 import AppKit
 import CoreGraphics
+import Foundation
 import Utilities
 
 public class TextInsertionService {
@@ -69,7 +69,8 @@ public class TextInsertionService {
         // Move cursor to end of selection
         let source = CGEventSource(stateID: .hidSystemState)
         if let rightDown = CGEvent(keyboardEventSource: source, virtualKey: 0x7C, keyDown: true),
-           let rightUp = CGEvent(keyboardEventSource: source, virtualKey: 0x7C, keyDown: false) {
+           let rightUp = CGEvent(keyboardEventSource: source, virtualKey: 0x7C, keyDown: false)
+        {
             rightDown.post(tap: .cgAnnotatedSessionEventTap)
             rightUp.post(tap: .cgAnnotatedSessionEventTap)
         }
@@ -207,7 +208,8 @@ public class TextInsertionService {
 
         // Backspace to clear selection
         if let deleteDown = CGEvent(keyboardEventSource: source, virtualKey: 0x33, keyDown: true),
-           let deleteUp = CGEvent(keyboardEventSource: source, virtualKey: 0x33, keyDown: false) {
+           let deleteUp = CGEvent(keyboardEventSource: source, virtualKey: 0x33, keyDown: false)
+        {
             deleteDown.post(tap: .cgAnnotatedSessionEventTap)
             deleteUp.post(tap: .cgAnnotatedSessionEventTap)
         }
@@ -225,7 +227,8 @@ public class TextInsertionService {
         pasteboard.setString(newText, forType: .string)
 
         if let cmdVDown = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: true),
-           let cmdVUp = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: false) {
+           let cmdVUp = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: false)
+        {
             cmdVDown.flags = .maskCommand
             cmdVUp.flags = .maskCommand
             cmdVDown.post(tap: .cgAnnotatedSessionEventTap)

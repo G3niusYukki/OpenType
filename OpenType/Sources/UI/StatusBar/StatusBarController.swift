@@ -1,8 +1,8 @@
 import AppKit
-import SwiftUI
 import Combine
 import Data
 import Models
+import SwiftUI
 import Utilities
 
 public class StatusBarController: NSObject, ObservableObject, PopoverViewModelFactory {
@@ -12,7 +12,7 @@ public class StatusBarController: NSObject, ObservableObject, PopoverViewModelFa
     private var cancellables = Set<AnyCancellable>()
     @Published public var currentIcon: StatusBarIcon = .idle
 
-    public override init() {
+    override public init() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         popover = NSPopover()
 
@@ -74,7 +74,7 @@ public class StatusBarController: NSObject, ObservableObject, PopoverViewModelFa
         popover.animates = true
     }
 
-    @objc private func statusBarButtonClicked(_ sender: Any?) {
+    @objc private func statusBarButtonClicked(_: Any?) {
         if NSApp.currentEvent?.type == .rightMouseUp {
             showMenu()
         } else {
@@ -134,7 +134,7 @@ public class StatusBarController: NSObject, ObservableObject, PopoverViewModelFa
     @MainActor public func showPopover() {
         guard let button = statusItem.button else { return }
         let viewModel = PopoverViewModel()
-        self.popoverViewModel = viewModel
+        popoverViewModel = viewModel
         popover.contentViewController = NSHostingController(rootView: PopoverView(viewModel: viewModel))
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         observeViewModelState(viewModel)
@@ -145,7 +145,7 @@ public class StatusBarController: NSObject, ObservableObject, PopoverViewModelFa
 
         // Map recording/processing state to status bar icon
         Publishers.CombineLatest(viewModel.$isRecording, viewModel.$isProcessing)
-            .map { (isRecording, isProcessing) -> StatusBarIcon in
+            .map { isRecording, isProcessing -> StatusBarIcon in
                 if isRecording {
                     return SettingsStore.shared.whisperModeEnabled ? .whisperRecording : .recording
                 }

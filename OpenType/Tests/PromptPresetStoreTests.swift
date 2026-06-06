@@ -1,6 +1,6 @@
-import XCTest
-@testable import Models
 @testable import Data
+@testable import Models
+import XCTest
 
 final class PromptPresetStoreTests: XCTestCase {
     private let suiteName = "PromptPresetStoreTestsSuite"
@@ -26,9 +26,9 @@ final class PromptPresetStoreTests: XCTestCase {
 
         XCTAssertEqual(presets.count, 10)
         XCTAssertEqual(presets.prefix(10).map(\.isBuiltIn), Array(repeating: true, count: 10))
-        XCTAssertEqual(presets.map(\.sortOrder), Array(0..<10))
-        XCTAssertEqual(presets.first?.id, UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
-        XCTAssertEqual(presets.last?.id, UUID(uuidString: "00000000-0000-0000-0000-00000000000A")!)
+        XCTAssertEqual(presets.map(\.sortOrder), Array(0 ..< 10))
+        XCTAssertEqual(presets.first?.id, UUID(uuidString: "00000000-0000-0000-0000-000000000001"))
+        XCTAssertEqual(presets.last?.id, UUID(uuidString: "00000000-0000-0000-0000-00000000000A"))
     }
 
     func testAddCustomPresetPersists() {
@@ -77,8 +77,8 @@ final class PromptPresetStoreTests: XCTestCase {
     }
 
     func testCustomPresetsDecodeFromJSON() throws {
-        let preset = PromptPreset(
-            id: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!,
+        let preset = try PromptPreset(
+            id: XCTUnwrap(UUID(uuidString: "11111111-1111-1111-1111-111111111111")),
             name: "Manual JSON",
             icon: "sparkles",
             instruction: "Rewrite from manual JSON.",

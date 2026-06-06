@@ -1,7 +1,7 @@
-import AVFoundation
-import Foundation
 import Accelerate
+import AVFoundation
 import Data
+import Foundation
 import Utilities
 
 public enum AudioCaptureError: Error {
@@ -152,7 +152,7 @@ public class AudioCaptureService: ObservableObject {
         let noiseGateThreshold: Float = max(rms * 0.3, 0.002)
 
         // Apply soft noise gate (gradual attenuation below threshold, not hard cutoff)
-        for i in 0..<frameLength {
+        for i in 0 ..< frameLength {
             let absSample = abs(samples[i])
             if absSample < noiseGateThreshold {
                 // Attenuate noise below threshold (soft knee)
@@ -176,7 +176,7 @@ public class AudioCaptureService: ObservableObject {
             vDSP_vsmul(samples, 1, &gainValue, samples, 1, vDSP_Length(frameLength))
 
             // Soft clip to prevent distortion (tanh-based limiter)
-            for i in 0..<frameLength {
+            for i in 0 ..< frameLength {
                 if abs(samples[i]) > 0.9 {
                     samples[i] = tanh(samples[i])
                 }
@@ -194,25 +194,26 @@ public class AudioCaptureService: ObservableObject {
 
     private func updateAudioLevel() {
         guard isRecording else { return }
-        
+
         // Calculate RMS (Root Mean Square) from the last audio buffer
         guard let buffer = lastAudioBuffer,
-              let channelData = buffer.floatChannelData else {
+              let channelData = buffer.floatChannelData
+        else {
             audioLevel = 0.0
             return
         }
-        
+
         let frameLength = Int(buffer.frameLength)
         let channelDataPointer = channelData[0]
         var sum: Float = 0.0
-        
-        for i in 0..<frameLength {
+
+        for i in 0 ..< frameLength {
             let sample = channelDataPointer[i]
             sum += sample * sample
         }
-        
+
         let rms = sqrt(sum / Float(frameLength))
-        
+
         // Convert to logarithmic scale (dB) and normalize to 0.0-1.0
         // Typical range: -60dB (quiet) to 0dB (loud)
         let db = 20.0 * log10(max(rms, 0.0001))
@@ -222,7 +223,7 @@ public class AudioCaptureService: ObservableObject {
         let dbFloor: Float = whisperMode ? -70.0 : -60.0
         let dbRange: Float = whisperMode ? 70.0 : 60.0
         let normalizedLevel = (db - dbFloor) / dbRange
-        
+
         // Apply smoothing and clamp to valid range
         let targetLevel = max(0.0, min(1.0, normalizedLevel))
         audioLevel = audioLevel * 0.7 + targetLevel * 0.3

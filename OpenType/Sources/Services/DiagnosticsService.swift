@@ -1,8 +1,8 @@
-import Foundation
-import CoreAudio
 import AudioToolbox
-import Utilities
+import CoreAudio
+import Foundation
 import Models
+import Utilities
 
 public class DiagnosticsService {
     public static let shared = DiagnosticsService()

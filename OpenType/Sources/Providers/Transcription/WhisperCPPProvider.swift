@@ -1,6 +1,6 @@
+import Data
 import Foundation
 import Models
-import Data
 
 /// Local offline transcription via whisper.cpp CLI
 ///
@@ -15,7 +15,7 @@ public actor WhisperCPPProvider: TranscriptionProvider {
     private let binarySearchPaths = [
         "/usr/local/bin/whisper-cpp",
         "/opt/homebrew/bin/whisper-cpp",
-        "\(NSHomeDirectory())/.local/bin/whisper-cpp"
+        "\(NSHomeDirectory())/.local/bin/whisper-cpp",
     ]
 
     public func transcribe(audioURL: URL, language: String?) async throws -> TranscriptionResult {
@@ -97,7 +97,8 @@ public actor WhisperCPPProvider: TranscriptionProvider {
     private func findBinary() -> String? {
         // Check configured path first
         if let configuredPath = SettingsStore.shared.whisperBinaryPath,
-           FileManager.default.isExecutableFile(atPath: configuredPath) {
+           FileManager.default.isExecutableFile(atPath: configuredPath)
+        {
             return configuredPath
         }
 
@@ -119,7 +120,7 @@ public actor WhisperCPPProvider: TranscriptionProvider {
             whichProcess.waitUntilExit()
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
             let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            if !path.isEmpty && FileManager.default.isExecutableFile(atPath: path) {
+            if !path.isEmpty, FileManager.default.isExecutableFile(atPath: path) {
                 return path
             }
         } catch {}
@@ -133,9 +134,9 @@ public actor WhisperCPPProvider: TranscriptionProvider {
         var args: [String] = [
             "-m", modelPath,
             "-f", audioURL.path,
-            "-otxt",           // output plain text
+            "-otxt", // output plain text
             "--no-timestamps", // don't include timestamps
-            "-pp"              // print progress
+            "-pp", // print progress
         ]
 
         if let lang = language {
@@ -175,8 +176,7 @@ public actor WhisperCPPProvider: TranscriptionProvider {
         // whisper.cpp prints "detected language: en" in stderr
         for line in output.components(separatedBy: .newlines) {
             if let range = line.range(of: "detected language:") {
-                let lang = line[range.upperBound...].trimmingCharacters(in: .whitespaces)
-                return lang
+                return line[range.upperBound...].trimmingCharacters(in: .whitespaces)
             }
         }
         return nil

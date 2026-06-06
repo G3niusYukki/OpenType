@@ -1,6 +1,6 @@
 import Foundation
-import SQLite
 import Models
+import SQLite
 import Utilities
 
 public enum HistoryStoreError: Error {
@@ -253,11 +253,10 @@ public class HistoryStore: @unchecked Sendable {
         }
 
         let insert = dictionary.insert(or: .replace,
-            termId <- UUID().uuidString,
-            term <- t,
-            replacement <- r,
-            category <- c
-        )
+                                       termId <- UUID().uuidString,
+                                       term <- t,
+                                       replacement <- r,
+                                       category <- c)
         try db.run(insert)
     }
 
@@ -304,12 +303,11 @@ public class HistoryStore: @unchecked Sendable {
         }
 
         let insert = styleProfiles.insert(or: .replace,
-            profileId <- profile.id.uuidString,
-            profileName <- profile.name,
-            profileIsActive <- profile.isActive,
-            profileCreatedAt <- Int64(profile.createdAt.timeIntervalSince1970),
-            profileUpdatedAt <- Int64(profile.updatedAt.timeIntervalSince1970)
-        )
+                                          profileId <- profile.id.uuidString,
+                                          profileName <- profile.name,
+                                          profileIsActive <- profile.isActive,
+                                          profileCreatedAt <- Int64(profile.createdAt.timeIntervalSince1970),
+                                          profileUpdatedAt <- Int64(profile.updatedAt.timeIntervalSince1970))
         try db.run(insert)
     }
 
@@ -345,13 +343,12 @@ public class HistoryStore: @unchecked Sendable {
         }
 
         let insert = styleExamples.insert(or: .replace,
-            exampleId <- example.id.uuidString,
-            exampleRawText <- example.rawText,
-            examplePolishedText <- example.polishedText,
-            exampleAppBundleID <- example.appBundleID,
-            exampleTimestamp <- Int64(example.timestamp.timeIntervalSince1970),
-            exampleProfileID <- example.profileID.uuidString
-        )
+                                          exampleId <- example.id.uuidString,
+                                          exampleRawText <- example.rawText,
+                                          examplePolishedText <- example.polishedText,
+                                          exampleAppBundleID <- example.appBundleID,
+                                          exampleTimestamp <- Int64(example.timestamp.timeIntervalSince1970),
+                                          exampleProfileID <- example.profileID.uuidString)
         try db.run(insert)
     }
 
@@ -385,11 +382,10 @@ public class HistoryStore: @unchecked Sendable {
         }
 
         let insert = toneRules.insert(or: .replace,
-            toneRuleId <- rule.id.uuidString,
-            toneRuleDescription <- rule.description,
-            toneRuleInstructions <- rule.instructions,
-            toneRuleProfileID <- rule.profileID.uuidString
-        )
+                                      toneRuleId <- rule.id.uuidString,
+                                      toneRuleDescription <- rule.description,
+                                      toneRuleInstructions <- rule.instructions,
+                                      toneRuleProfileID <- rule.profileID.uuidString)
         try db.run(insert)
     }
 
@@ -425,13 +421,12 @@ public class HistoryStore: @unchecked Sendable {
         }
 
         let insert = appToneRules.insert(or: .replace,
-            appToneRuleId <- rule.id.uuidString,
-            appToneRuleBundleID <- rule.bundleID,
-            appToneRuleAppName <- rule.appName,
-            appToneRuleToneDescription <- rule.toneDescription,
-            appToneRuleInstructions <- rule.instructions,
-            appToneRuleProfileID <- rule.profileID.uuidString
-        )
+                                         appToneRuleId <- rule.id.uuidString,
+                                         appToneRuleBundleID <- rule.bundleID,
+                                         appToneRuleAppName <- rule.appName,
+                                         appToneRuleToneDescription <- rule.toneDescription,
+                                         appToneRuleInstructions <- rule.instructions,
+                                         appToneRuleProfileID <- rule.profileID.uuidString)
         try db.run(insert)
     }
 

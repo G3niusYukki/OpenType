@@ -1,9 +1,8 @@
-import XCTest
 @testable import Data
 @testable import Models
+import XCTest
 
 final class HistoryStoreMigrationTests: XCTestCase {
-
     func testStyleProfilesTableExists() throws {
         let store = HistoryStore.shared
         let profiles = try store.getAllStyleProfiles()

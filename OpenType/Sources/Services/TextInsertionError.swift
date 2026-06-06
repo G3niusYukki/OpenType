@@ -13,7 +13,7 @@ public enum TextInsertionError: Error, LocalizedError {
             return "Accessibility permission required for text insertion"
         case .noFocusedElement:
             return "No focused text input element found"
-        case .insertionFailed(let method):
+        case let .insertionFailed(method):
             return "Text insertion failed via \(method)"
         case .allMethodsFailed:
             return "All text insertion methods failed"

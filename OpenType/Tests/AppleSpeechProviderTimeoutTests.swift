@@ -1,9 +1,9 @@
-import XCTest
+@testable import Data
 import Foundation
 import Models
 @testable import Providers
-@testable import Data
 @testable import Utilities
+import XCTest
 
 final class AppleSpeechProviderTimeoutTests: XCTestCase {
     func test_autoDetector_emptyLocales_returnsEmptyImmediately() async throws {

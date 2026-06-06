@@ -24,7 +24,7 @@ public enum EditCommand: Equatable {
         case .shorten: return NSLocalizedString("edit.shortened", value: "Shortened", comment: "")
         case .lengthen: return NSLocalizedString("edit.lengthened", value: "Lengthened", comment: "")
         case .changeTone: return NSLocalizedString("edit.toneChanged", value: "Tone Changed", comment: "")
-        case .translate(let lang): return String(format: NSLocalizedString("edit.translated", value: "Translated to %@", comment: ""), lang ?? "")
+        case let .translate(lang): return String(format: NSLocalizedString("edit.translated", value: "Translated to %@", comment: ""), lang ?? "")
         case .summarize: return NSLocalizedString("edit.summarized", value: "Summarized", comment: "")
         case .explain: return NSLocalizedString("edit.explained", value: "Explained", comment: "")
         case .fixGrammar: return NSLocalizedString("edit.grammarFixed", value: "Grammar Fixed", comment: "")

@@ -30,6 +30,6 @@ public extension PromptPreset {
         PromptPreset(id: UUID(uuidString: "00000000-0000-0000-0000-000000000007")!, name: "Bullet Points", icon: "list.bullet", instruction: "Convert the following text into a clear bulleted list. Preserve all key information. Return ONLY the bullets.", isBuiltIn: true, sortOrder: 6),
         PromptPreset(id: UUID(uuidString: "00000000-0000-0000-0000-000000000008")!, name: "Explain Simply", icon: "lightbulb", instruction: "Explain the following text in simple, easy-to-understand language as if to a beginner. Return ONLY the explanation.", isBuiltIn: true, sortOrder: 7),
         PromptPreset(id: UUID(uuidString: "00000000-0000-0000-0000-000000000009")!, name: "Translate to English", icon: "globe", instruction: "Translate the following text to natural, fluent English. Return ONLY the translation.", isBuiltIn: true, sortOrder: 8),
-        PromptPreset(id: UUID(uuidString: "00000000-0000-0000-0000-00000000000A")!, name: "Translate to Chinese", icon: "character", instruction: "Translate the following text to natural, fluent Chinese (Simplified). Return ONLY the translation.", isBuiltIn: true, sortOrder: 9)
+        PromptPreset(id: UUID(uuidString: "00000000-0000-0000-0000-00000000000A")!, name: "Translate to Chinese", icon: "character", instruction: "Translate the following text to natural, fluent Chinese (Simplified). Return ONLY the translation.", isBuiltIn: true, sortOrder: 9),
     ]
 }

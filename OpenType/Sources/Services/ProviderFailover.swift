@@ -21,7 +21,8 @@ public struct ProviderFailover {
     public func nextProvider(after current: String) -> String? {
         let order = providerOrder()
         guard let index = order.firstIndex(of: current),
-              index + 1 < order.count else {
+              index + 1 < order.count
+        else {
             return nil
         }
         return order[index + 1]

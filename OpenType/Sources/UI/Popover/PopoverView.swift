@@ -1,7 +1,7 @@
+import Data
+import Models
 import SwiftUI
 import Utilities
-import Models
-import Data
 
 struct PopoverView: View {
     @ObservedObject var viewModel: PopoverViewModel

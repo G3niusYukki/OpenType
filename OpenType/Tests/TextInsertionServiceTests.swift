@@ -1,8 +1,7 @@
-import XCTest
 @testable import Services
+import XCTest
 
 final class TextInsertionErrorTests: XCTestCase {
-
     func testErrorDescriptions() {
         let noAccessibility = TextInsertionError.noAccessibilityPermission
         XCTAssertTrue(noAccessibility.localizedDescription.contains("Accessibility"))
@@ -21,7 +20,6 @@ final class TextInsertionErrorTests: XCTestCase {
 }
 
 final class TextInsertionServiceTests: XCTestCase {
-
     func testInsertTextThrowsWhenNoAccessibility() {
         // In CI / test environment, accessibility is typically not granted.
         // insertText should throw noAccessibilityPermission rather than silently failing.

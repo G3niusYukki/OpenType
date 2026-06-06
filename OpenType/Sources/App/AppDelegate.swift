@@ -15,7 +15,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var updaterController: SPUStandardUpdaterController?
     private var updaterDelegate: UpdaterDelegate?
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
+    func applicationDidFinishLaunching(_: Notification) {
         // Crash recovery: if the app crashed while recording, clean up stale state
         let defaults = UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
         let wasRecording = defaults.bool(forKey: "isRecordingActive")
@@ -151,12 +151,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
             let handler: () -> Void
             switch def.id {
-            case "basic":        handler = { [weak self] in self?.onBasicHotkey() }
-            case "handsFree":    handler = { [weak self] in self?.onHandsFreeHotkey() }
-            case "translate":    handler = { [weak self] in self?.onTranslateHotkey() }
+            case "basic": handler = { [weak self] in self?.onBasicHotkey() }
+            case "handsFree": handler = { [weak self] in self?.onHandsFreeHotkey() }
+            case "translate": handler = { [weak self] in self?.onTranslateHotkey() }
             case "editSelected": handler = { [weak self] in self?.onEditSelectedHotkey() }
-            case "quickAnswer":  handler = { [weak self] in self?.onQuickAnswerHotkey() }
-            default:             handler = {}
+            case "quickAnswer": handler = { [weak self] in self?.onQuickAnswerHotkey() }
+            default: handler = {}
             }
 
             if !hotkeyService.register(keyCode: keyCode, modifiers: modifiers, handler: handler) {
@@ -217,7 +217,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupHotkeys()
     }
 
-    func applicationWillTerminate(_ notification: Notification) {
+    func applicationWillTerminate(_: Notification) {
         // 停止录音
         if AudioCaptureService.shared.isRecording {
             let semaphore = DispatchSemaphore(value: 0)
@@ -233,9 +233,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         HistoryStore.shared.close()
     }
 
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+    func applicationShouldTerminateAfterLastWindowClosed(_: NSApplication) -> Bool {
         return false
     }
 }
-
-

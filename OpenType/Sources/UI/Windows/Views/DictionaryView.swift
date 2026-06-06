@@ -1,9 +1,9 @@
-import SwiftUI
 import Data
-import Services
-import Utilities
 import Models
+import Services
+import SwiftUI
 import UniformTypeIdentifiers
+import Utilities
 
 struct DictionaryView: View {
     @State private var entries: [DictionaryEntry] = []
@@ -24,8 +24,8 @@ struct DictionaryView: View {
         }
         return entries.filter {
             $0.term.localizedCaseInsensitiveContains(searchText) ||
-            $0.replacement.localizedCaseInsensitiveContains(searchText) ||
-            $0.category.localizedCaseInsensitiveContains(searchText)
+                $0.replacement.localizedCaseInsensitiveContains(searchText) ||
+                $0.category.localizedCaseInsensitiveContains(searchText)
         }
     }
 
@@ -507,7 +507,9 @@ struct SmartSuggestionsSheet: View {
                 Spacer()
                 if !suggestions.isEmpty {
                     Button("Accept All") {
-                        for s in suggestions { onAccept(s) }
+                        for s in suggestions {
+                            onAccept(s)
+                        }
                         suggestions.removeAll()
                     }
                     .buttonStyle(.bordered)

@@ -1,9 +1,8 @@
-import XCTest
 @testable import Models
 import Services
+import XCTest
 
 final class StyleProfileServiceTests: XCTestCase {
-
     func testStyleProfileCreation() {
         let profile = StyleProfile(name: "Test Style")
         XCTAssertEqual(profile.name, "Test Style")

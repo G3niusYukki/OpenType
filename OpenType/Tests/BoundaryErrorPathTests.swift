@@ -1,12 +1,11 @@
-import XCTest
-@testable import Models
 @testable import Data
+@testable import Models
 @testable import Providers
+import XCTest
 
 /// Tests for boundary conditions, error paths, and edge cases
 /// across the data model and provider layers.
 final class BoundaryErrorPathTests: XCTestCase {
-
     // MARK: - HistoryEntry Edge Cases
 
     func testHistoryEntryWithEmptyText() {

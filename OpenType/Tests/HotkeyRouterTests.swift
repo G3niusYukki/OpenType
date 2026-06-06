@@ -1,8 +1,8 @@
-import XCTest
-@testable import Services
+import AppKit
 @testable import Models
 @testable import OpenTypeUI
-import AppKit
+@testable import Services
+import XCTest
 
 @MainActor
 final class HotkeyRouterTests: XCTestCase {
@@ -54,7 +54,10 @@ final class PopoverViewModelFactoryStub: PopoverViewModelFactory {
     private(set) var lastStartMode: VoiceMode?
     private(set) var openCount = 0
 
-    func makeViewModel() -> PopoverViewModel { PopoverViewModel() }
+    func makeViewModel() -> PopoverViewModel {
+        PopoverViewModel()
+    }
+
     func openPopoverAndStart(mode: VoiceMode) {
         openCount += 1
         lastStartMode = mode

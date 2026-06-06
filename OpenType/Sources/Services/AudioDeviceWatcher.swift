@@ -1,11 +1,11 @@
-import Foundation
 import CoreAudio
+import Foundation
 
 public class AudioDeviceWatcher {
     public var onDeviceChanged: ((_ oldDevice: AudioDeviceID?, _ newDevice: AudioDeviceID?) -> Void)?
     public var onDeviceDisconnected: (() -> Void)?
 
-    private(set) public var isWatching = false
+    public private(set) var isWatching = false
     private var listenerBlock: ((AudioObjectID, UnsafePointer<AudioObjectPropertyAddress>) -> Void)?
 
     public init() {}

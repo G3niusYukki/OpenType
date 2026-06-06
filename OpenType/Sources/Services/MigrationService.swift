@@ -1,9 +1,9 @@
+import Data
 import Foundation
 import Utilities
-import Data
 
-// Local migration target type mirroring Data.HotkeyConfig (keyCode + modifiers only, no enabled)
-// The 'enabled' field from Electron config is not migrated as hotkeys are controlled natively.
+/// Local migration target type mirroring Data.HotkeyConfig (keyCode + modifiers only, no enabled)
+/// The 'enabled' field from Electron config is not migrated as hotkeys are controlled natively.
 private struct MigratedHotkeyConfig: Codable {
     let keyCode: Int
     let modifiers: UInt

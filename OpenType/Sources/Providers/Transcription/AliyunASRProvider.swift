@@ -1,7 +1,7 @@
+import CommonCrypto
+import Data
 import Foundation
 import Models
-import Data
-import CommonCrypto
 
 public actor AliyunASRProvider: TranscriptionProvider {
     public let name = "Alibaba Cloud ASR"
@@ -12,7 +12,8 @@ public actor AliyunASRProvider: TranscriptionProvider {
     public func transcribe(audioURL: URL, language: String?) async throws -> TranscriptionResult {
         // Get credentials from Keychain
         guard let accessKeyId = KeychainManager.shared.getCredential(provider: name, keyName: "accessKeyId"),
-              let accessKeySecret = KeychainManager.shared.getCredential(provider: name, keyName: "accessKeySecret") else {
+              let accessKeySecret = KeychainManager.shared.getCredential(provider: name, keyName: "accessKeySecret")
+        else {
             throw TranscriptionError.providerUnavailable
         }
 
@@ -26,7 +27,7 @@ public actor AliyunASRProvider: TranscriptionProvider {
             "audio_format": "wav",
             "sample_rate": 16000,
             "enable_punctuation_prediction": true,
-            "enable_inverse_text_normalization": true
+            "enable_inverse_text_normalization": true,
         ]
         if let language = language {
             payload["language"] = language
@@ -35,8 +36,8 @@ public actor AliyunASRProvider: TranscriptionProvider {
         let requestBody: [String: Any] = [
             "payload": payload,
             "context": [
-                "device_id": "opentype-macos"
-            ]
+                "device_id": "opentype-macos",
+            ],
         ]
 
         let bodyData = try JSONSerialization.data(withJSONObject: requestBody)
@@ -80,13 +81,13 @@ public actor AliyunASRProvider: TranscriptionProvider {
             // Parse error response
             if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
                 let errorCode = errorJson["code"] as? String
-                
+
                 if errorCode == "InvalidAccessKeyId.NotFound" || errorCode == "SignatureDoesNotMatch" {
                     throw TranscriptionError.invalidCredentials
                 } else if errorCode == "QuotaExceeded" {
                     throw TranscriptionError.quotaExceeded
                 }
-                
+
                 throw TranscriptionError.recognitionFailed
             }
             throw TranscriptionError.recognitionFailed
@@ -95,7 +96,8 @@ public actor AliyunASRProvider: TranscriptionProvider {
         // Parse response
         let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         guard let payload = json?["payload"] as? [String: Any],
-              let result = payload["result"] as? String else {
+              let result = payload["result"] as? String
+        else {
             throw TranscriptionError.recognitionFailed
         }
 
@@ -137,7 +139,7 @@ public actor AliyunASRProvider: TranscriptionProvider {
     // MARK: - ACS3-HMAC-SHA256 Signature
 
     private func generateACS3Signature(
-        accessKeyId: String,
+        accessKeyId _: String,
         accessKeySecret: String,
         method: String,
         path: String,

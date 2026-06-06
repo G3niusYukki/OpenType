@@ -1,7 +1,7 @@
-import Speech
+import Data
 import Foundation
 import Models
-import Data
+import Speech
 
 class AppleSpeechAutoDetector {
     private let locales: [Locale]

@@ -7,7 +7,9 @@ public enum VoiceMode: String, CaseIterable, Identifiable, Codable {
     case editSelected
     case quickAnswer
 
-    public var id: String { rawValue }
+    public var id: String {
+        rawValue
+    }
 
     public var displayName: String {
         switch self {

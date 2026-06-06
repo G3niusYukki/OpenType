@@ -1,9 +1,8 @@
-import XCTest
-@testable import Models
 @testable import Data
+@testable import Models
+import XCTest
 
 final class ProfileStoreTests: XCTestCase {
-
     func testProfileModel() {
         let profile = Profile(
             name: "Test Profile",
@@ -17,7 +16,7 @@ final class ProfileStoreTests: XCTestCase {
         XCTAssertTrue(profile.isDefault)
     }
 
-    func testProfileEncodable() {
+    func testProfileEncodable() throws {
         let profile = Profile(
             name: "Test",
             transcriptionProvider: "Groq",
@@ -26,7 +25,7 @@ final class ProfileStoreTests: XCTestCase {
         )
         let data = try? JSONEncoder().encode(profile)
         XCTAssertNotNil(data)
-        let decoded = try! JSONDecoder().decode(Profile.self, from: data!)
+        let decoded = try JSONDecoder().decode(Profile.self, from: XCTUnwrap(data))
         XCTAssertEqual(decoded.name, "Test")
         XCTAssertFalse(decoded.isDefault)
     }

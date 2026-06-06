@@ -18,7 +18,7 @@ public actor OpenAIProvider: AIProvider, ProviderHTTPClient {
         return response.firstContent ?? text
     }
 
-    nonisolated public func processStreaming(prompt: String, text: String, apiKey: String, model: String?) -> AsyncThrowingStream<String, Error> {
+    public nonisolated func processStreaming(prompt: String, text: String, apiKey: String, model: String?) -> AsyncThrowingStream<String, Error> {
         AsyncThrowingStream { continuation in
             Task {
                 do {
@@ -50,7 +50,8 @@ public actor OpenAIProvider: AIProvider, ProviderHTTPClient {
                             }
 
                             if let delta = SSEParser.decode(event, as: OpenAIStreamDelta.self),
-                               let content = delta.choices.first?.delta.content {
+                               let content = delta.choices.first?.delta.content
+                            {
                                 accumulated += content
                                 continuation.yield(accumulated)
                             }
@@ -72,7 +73,9 @@ public struct OpenAIStreamDelta: Codable {
         public struct Delta: Codable {
             public let content: String?
         }
+
         public let delta: Delta
     }
+
     public let choices: [Choice]
 }

@@ -1,9 +1,8 @@
-import XCTest
-@testable import Utilities
 @testable import Providers
+@testable import Utilities
+import XCTest
 
 final class RetryPolicyTests: XCTestCase {
-
     func testDefaultConfiguration() {
         let policy = RetryPolicy()
         XCTAssertEqual(policy.maxRetries, 3)

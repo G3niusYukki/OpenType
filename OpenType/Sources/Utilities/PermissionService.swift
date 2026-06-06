@@ -1,6 +1,6 @@
+import AppKit
 import AVFoundation
 import Speech
-import AppKit
 
 public enum PermissionStatus {
     case granted

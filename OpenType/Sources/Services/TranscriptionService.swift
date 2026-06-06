@@ -1,7 +1,7 @@
+import Data
 import Foundation
 import Models
 import Providers
-import Data
 
 public class TranscriptionService: @unchecked Sendable {
     public static let shared = TranscriptionService()

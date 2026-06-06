@@ -79,7 +79,8 @@ public class VADDetector: ObservableObject {
         if silenceDuration >= silenceThreshold {
             // Also check minimum speech duration to avoid false triggers
             if let speechStart = speechStartTime,
-               lastSpeech.timeIntervalSince(speechStart) >= minSpeechDuration {
+               lastSpeech.timeIntervalSince(speechStart) >= minSpeechDuration
+            {
                 isSpeaking = false
                 silenceDuration = 0
                 speechStartTime = nil

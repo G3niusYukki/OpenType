@@ -26,7 +26,7 @@ public struct RetryPolicy {
         let exponential = baseDelay * pow(backoffMultiplier, Double(attempt))
         let capped = min(exponential, maxDelay)
         let jitterAmount = capped * jitter
-        return capped + Double.random(in: -jitterAmount...jitterAmount)
+        return capped + Double.random(in: -jitterAmount ... jitterAmount)
     }
 
     /// Whether we should retry at the given attempt number.

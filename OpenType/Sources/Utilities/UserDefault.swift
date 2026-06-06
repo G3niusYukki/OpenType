@@ -1,5 +1,5 @@
-import Foundation
 import Combine
+import Foundation
 
 /// A property wrapper that reads/writes to UserDefaults, publishing changes via ObservableObject.
 /// Eliminates the repetitive `didSet { defaults.set(value, forKey: key) }` pattern in SettingsStore.
@@ -11,13 +11,13 @@ public struct UserDefault<T> {
 
     public init(wrappedValue: T, _ key: String, defaults: UserDefaults = .standard) {
         self.key = key
-        self.defaultValue = wrappedValue
+        defaultValue = wrappedValue
         self.defaults = defaults
     }
 
     public static subscript<Enclosing: ObservableObject>(
         _enclosingInstance instance: Enclosing,
-        wrapped wrappedKeyPath: ReferenceWritableKeyPath<Enclosing, T>,
+        wrapped _: ReferenceWritableKeyPath<Enclosing, T>,
         storage storageKeyPath: ReferenceWritableKeyPath<Enclosing, Self>
     ) -> T {
         get {
@@ -39,8 +39,8 @@ public struct UserDefault<T> {
     }
 }
 
-extension UserDefault where T: ExpressibleByNilLiteral {
-    public init(_ key: String, defaults: UserDefaults = .standard) {
+public extension UserDefault where T: ExpressibleByNilLiteral {
+    init(_ key: String, defaults: UserDefaults = .standard) {
         self.init(wrappedValue: nil, key, defaults: defaults)
     }
 }

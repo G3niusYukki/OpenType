@@ -1,12 +1,11 @@
-import XCTest
 @testable import Providers
+import XCTest
 
 // MARK: - Provider Integration Tests
 
 /// Tests the provider layer: factory, encoding/decoding, error contracts.
 /// Full HTTP integration tests require URLSession injection (planned for Phase 1.3).
 final class ProviderIntegrationTests: XCTestCase {
-
     // MARK: - AIProviderFactory Tests
 
     func testAIProviderFactoryReturnsAllSeven() {

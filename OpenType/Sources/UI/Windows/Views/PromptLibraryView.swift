@@ -1,6 +1,6 @@
-import SwiftUI
-import Models
 import Data
+import Models
+import SwiftUI
 
 struct PromptLibraryView: View {
     @Binding var isPresented: Bool
@@ -178,8 +178,8 @@ struct PromptLibraryView: View {
 
     private var canSaveEditor: Bool {
         !editorName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        !editorIcon.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        !editorInstruction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            !editorIcon.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            !editorInstruction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     private func reloadPresets() {

@@ -1,5 +1,5 @@
-import Foundation
 import AppKit
+import Foundation
 
 /// Decides whether it's safe to auto-insert transcribed text into the
 /// currently-focused app, given the bundle ID captured at recording start.

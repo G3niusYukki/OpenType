@@ -1,9 +1,8 @@
-import XCTest
 @testable import OpenTypeUI
+import XCTest
 
 @MainActor
 final class PopoverViewModelCancelTests: XCTestCase {
-
     func testCancelProcessing_whenIdle_isNoOp() {
         let viewModel = PopoverViewModel()
 

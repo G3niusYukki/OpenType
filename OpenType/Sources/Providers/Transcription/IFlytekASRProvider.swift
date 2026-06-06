@@ -1,14 +1,16 @@
+import CommonCrypto
+import Data
 import Foundation
 import Models
-import Data
-import CommonCrypto
 
 /// iFlytek (科大讯飞) ASR — Streaming Speech Recognition via WebSocket
 /// Auth: HMAC-SHA256 signed URL
 /// Docs: https://www.xfyun.cn/doc/asr/voicedictation/API.html
 public actor IFlytekASRProvider: TranscriptionProvider {
     public let name = "iFlytek ASR"
-    public nonisolated var supportsStreaming: Bool { true }
+    public nonisolated var supportsStreaming: Bool {
+        true
+    }
 
     private let hostURL = "ws://iat-api.xfyun.cn/v2/iat"
     private let host = "iat-api.xfyun.cn"
@@ -16,7 +18,8 @@ public actor IFlytekASRProvider: TranscriptionProvider {
     public func transcribe(audioURL: URL, language: String?) async throws -> TranscriptionResult {
         guard let appId = KeychainManager.shared.getCredential(provider: name, keyName: "appId"),
               let apiKey = KeychainManager.shared.getCredential(provider: name, keyName: "apiKey"),
-              let apiSecret = KeychainManager.shared.getCredential(provider: name, keyName: "apiSecret") else {
+              let apiSecret = KeychainManager.shared.getCredential(provider: name, keyName: "apiSecret")
+        else {
             throw TranscriptionError.providerUnavailable
         }
 
@@ -42,7 +45,7 @@ public actor IFlytekASRProvider: TranscriptionProvider {
         var offset = 0
         while offset < audioData.count {
             let end = min(offset + chunkSize, audioData.count)
-            let chunk = audioData[offset..<end]
+            let chunk = audioData[offset ..< end]
 
             let frame: [String: Any] = [
                 "common": ["app_id": appId],
@@ -50,14 +53,14 @@ public actor IFlytekASRProvider: TranscriptionProvider {
                     "language": mapLanguage(language),
                     "domain": "iat",
                     "accent": "mandarin",
-                    "vad_eos": 3000
+                    "vad_eos": 3000,
                 ],
                 "data": [
                     "status": offset + chunkSize >= audioData.count ? 2 : 1,
                     "format": "audio/L16;rate=16000",
                     "encoding": "raw",
-                    "audio": chunk.base64EncodedString()
-                ]
+                    "audio": chunk.base64EncodedString(),
+                ],
             ]
             let frameData = try JSONSerialization.data(withJSONObject: frame)
             try await wsTask.send(.data(frameData))
@@ -72,7 +75,7 @@ public actor IFlytekASRProvider: TranscriptionProvider {
         while !receivedFinal {
             let message = try await wsTask.receive()
             switch message {
-            case .data(let data):
+            case let .data(data):
                 guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                       let code = json["code"] as? Int else { continue }
 
@@ -83,7 +86,8 @@ public actor IFlytekASRProvider: TranscriptionProvider {
                 }
 
                 if let d = json["data"] as? [String: Any],
-                   let result = d["result"] as? [String: Any] {
+                   let result = d["result"] as? [String: Any]
+                {
                     // Accumulate text
                     if let ws = result["ws"] as? [[String: Any]] {
                         for word in ws {
@@ -102,7 +106,7 @@ public actor IFlytekASRProvider: TranscriptionProvider {
                         receivedFinal = true
                     }
                 }
-            case .string(let text):
+            case let .string(text):
                 guard let d = text.data(using: .utf8),
                       let json = try JSONSerialization.jsonObject(with: d) as? [String: Any],
                       let code = json["code"] as? Int else { continue }
@@ -153,7 +157,7 @@ public actor IFlytekASRProvider: TranscriptionProvider {
 
     // MARK: - Helpers
 
-    private func buildHandshakeParams(appId: String, apiKey: String) -> [String: Any] {
+    private func buildHandshakeParams(appId: String, apiKey _: String) -> [String: Any] {
         return [
             "common": ["app_id": appId],
             "business": [
@@ -161,14 +165,14 @@ public actor IFlytekASRProvider: TranscriptionProvider {
                 "domain": "iat",
                 "accent": "mandarin",
                 "vad_eos": 3000,
-                "dwa": "wpgs"
+                "dwa": "wpgs",
             ],
             "data": [
                 "status": 0,
                 "format": "audio/L16;rate=16000",
                 "encoding": "raw",
-                "audio": ""
-            ]
+                "audio": "",
+            ],
         ]
     }
 
@@ -177,10 +181,10 @@ public actor IFlytekASRProvider: TranscriptionProvider {
         switch lang {
         case "zh", "zh-CN": return "zh_cn"
         case "en", "en-US": return "en_us"
-        case "yue":         return "zh_cn" // iFlytek uses accent param for Cantonese
-        case "ja":          return "ja_jp"
-        case "ko":          return "ko_kr"
-        default:            return "zh_cn"
+        case "yue": return "zh_cn" // iFlytek uses accent param for Cantonese
+        case "ja": return "ja_jp"
+        case "ko": return "ko_kr"
+        default: return "zh_cn"
         }
     }
 

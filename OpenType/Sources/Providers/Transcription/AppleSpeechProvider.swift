@@ -1,16 +1,19 @@
-import Foundation
-import Speech
-import Models
-import Utilities
 import Data
+import Foundation
+import Models
+import Speech
+import Utilities
 
 public class AppleSpeechProvider: TranscriptionProvider, @unchecked Sendable {
     public let name = "Apple Speech"
-    public var supportsStreaming: Bool { true }
+    public var supportsStreaming: Bool {
+        true
+    }
+
     private let recognizer: SFSpeechRecognizer
 
     public init(locale: Locale = .current) {
-        self.recognizer = SFSpeechRecognizer(locale: locale) ?? SFSpeechRecognizer()!
+        recognizer = SFSpeechRecognizer(locale: locale) ?? SFSpeechRecognizer()!
     }
 
     public func transcribe(audioURL: URL, language: String?) async throws -> TranscriptionResult {

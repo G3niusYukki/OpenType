@@ -27,7 +27,8 @@ public final class PromptPresetStore {
 
     public func getCustomPresets() -> [PromptPreset] {
         guard let data = defaults.data(forKey: storageKey),
-              let presets = try? JSONDecoder().decode([PromptPreset].self, from: data) else {
+              let presets = try? JSONDecoder().decode([PromptPreset].self, from: data)
+        else {
             return []
         }
         return presets

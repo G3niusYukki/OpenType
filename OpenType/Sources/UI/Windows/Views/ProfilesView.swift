@@ -1,9 +1,9 @@
-import SwiftUI
 import AppKit
-import UniformTypeIdentifiers
-import Models
 import Data
+import Models
 import Services
+import SwiftUI
+import UniformTypeIdentifiers
 import Utilities
 
 struct ProfilesView: View {

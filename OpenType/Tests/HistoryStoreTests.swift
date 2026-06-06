@@ -1,9 +1,8 @@
-import XCTest
 @testable import Data
 @testable import Models
+import XCTest
 
 final class HistoryStoreTests: XCTestCase {
-
     func testHistoryEntryProperties() {
         let entry = HistoryEntry(
             audioPath: "/tmp/test.wav",
@@ -45,7 +44,7 @@ final class HistoryStoreTests: XCTestCase {
         XCTAssertNotEqual(entry1.id, entry2.id)
     }
 
-    func testHistoryEntryEncodable() {
+    func testHistoryEntryEncodable() throws {
         let entry = HistoryEntry(
             audioPath: "/tmp/test.wav",
             originalText: "hello",
@@ -57,7 +56,7 @@ final class HistoryStoreTests: XCTestCase {
         )
         let data = try? JSONEncoder().encode(entry)
         XCTAssertNotNil(data)
-        let decoded = try! JSONDecoder().decode(HistoryEntry.self, from: data!)
+        let decoded = try JSONDecoder().decode(HistoryEntry.self, from: XCTUnwrap(data))
         XCTAssertEqual(decoded.originalText, "hello")
     }
 

@@ -9,9 +9,12 @@ public protocol ProviderHTTPClient: Sendable {
     var decoder: JSONDecoder { get }
 }
 
-extension ProviderHTTPClient {
-    public var session: URLSession { .shared }
-    public var decoder: JSONDecoder {
+public extension ProviderHTTPClient {
+    var session: URLSession {
+        .shared
+    }
+
+    var decoder: JSONDecoder {
         let d = JSONDecoder()
         d.keyDecodingStrategy = .convertFromSnakeCase
         return d
@@ -34,7 +37,7 @@ public struct ChatCompletionRequest: Encodable {
 
     public init(model: String, systemPrompt: String, userText: String, temperature: Double = 0.3, stream: Bool? = nil) {
         self.model = model
-        self.messages = [
+        messages = [
             Message(role: "system", content: systemPrompt),
             Message(role: "user", content: userText),
         ]
@@ -60,10 +63,9 @@ public struct ChatCompletionResponse: Decodable {
     }
 }
 
-extension ProviderHTTPClient {
-
+public extension ProviderHTTPClient {
     /// Perform a JSON POST request with Bearer token auth.
-    public func performJSONPost<T: Decodable>(
+    func performJSONPost<T: Decodable>(
         url: URL,
         body: some Encodable,
         apiKey: String,
@@ -101,7 +103,7 @@ extension ProviderHTTPClient {
     ///   - authHeaderName: Header name for the token
     ///   - authPrefix: Prefix before the token value (e.g., "Bearer ")
     ///   - extraHeaders: Additional HTTP headers
-    public func performMultipartUpload<T: Decodable>(
+    func performMultipartUpload<T: Decodable>(
         url: URL,
         fields: [String: String],
         file: (fieldName: String, fileName: String, mimeType: String, data: Data),

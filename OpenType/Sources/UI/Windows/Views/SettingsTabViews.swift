@@ -1,8 +1,8 @@
-import SwiftUI
 import AppKit
-import ServiceManagement
-import Models
 import Data
+import Models
+import ServiceManagement
+import SwiftUI
 import Utilities
 
 // MARK: - GeneralSettingsView
@@ -177,8 +177,8 @@ struct HotkeyRecorderButton: View {
         var parts: [String] = []
         let flags = NSEvent.ModifierFlags(rawValue: modifiers)
         if flags.contains(.control) { parts.append("^") }
-        if flags.contains(.option)  { parts.append("\u{2325}") }
-        if flags.contains(.shift)  { parts.append("\u{21E7}") }
+        if flags.contains(.option) { parts.append("\u{2325}") }
+        if flags.contains(.shift) { parts.append("\u{21E7}") }
         if flags.contains(.command) { parts.append("\u{2318}") }
         parts.append(keyCodeToSymbol(keyCode))
         return parts.joined()
@@ -186,16 +186,16 @@ struct HotkeyRecorderButton: View {
 
     private func keyCodeToSymbol(_ keyCode: Int) -> String {
         switch keyCode {
-        case 0:  return "A"
-        case 1:  return "S"
-        case 2:  return "D"
-        case 3:  return "F"
-        case 4:  return "H"
-        case 5:  return "G"
-        case 6:  return "Z"
-        case 7:  return "X"
-        case 8:  return "C"
-        case 9:  return "V"
+        case 0: return "A"
+        case 1: return "S"
+        case 2: return "D"
+        case 3: return "F"
+        case 4: return "H"
+        case 5: return "G"
+        case 6: return "Z"
+        case 7: return "X"
+        case 8: return "C"
+        case 9: return "V"
         case 11: return "B"
         case 12: return "Q"
         case 13: return "W"
@@ -253,7 +253,7 @@ struct HotkeyRecorderButton: View {
         case 119: return "F2"
         case 120: return "F1"
         case 121: return "F16"
-        default:  return "Key\(keyCode)"
+        default: return "Key\(keyCode)"
         }
     }
 }
@@ -306,7 +306,8 @@ struct TranscriptionSettingsView: View {
             }
 
             if settings.selectedTranscriptionProvider != "Apple Speech"
-                && settings.selectedTranscriptionProvider != "Whisper.cpp" {
+                && settings.selectedTranscriptionProvider != "Whisper.cpp"
+            {
                 Section {
                     SecureField("API Key", text: $apiKeyInput)
                         .textFieldStyle(.roundedBorder)

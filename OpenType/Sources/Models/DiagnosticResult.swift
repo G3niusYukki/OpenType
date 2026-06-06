@@ -1,7 +1,10 @@
 import Foundation
 
 public struct DiagnosticResult: Identifiable {
-    public var id: String { name }
+    public var id: String {
+        name
+    }
+
     public let name: String
     public let status: DiagnosticStatus
     public let details: String

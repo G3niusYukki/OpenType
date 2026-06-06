@@ -1,8 +1,7 @@
-import XCTest
 @testable import Services
+import XCTest
 
 final class HealthMonitorTests: XCTestCase {
-
     func testMemoryPressureCalculation() {
         // currentMemoryPressureMB is nonisolated — safe to call from any context
         let monitor = HealthMonitor.shared

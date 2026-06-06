@@ -1,6 +1,6 @@
+import Data
 import Foundation
 import Models
-import Data
 
 public actor OpenAIWhisperProvider: TranscriptionProvider, ProviderHTTPClient {
     public let name = "OpenAI Whisper"
@@ -11,7 +11,7 @@ public actor OpenAIWhisperProvider: TranscriptionProvider, ProviderHTTPClient {
         }
 
         let audioData = try Data(contentsOf: audioURL)
-        var fields: [String: String] = ["model": "whisper-1"]
+        var fields = ["model": "whisper-1"]
         if let language {
             fields["language"] = language
         }

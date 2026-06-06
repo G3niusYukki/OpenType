@@ -1,5 +1,5 @@
-import Foundation
 import CoreGraphics
+import Foundation
 
 public enum Constants {
     public static let appBundleIdentifier = "com.opentype.macos"
@@ -31,11 +31,11 @@ public enum Constants {
         public static let defaultQuickAnswer = (keyCode: CGKeyCode(12), modifiers: CGEventFlags.maskCommand.union(.maskShift)) // Q
 
         public static let defaultHotkeys: [(id: String, keyCode: Int, modifiers: UInt, name: String)] = [
-            ("basic",        2,  UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue), "Basic Voice Input"),
-            ("handsFree",   49,  UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue), "Hands-Free"),
-            ("translate",   17,  UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue), "Translate"),
-            ("editSelected",14,  UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue), "Edit Selected"),
-            ("quickAnswer", 12,  UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue), "Quick Answer"),
+            ("basic", 2, UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue), "Basic Voice Input"),
+            ("handsFree", 49, UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue), "Hands-Free"),
+            ("translate", 17, UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue), "Translate"),
+            ("editSelected", 14, UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue), "Edit Selected"),
+            ("quickAnswer", 12, UInt(CGEventFlags.maskCommand.union(.maskShift).rawValue), "Quick Answer"),
         ]
     }
 

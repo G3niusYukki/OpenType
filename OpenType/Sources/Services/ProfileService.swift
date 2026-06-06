@@ -1,5 +1,5 @@
-import Foundation
 import Data
+import Foundation
 import Models
 
 public class ProfileService {

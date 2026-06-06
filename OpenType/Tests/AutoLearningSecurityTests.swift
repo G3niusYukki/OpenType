@@ -1,11 +1,10 @@
-import XCTest
-@testable import Services
 @testable import Models
 @testable import Providers
+@testable import Services
+import XCTest
 
 /// Tests for auto style learning, response validation, and security hardening.
 final class AutoLearningSecurityTests: XCTestCase {
-
     // MARK: - Levenshtein Distance Tests
 
     func testLevenshteinIdenticalStrings() {

@@ -1,8 +1,7 @@
-import XCTest
 @testable import Services
+import XCTest
 
 final class AudioDeviceWatcherTests: XCTestCase {
-
     func testStartStopWatching() {
         let watcher = AudioDeviceWatcher()
 

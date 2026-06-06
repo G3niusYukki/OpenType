@@ -1,6 +1,6 @@
+import Data
 import Foundation
 import Models
-import Data
 
 public class StyleProfileService: @unchecked Sendable {
     public static let shared = StyleProfileService()
@@ -122,7 +122,8 @@ public class StyleProfileService: @unchecked Sendable {
 
         // Add app-specific tone
         if let bundleID = appBundleID,
-           let appTone = (try? store.getAppToneRules(for: profile.id))?.first(where: { $0.bundleID == bundleID }) {
+           let appTone = (try? store.getAppToneRules(for: profile.id))?.first(where: { $0.bundleID == bundleID })
+        {
             let appTokens = appTone.instructions.count / charsPerToken
             if tokenCount + appTokens <= maxInstructionTokens {
                 parts.append(appTone.instructions)
@@ -155,7 +156,8 @@ public class StyleProfileService: @unchecked Sendable {
         var parts = ["Translate the following text from \(from) to \(to). Return ONLY the translation."]
         if let profile = getActiveProfile(forBundleID: appBundleID),
            let bundleID = appBundleID,
-           let appTone = (try? store.getAppToneRules(for: profile.id))?.first(where: { $0.bundleID == bundleID }) {
+           let appTone = (try? store.getAppToneRules(for: profile.id))?.first(where: { $0.bundleID == bundleID })
+        {
             parts.append(appTone.instructions)
         }
         return parts.joined(separator: " ")
@@ -175,7 +177,8 @@ public class StyleProfileService: @unchecked Sendable {
 
         if let profile = getActiveProfile(forBundleID: appBundleID),
            let bundleID = appBundleID,
-           let appTone = (try? store.getAppToneRules(for: profile.id))?.first(where: { $0.bundleID == bundleID }) {
+           let appTone = (try? store.getAppToneRules(for: profile.id))?.first(where: { $0.bundleID == bundleID })
+        {
             parts.append(appTone.instructions)
         }
 
@@ -200,7 +203,8 @@ public class StyleProfileService: @unchecked Sendable {
 
         if let profile = getActiveProfile(forBundleID: bundleID),
            let bundleID,
-           let appTone = (try? store.getAppToneRules(for: profile.id))?.first(where: { $0.bundleID == bundleID }) {
+           let appTone = (try? store.getAppToneRules(for: profile.id))?.first(where: { $0.bundleID == bundleID })
+        {
             parts.append(appTone.instructions)
         } else if let appContext = appContextPrompt(for: bundleID) {
             parts.append(appContext)
@@ -215,12 +219,13 @@ public class StyleProfileService: @unchecked Sendable {
             "Provide a clear, concise, and accurate answer.",
             "If the question is ambiguous, provide the most likely interpretation.",
             "Keep answers brief unless detail is requested.",
-            "Return ONLY the answer text, without prefixes or decorative formatting."
+            "Return ONLY the answer text, without prefixes or decorative formatting.",
         ]
 
         if let profile = getActiveProfile(forBundleID: appBundleID),
            let bundleID = appBundleID,
-           let appTone = (try? store.getAppToneRules(for: profile.id))?.first(where: { $0.bundleID == bundleID }) {
+           let appTone = (try? store.getAppToneRules(for: profile.id))?.first(where: { $0.bundleID == bundleID })
+        {
             parts.append(appTone.instructions)
         }
 
@@ -232,8 +237,8 @@ public class StyleProfileService: @unchecked Sendable {
         case .rephrase: return isChinese ? "改写" : "Rephrase the text in different words while preserving the meaning"
         case .shorten: return isChinese ? "缩短" : "Shorten and condense the text"
         case .lengthen: return isChinese ? "加长" : "Expand and elaborate on the text with more detail"
-        case .changeTone(let preset): return isChinese ? "改变语气为\(preset?.localizedName ?? "")" : "Change the tone to \(preset?.localizedName ?? "different style")"
-        case .translate(let lang): return isChinese ? "翻译为\(lang ?? "")" : "Translate to \(lang ?? "another language")"
+        case let .changeTone(preset): return isChinese ? "改变语气为\(preset?.localizedName ?? "")" : "Change the tone to \(preset?.localizedName ?? "different style")"
+        case let .translate(lang): return isChinese ? "翻译为\(lang ?? "")" : "Translate to \(lang ?? "another language")"
         case .summarize: return isChinese ? "摘要" : "Summarize the text"
         case .explain: return isChinese ? "解释" : "Explain what this text means"
         case .fixGrammar: return isChinese ? "修正语法" : "Fix grammar and spelling errors"
@@ -251,15 +256,24 @@ public class StyleProfileService: @unchecked Sendable {
     public func getActiveProfile(forBundleID bundleID: String?) -> StyleProfile? {
         if let bundleID,
            let binding = AppProfileBindingStore.shared.binding(for: bundleID),
-           let profile = (try? store.getAllProfiles())?.first(where: { $0.id == binding.profileID }) {
+           let profile = (try? store.getAllProfiles())?.first(where: { $0.id == binding.profileID })
+        {
             return profile
         }
         return getActiveProfile()
     }
 
-    public func saveStyleProfile(_ profile: StyleProfile) throws { try store.saveProfile(profile) }
-    public func deleteStyleProfile(_ id: UUID) throws { try store.deleteProfile(id) }
-    public func getAllStyleProfiles() throws -> [StyleProfile] { try store.getAllProfiles() }
+    public func saveStyleProfile(_ profile: StyleProfile) throws {
+        try store.saveProfile(profile)
+    }
+
+    public func deleteStyleProfile(_ id: UUID) throws {
+        try store.deleteProfile(id)
+    }
+
+    public func getAllStyleProfiles() throws -> [StyleProfile] {
+        try store.getAllProfiles()
+    }
 
     public func setActiveProfile(_ id: UUID) throws {
         let profiles = try store.getAllProfiles()
@@ -271,12 +285,30 @@ public class StyleProfileService: @unchecked Sendable {
         }
     }
 
-    public func saveStyleExample(_ example: StyleExample) throws { try store.saveExample(example) }
-    public func deleteStyleExample(_ id: UUID) throws { try store.deleteExample(id) }
-    public func saveToneRule(_ rule: ToneRule) throws { try store.saveToneRule(rule) }
-    public func deleteToneRule(_ id: UUID) throws { try store.deleteToneRule(id) }
-    public func saveAppToneRule(_ rule: AppToneRule) throws { try store.saveAppToneRule(rule) }
-    public func deleteAppToneRule(_ id: UUID) throws { try store.deleteAppToneRule(id) }
+    public func saveStyleExample(_ example: StyleExample) throws {
+        try store.saveExample(example)
+    }
+
+    public func deleteStyleExample(_ id: UUID) throws {
+        try store.deleteExample(id)
+    }
+
+    public func saveToneRule(_ rule: ToneRule) throws {
+        try store.saveToneRule(rule)
+    }
+
+    public func deleteToneRule(_ id: UUID) throws {
+        try store.deleteToneRule(id)
+    }
+
+    public func saveAppToneRule(_ rule: AppToneRule) throws {
+        try store.saveAppToneRule(rule)
+    }
+
+    public func deleteAppToneRule(_ id: UUID) throws {
+        try store.deleteAppToneRule(id)
+    }
+
     // MARK: - Auto Style Learning
 
     /// Analyze recent history to suggest style examples from user corrections.
@@ -334,12 +366,12 @@ public class StyleProfileService: @unchecked Sendable {
         guard m > 0 else { return n }
         guard n > 0 else { return m }
 
-        var prev = Array(0...n)
+        var prev = Array(0 ... n)
         var curr = Array(repeating: 0, count: n + 1)
 
-        for i in 1...m {
+        for i in 1 ... m {
             curr[0] = i
-            for j in 1...n {
+            for j in 1 ... n {
                 curr[j] = aChars[i - 1] == bChars[j - 1]
                     ? prev[j - 1]
                     : min(prev[j], curr[j - 1], prev[j - 1]) + 1

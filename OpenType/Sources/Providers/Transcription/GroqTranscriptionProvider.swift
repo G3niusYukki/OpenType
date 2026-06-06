@@ -1,11 +1,11 @@
+import Data
 import Foundation
 import Models
-import Data
 
 actor GroqTranscriptionProvider: TranscriptionProvider {
-    public let name = "Groq"
+    let name = "Groq"
 
-    public func transcribe(audioURL: URL, language: String?) async throws -> TranscriptionResult {
+    func transcribe(audioURL: URL, language: String?) async throws -> TranscriptionResult {
         guard let apiKey = KeychainManager.shared.getTranscriptionAPIKey(provider: name) else {
             throw TranscriptionError.providerUnavailable
         }

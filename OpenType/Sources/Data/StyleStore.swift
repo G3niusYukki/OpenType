@@ -1,6 +1,6 @@
 import Foundation
-import SQLite
 import Models
+import SQLite
 import Utilities
 
 /// Manages style profiles, examples, tone rules, and per-app tone rules.
@@ -41,7 +41,9 @@ public class StyleStore: @unchecked Sendable {
     private let appToneRuleInstructions = Expression<String>("instructions")
     private let appToneRuleProfileID = Expression<String>("profile_id")
 
-    private init() { setupDatabase() }
+    private init() {
+        setupDatabase()
+    }
 
     private func setupDatabase() {
         do {
@@ -107,12 +109,11 @@ public class StyleStore: @unchecked Sendable {
     public func saveProfile(_ profile: StyleProfile) throws {
         guard let db = db else { throw HistoryStoreError.databaseNotInitialized }
         try db.run(styleProfiles.insert(or: .replace,
-            profileId <- profile.id.uuidString,
-            profileName <- profile.name,
-            profileIsActive <- profile.isActive,
-            profileCreatedAt <- Int64(profile.createdAt.timeIntervalSince1970),
-            profileUpdatedAt <- Int64(profile.updatedAt.timeIntervalSince1970)
-        ))
+                                        profileId <- profile.id.uuidString,
+                                        profileName <- profile.name,
+                                        profileIsActive <- profile.isActive,
+                                        profileCreatedAt <- Int64(profile.createdAt.timeIntervalSince1970),
+                                        profileUpdatedAt <- Int64(profile.updatedAt.timeIntervalSince1970)))
     }
 
     public func deleteProfile(_ profileID: UUID) throws {
@@ -139,13 +140,12 @@ public class StyleStore: @unchecked Sendable {
     public func saveExample(_ example: StyleExample) throws {
         guard let db = db else { throw HistoryStoreError.databaseNotInitialized }
         try db.run(styleExamples.insert(or: .replace,
-            exampleId <- example.id.uuidString,
-            exampleRawText <- example.rawText,
-            examplePolishedText <- example.polishedText,
-            exampleAppBundleID <- example.appBundleID,
-            exampleTimestamp <- Int64(example.timestamp.timeIntervalSince1970),
-            exampleProfileID <- example.profileID.uuidString
-        ))
+                                        exampleId <- example.id.uuidString,
+                                        exampleRawText <- example.rawText,
+                                        examplePolishedText <- example.polishedText,
+                                        exampleAppBundleID <- example.appBundleID,
+                                        exampleTimestamp <- Int64(example.timestamp.timeIntervalSince1970),
+                                        exampleProfileID <- example.profileID.uuidString))
     }
 
     public func deleteExample(_ exampleID: UUID) throws {
@@ -170,11 +170,10 @@ public class StyleStore: @unchecked Sendable {
     public func saveToneRule(_ rule: ToneRule) throws {
         guard let db = db else { throw HistoryStoreError.databaseNotInitialized }
         try db.run(toneRules.insert(or: .replace,
-            toneRuleId <- rule.id.uuidString,
-            toneRuleDescription <- rule.description,
-            toneRuleInstructions <- rule.instructions,
-            toneRuleProfileID <- rule.profileID.uuidString
-        ))
+                                    toneRuleId <- rule.id.uuidString,
+                                    toneRuleDescription <- rule.description,
+                                    toneRuleInstructions <- rule.instructions,
+                                    toneRuleProfileID <- rule.profileID.uuidString))
     }
 
     public func deleteToneRule(_ ruleID: UUID) throws {
@@ -201,13 +200,12 @@ public class StyleStore: @unchecked Sendable {
     public func saveAppToneRule(_ rule: AppToneRule) throws {
         guard let db = db else { throw HistoryStoreError.databaseNotInitialized }
         try db.run(appToneRules.insert(or: .replace,
-            appToneRuleId <- rule.id.uuidString,
-            appToneRuleBundleID <- rule.bundleID,
-            appToneRuleAppName <- rule.appName,
-            appToneRuleToneDescription <- rule.toneDescription,
-            appToneRuleInstructions <- rule.instructions,
-            appToneRuleProfileID <- rule.profileID.uuidString
-        ))
+                                       appToneRuleId <- rule.id.uuidString,
+                                       appToneRuleBundleID <- rule.bundleID,
+                                       appToneRuleAppName <- rule.appName,
+                                       appToneRuleToneDescription <- rule.toneDescription,
+                                       appToneRuleInstructions <- rule.instructions,
+                                       appToneRuleProfileID <- rule.profileID.uuidString))
     }
 
     public func deleteAppToneRule(_ ruleID: UUID) throws {

@@ -1,8 +1,8 @@
-import SwiftUI
 import AppKit
 import Data
 import Models
 import Services
+import SwiftUI
 import Utilities
 
 // MARK: - OnboardingStep
@@ -44,7 +44,9 @@ struct PermissionItem: Identifiable {
     let description: String
     var status: PermissionStatus
 
-    var isGranted: Bool { status == .granted }
+    var isGranted: Bool {
+        status == .granted
+    }
 }
 
 // MARK: - OnboardingView
@@ -62,7 +64,7 @@ struct OnboardingView: View {
     @State private var selectedTranscription: String = SettingsStore.shared.selectedTranscriptionProvider
     @State private var selectedAI: String = SettingsStore.shared.selectedAIProvider
 
-    // Callback
+    /// Callback
     var onComplete: () -> Void = {}
 
     var body: some View {
@@ -75,11 +77,11 @@ struct OnboardingView: View {
             // Content area with transition
             Group {
                 switch currentStep {
-                case .welcome:      welcomeStep
-                case .permissions:  permissionsStep
+                case .welcome: welcomeStep
+                case .permissions: permissionsStep
                 case .transcription: transcriptionStep
-                case .aiProvider:   aiProviderStep
-                case .ready:        readyStep
+                case .aiProvider: aiProviderStep
+                case .ready: readyStep
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -229,13 +231,13 @@ struct OnboardingView: View {
 
     private var allPermissionsGranted: Bool {
         micPermission == .granted &&
-        speechPermission == .granted &&
-        accessibilityGranted
+            speechPermission == .granted &&
+            accessibilityGranted
     }
 
-    @ViewBuilder
     private func permissionRow(name: String, icon: String, description: String,
-                                 status: PermissionStatus, action: @escaping () -> Void) -> some View {
+                               status: PermissionStatus, action: @escaping () -> Void) -> some View
+    {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.title2)
@@ -350,7 +352,8 @@ struct OnboardingView: View {
     }
 
     private func providerCard(id: String, name: String, icon: String,
-                               description: String, badges: [String]) -> some View {
+                              description: String, badges: [String]) -> some View
+    {
         let isSelected = selectedTranscription == id
 
         return Button(action: { selectedTranscription = id }) {

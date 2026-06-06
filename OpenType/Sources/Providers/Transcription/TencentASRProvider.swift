@@ -1,7 +1,7 @@
+import CommonCrypto
+import Data
 import Foundation
 import Models
-import Data
-import CommonCrypto
 
 /// Tencent Cloud ASR — Sentence Recognition (一句话识别)
 /// Auth: TC3-HMAC-SHA256 signature
@@ -15,7 +15,8 @@ public actor TencentASRProvider: TranscriptionProvider {
 
     public func transcribe(audioURL: URL, language: String?) async throws -> TranscriptionResult {
         guard let secretId = KeychainManager.shared.getCredential(provider: name, keyName: "secretId"),
-              let secretKey = KeychainManager.shared.getCredential(provider: name, keyName: "secretKey") else {
+              let secretKey = KeychainManager.shared.getCredential(provider: name, keyName: "secretKey")
+        else {
             throw TranscriptionError.providerUnavailable
         }
 
@@ -31,7 +32,7 @@ public actor TencentASRProvider: TranscriptionProvider {
             "SourceType": 1,
             "VoiceFormat": "wav",
             "Data": audioBase64,
-            "DataLen": audioData.count
+            "DataLen": audioData.count,
         ]
         let bodyData = try JSONSerialization.data(withJSONObject: params)
         let bodyString = String(data: bodyData, encoding: .utf8)!
@@ -51,7 +52,8 @@ public actor TencentASRProvider: TranscriptionProvider {
         }
 
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let resp = json["Response"] as? [String: Any] else {
+              let resp = json["Response"] as? [String: Any]
+        else {
             throw TranscriptionError.recognitionFailed
         }
 
@@ -92,11 +94,11 @@ public actor TencentASRProvider: TranscriptionProvider {
         guard let lang = language else { return "16k_zh" }
         switch lang {
         case "zh", "zh-CN", "zh-Hans": return "16k_zh"
-        case "en", "en-US":           return "16k_en"
-        case "yue", "zh-HK":          return "16k_yue"
-        case "ja", "ja-JP":           return "16k_ja"
-        case "ko", "ko-KR":           return "16k_ko"
-        default:                       return "16k_zh"
+        case "en", "en-US": return "16k_en"
+        case "yue", "zh-HK": return "16k_yue"
+        case "ja", "ja-JP": return "16k_ja"
+        case "ko", "ko-KR": return "16k_ko"
+        default: return "16k_zh"
         }
     }
 
@@ -126,7 +128,7 @@ public actor TencentASRProvider: TranscriptionProvider {
             canonicalQueryString,
             canonicalHeaders,
             signedHeaders,
-            hashedPayload
+            hashedPayload,
         ].joined(separator: "\n")
 
         // Step 2: String to Sign
@@ -137,7 +139,7 @@ public actor TencentASRProvider: TranscriptionProvider {
             algorithm,
             timestamp,
             credentialScope,
-            hashedCanonicalRequest
+            hashedCanonicalRequest,
         ].joined(separator: "\n")
 
         // Step 3: Signature

@@ -1,9 +1,8 @@
-import XCTest
-@testable import Utilities
 @testable import Models
+@testable import Utilities
+import XCTest
 
 final class EditCommandDetectorTests: XCTestCase {
-
     func testDetectRephrase() {
         XCTAssertEqual(EditCommandDetector.detect(from: "rephrase this"), .rephrase)
         XCTAssertEqual(EditCommandDetector.detect(from: "rewrite it"), .rephrase)
@@ -28,7 +27,7 @@ final class EditCommandDetectorTests: XCTestCase {
     }
 
     func testDetectTranslate() {
-        if case .translate(let lang) = EditCommandDetector.detect(from: "translate to Chinese") {
+        if case let .translate(lang) = EditCommandDetector.detect(from: "translate to Chinese") {
             XCTAssertEqual(lang, "Chinese")
         } else {
             XCTFail("Expected translate command")

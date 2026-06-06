@@ -8,7 +8,8 @@ public struct StyleProfile: Identifiable, Codable, Equatable {
     public var updatedAt: Date
 
     public init(id: UUID = UUID(), name: String, isActive: Bool = false,
-                createdAt: Date = Date(), updatedAt: Date = Date()) {
+                createdAt: Date = Date(), updatedAt: Date = Date())
+    {
         self.id = id
         self.name = name
         self.isActive = isActive
@@ -26,7 +27,8 @@ public struct StyleExample: Identifiable, Codable, Equatable {
     public let profileID: UUID
 
     public init(id: UUID = UUID(), rawText: String, polishedText: String,
-                appBundleID: String? = nil, timestamp: Date = Date(), profileID: UUID) {
+                appBundleID: String? = nil, timestamp: Date = Date(), profileID: UUID)
+    {
         self.id = id
         self.rawText = rawText
         self.polishedText = polishedText
@@ -59,7 +61,8 @@ public struct AppToneRule: Identifiable, Codable, Equatable {
     public let profileID: UUID
 
     public init(id: UUID = UUID(), bundleID: String, appName: String,
-                toneDescription: String, instructions: String, profileID: UUID) {
+                toneDescription: String, instructions: String, profileID: UUID)
+    {
         self.id = id
         self.bundleID = bundleID
         self.appName = appName
@@ -76,7 +79,9 @@ public enum TonePreset: String, Codable, CaseIterable {
     case creative
     case academic
 
-    public var key: String { rawValue }
+    public var key: String {
+        rawValue
+    }
 
     public var localizedName: String {
         switch self {

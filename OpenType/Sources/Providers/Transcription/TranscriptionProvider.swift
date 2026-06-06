@@ -1,6 +1,6 @@
+import Data
 import Foundation
 import Models
-import Data
 
 /// Protocol for speech-to-text transcription providers.
 /// Implementations include Apple Speech (on-device), OpenAI Whisper, Groq, and Chinese ASR services.
@@ -14,9 +14,12 @@ public protocol TranscriptionProvider: Sendable {
     func transcribeStreaming(audioURL: URL, language: String?) -> AsyncThrowingStream<String, Error>
 }
 
-extension TranscriptionProvider {
-    public var supportsStreaming: Bool { false }
-    public func transcribeStreaming(audioURL: URL, language: String?) -> AsyncThrowingStream<String, Error> {
+public extension TranscriptionProvider {
+    var supportsStreaming: Bool {
+        false
+    }
+
+    func transcribeStreaming(audioURL: URL, language: String?) -> AsyncThrowingStream<String, Error> {
         AsyncThrowingStream { continuation in
             Task {
                 do {
@@ -62,7 +65,7 @@ public enum TranscriptionProviderFactory {
             TencentASRProvider(),
             BaiduASRProvider(),
             IFlytekASRProvider(),
-            WhisperCPPProvider()
+            WhisperCPPProvider(),
         ]
     }
 }

@@ -40,10 +40,10 @@ private struct AnthropicRequest: Encodable {
 
     init(model: String, system: String, userText: String) {
         self.model = model
-        self.maxTokens = 4096
+        maxTokens = 4096
         self.system = system
-        self.messages = [.init(role: "user", content: userText)]
-        self.temperature = 0.3
+        messages = [.init(role: "user", content: userText)]
+        temperature = 0.3
     }
 }
 

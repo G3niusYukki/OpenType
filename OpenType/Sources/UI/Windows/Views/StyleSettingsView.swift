@@ -1,7 +1,7 @@
-import SwiftUI
-import Models
 import Data
+import Models
 import Services
+import SwiftUI
 import Utilities
 
 // MARK: - View Model
@@ -342,7 +342,7 @@ struct StyleSettingsView: View {
                         .textFieldStyle(.roundedBorder)
                     TextField("Instructions", text: $viewModel.customAppToneInstructions, axis: .vertical)
                         .textFieldStyle(.roundedBorder)
-                        .lineLimit(2...4)
+                        .lineLimit(2 ... 4)
                 } else {
                     Picker("Preset", selection: $viewModel.appTonePreset) {
                         ForEach(TonePreset.allCases, id: \.self) { preset in

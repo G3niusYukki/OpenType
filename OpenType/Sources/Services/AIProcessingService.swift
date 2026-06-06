@@ -1,7 +1,7 @@
-import Foundation
-import Providers
 import Data
+import Foundation
 import Models
+import Providers
 import Utilities
 
 public class AIProcessingService: @unchecked Sendable {
@@ -141,14 +141,15 @@ public class AIProcessingService: @unchecked Sendable {
 
     private func withRetry<T>(_ operation: @escaping () async throws -> T) async throws -> T {
         var lastError: Error?
-        for attempt in 0...retryPolicy.maxRetries {
+        for attempt in 0 ... retryPolicy.maxRetries {
             do {
                 return try await operation()
             } catch {
                 lastError = error
                 guard retryPolicy.shouldRetry(attempt: attempt),
                       retryPolicy.isRetryable(error),
-                      attempt < retryPolicy.maxRetries else {
+                      attempt < retryPolicy.maxRetries
+                else {
                     throw error
                 }
                 let delay = retryPolicy.delay(for: attempt)
@@ -161,7 +162,7 @@ public class AIProcessingService: @unchecked Sendable {
     /// Try the selected provider first, then cascade to others on failure.
     private func processWithFailover(
         text: String,
-        appBundleID: String?,
+        appBundleID _: String?,
         prompt: String
     ) async throws -> String {
         let failover = ProviderFailover(selectedProvider: SettingsStore.shared.selectedAIProvider)
@@ -196,5 +197,6 @@ public class AIProcessingService: @unchecked Sendable {
         return getAPIKey(for: providerName) != nil
     }
 }
+
 // Note: AIError is defined in Sources/Providers/AI/AIError.swift (consolidated in Task 0)
 // Do NOT re-declare it here.

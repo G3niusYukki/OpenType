@@ -1,6 +1,6 @@
+import Data
 import Foundation
 import Models
-import Data
 
 /// Baidu Cloud ASR — Short Speech Recognition (短语音识别)
 /// Auth: OAuth2 Bearer Token (API Key + Secret Key → access_token)
@@ -16,7 +16,8 @@ public actor BaiduASRProvider: TranscriptionProvider {
 
     public func transcribe(audioURL: URL, language: String?) async throws -> TranscriptionResult {
         guard let apiKey = KeychainManager.shared.getCredential(provider: name, keyName: "apiKey"),
-              let secretKey = KeychainManager.shared.getCredential(provider: name, keyName: "secretKey") else {
+              let secretKey = KeychainManager.shared.getCredential(provider: name, keyName: "secretKey")
+        else {
             throw TranscriptionError.providerUnavailable
         }
 
@@ -32,7 +33,7 @@ public actor BaiduASRProvider: TranscriptionProvider {
             "cuid": "opentype-macos",
             "token": token,
             "speech": audioBase64,
-            "len": audioData.count
+            "len": audioData.count,
         ]
 
         if let lang = language {
@@ -104,7 +105,7 @@ public actor BaiduASRProvider: TranscriptionProvider {
         components.queryItems = [
             URLQueryItem(name: "grant_type", value: "client_credentials"),
             URLQueryItem(name: "client_id", value: apiKey),
-            URLQueryItem(name: "client_secret", value: secretKey)
+            URLQueryItem(name: "client_secret", value: secretKey),
         ]
 
         var request = URLRequest(url: components.url!)
@@ -118,11 +119,12 @@ public actor BaiduASRProvider: TranscriptionProvider {
         }
 
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let token = json["access_token"] as? String else {
+              let token = json["access_token"] as? String
+        else {
             throw TranscriptionError.invalidCredentials
         }
 
-        let expiresIn = json["expires_in"] as? Double ?? 2592000 // default 30 days
+        let expiresIn = json["expires_in"] as? Double ?? 2_592_000 // default 30 days
         cachedToken = token
         tokenExpiry = Date().addingTimeInterval(expiresIn - 3600) // refresh 1h early
         return token
@@ -139,9 +141,9 @@ public actor BaiduASRProvider: TranscriptionProvider {
     private func mapLanguage(_ language: String) -> Int {
         switch language {
         case "zh", "zh-CN", "zh-Hans": return 1537
-        case "en", "en-US":           return 1737
-        case "yue", "zh-HK":          return 1637
-        default:                       return 1537
+        case "en", "en-US": return 1737
+        case "yue", "zh-HK": return 1637
+        default: return 1537
         }
     }
 }

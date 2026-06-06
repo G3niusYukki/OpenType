@@ -1,11 +1,11 @@
-import SwiftUI
-import Foundation
 import AppKit
 import Combine
+import Data
+import Foundation
 import Models
 import Providers
 import Services
-import Data
+import SwiftUI
 import Utilities
 
 @MainActor
@@ -217,7 +217,8 @@ public final class PopoverViewModel: ObservableObject {
 
                 // Auto-insert text — but only if the user hasn't switched apps.
                 if focusDecision == .insert,
-                   currentMode != .handsFree, currentMode != .quickAnswer {
+                   currentMode != .handsFree, currentMode != .quickAnswer
+                {
                     if currentMode == .editSelected {
                         if detectedEditCommand == nil {
                             insertText()
@@ -247,7 +248,7 @@ public final class PopoverViewModel: ObservableObject {
 
     // MARK: - Mode Processing
 
-    private func processForMode(_ text: String, audioURL: URL) async throws -> String {
+    private func processForMode(_ text: String, audioURL _: URL) async throws -> String {
         switch currentMode {
         case .basic, .handsFree:
             return try await processBasic(text)
@@ -495,15 +496,15 @@ public final class PopoverViewModel: ObservableObject {
 
 // MARK: - Notification Names
 
-extension Notification.Name {
-    public static let openHistoryWindow = Notification.Name("openHistoryWindow")
-    public static let openSettingsWindow = Notification.Name("openSettingsWindow")
-    public static let openDiagnosticsWindow = Notification.Name("openDiagnosticsWindow")
-    public static let transcriptionError = Notification.Name("transcriptionError")
-    public static let hotkeyConfigChanged = Notification.Name("hotkeyConfigChanged")
-    public static let hotkeyBasic = Notification.Name("hotkeyBasic")
-    public static let hotkeyHandsFree = Notification.Name("hotkeyHandsFree")
-    public static let hotkeyTranslate = Notification.Name("hotkeyTranslate")
-    public static let hotkeyEditSelected = Notification.Name("hotkeyEditSelected")
-    public static let hotkeyQuickAnswer = Notification.Name("hotkeyQuickAnswer")
+public extension Notification.Name {
+    static let openHistoryWindow = Notification.Name("openHistoryWindow")
+    static let openSettingsWindow = Notification.Name("openSettingsWindow")
+    static let openDiagnosticsWindow = Notification.Name("openDiagnosticsWindow")
+    static let transcriptionError = Notification.Name("transcriptionError")
+    static let hotkeyConfigChanged = Notification.Name("hotkeyConfigChanged")
+    static let hotkeyBasic = Notification.Name("hotkeyBasic")
+    static let hotkeyHandsFree = Notification.Name("hotkeyHandsFree")
+    static let hotkeyTranslate = Notification.Name("hotkeyTranslate")
+    static let hotkeyEditSelected = Notification.Name("hotkeyEditSelected")
+    static let hotkeyQuickAnswer = Notification.Name("hotkeyQuickAnswer")
 }

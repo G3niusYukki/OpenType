@@ -1,6 +1,6 @@
-import UserNotifications
 import AppKit
 import Data
+import UserNotifications
 import Utilities
 
 public class NotificationService {

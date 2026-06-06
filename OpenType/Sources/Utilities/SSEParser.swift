@@ -15,7 +15,6 @@ public struct SSEEvent {
 /// Parses Server-Sent Events (SSE) from a raw string or byte stream.
 /// See: https://html.spec.whatwg.org/multipage/server-sent-events.html
 public enum SSEParser {
-
     /// Parse a complete SSE response string into events.
     public static func parse(_ input: String) -> [SSEEvent] {
         var events: [SSEEvent] = []

@@ -1,6 +1,6 @@
 import Foundation
-import SwiftUI
 import Models
+import SwiftUI
 import Utilities
 
 public final class SettingsStore: ObservableObject {
@@ -79,7 +79,5 @@ public final class SettingsStore: ObservableObject {
         defaults = SettingsStore.suite
     }
 
-    private static let suite: UserDefaults = {
-        UserDefaults(suiteName: Constants.UserDefaults.suiteName) ?? .standard
-    }()
+    private static let suite: UserDefaults = .init(suiteName: Constants.UserDefaults.suiteName) ?? .standard
 }

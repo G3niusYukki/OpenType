@@ -1,6 +1,6 @@
 import Foundation
-import SQLite
 import Models
+import SQLite
 import Utilities
 
 /// Manages the user dictionary — custom term→replacement mappings for transcription correction.
@@ -45,11 +45,10 @@ public class DictionaryStore: @unchecked Sendable {
         guard let db = db else { throw HistoryStoreError.databaseNotInitialized }
 
         let insert = dictionary.insert(or: .replace,
-            termId <- UUID().uuidString,
-            term <- t,
-            replacement <- r,
-            category <- c
-        )
+                                       termId <- UUID().uuidString,
+                                       term <- t,
+                                       replacement <- r,
+                                       category <- c)
         try db.run(insert)
     }
 

@@ -1,9 +1,9 @@
+import Data
 import Foundation
 import Sparkle
-import Data
 
 class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
-    func updaterShouldPromptForPermission(toCheck updater: SPUUpdater) -> Bool {
+    func updaterShouldPromptForPermission(toCheck _: SPUUpdater) -> Bool {
         return SettingsStore.shared.notificationsEnabled
     }
 }

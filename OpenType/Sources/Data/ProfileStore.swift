@@ -26,7 +26,8 @@ public class ProfileStore: @unchecked Sendable {
 
     public func getAllProfiles() -> [Profile] {
         guard let data = defaults.data(forKey: profilesKey),
-              let profiles = try? JSONDecoder().decode([Profile].self, from: data) else {
+              let profiles = try? JSONDecoder().decode([Profile].self, from: data)
+        else {
             return []
         }
         return profiles
@@ -74,7 +75,8 @@ public final class AppProfileBindingStore {
 
     public func getAllBindings() -> [AppProfileBinding] {
         guard let data = defaults.data(forKey: bindingsKey),
-              let bindings = try? JSONDecoder().decode([AppProfileBinding].self, from: data) else {
+              let bindings = try? JSONDecoder().decode([AppProfileBinding].self, from: data)
+        else {
             return []
         }
         return bindings

@@ -35,12 +35,12 @@ public protocol AIProvider: Sendable {
     func processStreaming(prompt: String, text: String, apiKey: String, model: String?) -> AsyncThrowingStream<String, Error>
 }
 
-extension AIProvider {
-    public func translate(prompt: String, text: String, from: String, to: String, apiKey: String, model: String?) async throws -> String {
+public extension AIProvider {
+    func translate(prompt: String, text: String, from _: String, to _: String, apiKey: String, model: String?) async throws -> String {
         return try await process(prompt: prompt, text: text, apiKey: apiKey, model: model)
     }
 
-    public func processStreaming(prompt: String, text: String, apiKey: String, model: String?) -> AsyncThrowingStream<String, Error> {
+    func processStreaming(prompt: String, text: String, apiKey: String, model: String?) -> AsyncThrowingStream<String, Error> {
         AsyncThrowingStream { continuation in
             Task {
                 do {
@@ -73,7 +73,7 @@ public enum AIProviderFactory {
     public static func getAvailableProviders() -> [any AIProvider] {
         return [
             OpenAIProvider(), GroqAIProvider(), AnthropicProvider(),
-            DeepSeekProvider(), ZhipuProvider(), MiniMaxProvider(), MoonshotProvider()
+            DeepSeekProvider(), ZhipuProvider(), MiniMaxProvider(), MoonshotProvider(),
         ]
     }
 }

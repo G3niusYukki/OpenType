@@ -1,5 +1,5 @@
-import SwiftUI
 import Services
+import SwiftUI
 
 struct AudioLevelIndicator: View {
     @ObservedObject var audioService: AudioCaptureService
