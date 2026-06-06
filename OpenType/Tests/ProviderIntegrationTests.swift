@@ -4,7 +4,7 @@ import XCTest
 // MARK: - Provider Integration Tests
 
 /// Tests the provider layer: factory, encoding/decoding, error contracts.
-/// Full HTTP integration tests require URLSession injection (planned for Phase 1.3).
+/// HTTP integration tests use MockURLProtocol (see AIProviderMockTests for full coverage).
 final class ProviderIntegrationTests: XCTestCase {
     // MARK: - AIProviderFactory Tests
 
@@ -148,8 +148,103 @@ final class ProviderIntegrationTests: XCTestCase {
     }
 
     func testTranscriptionProviderSupportsStreamingIsFalseByDefault() {
-        // Per protocol extension, supportsStreaming defaults to false
         let provider = TranscriptionProviderFactory.makeProvider(name: "OpenAI Whisper")
         XCTAssertFalse(provider.supportsStreaming)
+    }
+
+    // MARK: - Mock-Based Integration Tests
+
+    func testPerformJSONPost_withMockSession_decodesResponse() async throws {
+        struct TestClient: ProviderHTTPClient {
+            let session: URLSession
+        }
+
+        ProviderTestHelpers.mockChatCompletion(for: "api.test.com", responseText: "integration ok")
+        let client = TestClient(session: ProviderTestHelpers.mockSession())
+
+        let body = ChatCompletionRequest(model: "test-model", systemPrompt: "sys", userText: "usr")
+        let response: ChatCompletionResponse = try await client.performJSONPost(
+            url: XCTUnwrap(URL(string: "https://api.test.com/v1/chat/completions")),
+            body: body,
+            apiKey: "sk-integration"
+        )
+
+        XCTAssertEqual(response.firstContent, "integration ok")
+    }
+
+    func testPerformJSONPost_http4xx_throwsRequestFailed() async throws {
+        struct TestClient: ProviderHTTPClient {
+            let session: URLSession
+        }
+
+        MockURLProtocol.setHandler(for: "api.test.com") { request in
+            let data = "bad request".data(using: .utf8)!
+            return (data, ProviderTestHelpers.httpResponse(url: request.url!, statusCode: 400))
+        }
+
+        let client = TestClient(session: ProviderTestHelpers.mockSession())
+        let body = ChatCompletionRequest(model: "m", systemPrompt: "s", userText: "u")
+
+        do {
+            let _: ChatCompletionResponse = try await client.performJSONPost(
+                url: XCTUnwrap(URL(string: "https://api.test.com/v1/chat")),
+                body: body,
+                apiKey: "key"
+            )
+            XCTFail("Expected AIError.requestFailed for 400 status")
+        } catch {
+            XCTAssertTrue(error is AIError)
+        }
+    }
+
+    func testPerformJSONPost_sendsBearerAuth() async throws {
+        struct TestClient: ProviderHTTPClient {
+            let session: URLSession
+        }
+
+        var capturedRequest: URLRequest?
+        MockURLProtocol.setHandler(for: "api.test.com") { request in
+            capturedRequest = request
+            let data = ProviderTestHelpers.chatCompletionJSON(text: "authenticated")
+            return (data, ProviderTestHelpers.httpResponse(url: request.url!))
+        }
+
+        let client = TestClient(session: ProviderTestHelpers.mockSession())
+        let body = ChatCompletionRequest(model: "gpt-4", systemPrompt: "system", userText: "hello")
+        let _: ChatCompletionResponse = try await client.performJSONPost(
+            url: XCTUnwrap(URL(string: "https://api.test.com/v1/chat/completions")),
+            body: body,
+            apiKey: "sk-secret-key"
+        )
+
+        XCTAssertEqual(capturedRequest?.value(forHTTPHeaderField: "Authorization"), "Bearer sk-secret-key")
+        XCTAssertEqual(capturedRequest?.httpMethod, "POST")
+        XCTAssertEqual(capturedRequest?.value(forHTTPHeaderField: "Content-Type"), "application/json")
+    }
+
+    func testPerformJSONPost_invalidJSON_throwsDecodingError() async throws {
+        struct TestClient: ProviderHTTPClient {
+            let session: URLSession
+        }
+
+        MockURLProtocol.setHandler(for: "api.test.com") { request in
+            let data = "not json".data(using: .utf8)!
+            return (data, ProviderTestHelpers.httpResponse(url: request.url!))
+        }
+
+        let client = TestClient(session: ProviderTestHelpers.mockSession())
+        let body = ChatCompletionRequest(model: "m", systemPrompt: "s", userText: "u")
+
+        do {
+            let _: ChatCompletionResponse = try await client.performJSONPost(
+                url: XCTUnwrap(URL(string: "https://api.test.com/v1/chat")),
+                body: body,
+                apiKey: "key"
+            )
+            XCTFail("Expected decoding error")
+        } catch {
+            // Should throw DecodingError, not AIError
+            XCTAssertTrue(error is DecodingError)
+        }
     }
 }

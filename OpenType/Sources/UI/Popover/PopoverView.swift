@@ -11,7 +11,7 @@ struct PopoverView: View {
 
     private var enabledModes: [VoiceMode] {
         VoiceMode.allCases.filter { mode in
-            SettingsStore.shared.voiceModeConfigs[mode]?.enabled ?? true
+            SettingsStore.shared.voiceModes.configs[mode]?.enabled ?? true
         }
     }
 
@@ -27,7 +27,7 @@ struct PopoverView: View {
             .padding(.top, 12)
 
             // Whisper Mode indicator
-            if SettingsStore.shared.whisperModeEnabled {
+            if SettingsStore.shared.whisper.modeEnabled {
                 HStack(spacing: 4) {
                     Image(systemName: "waveform.badge.mic")
                         .font(.caption2)

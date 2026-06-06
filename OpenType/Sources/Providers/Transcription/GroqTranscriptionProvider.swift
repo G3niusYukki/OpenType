@@ -4,7 +4,7 @@ import Models
 
 actor GroqTranscriptionProvider: TranscriptionProvider {
     let name = "Groq"
-
+    let supportsChunkedStreaming = true
     func transcribe(audioURL: URL, language: String?) async throws -> TranscriptionResult {
         guard let apiKey = KeychainManager.shared.getTranscriptionAPIKey(provider: name) else {
             throw TranscriptionError.providerUnavailable

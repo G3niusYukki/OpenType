@@ -4,7 +4,7 @@ import Models
 
 public actor OpenAIWhisperProvider: TranscriptionProvider, ProviderHTTPClient {
     public let name = "OpenAI Whisper"
-
+    public let supportsChunkedStreaming = true
     public func transcribe(audioURL: URL, language: String?) async throws -> TranscriptionResult {
         guard let apiKey = KeychainManager.shared.getTranscriptionAPIKey(provider: name) else {
             throw TranscriptionError.providerUnavailable

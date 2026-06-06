@@ -15,9 +15,9 @@ struct GeneralSettingsView: View {
         Form {
             Section {
                 Toggle("Launch at Login", isOn: Binding(
-                    get: { settings.launchAtLogin },
+                    get: { settings.general.launchAtLogin },
                     set: { newValue in
-                        settings.launchAtLogin = newValue
+                        settings.general.launchAtLogin = newValue
                         do {
                             if newValue {
                                 try SMAppService.mainApp.register()
@@ -26,18 +26,18 @@ struct GeneralSettingsView: View {
                             }
                         } catch {
                             print("SMAppService error: \(error)")
-                            settings.launchAtLogin = !newValue
+                            settings.general.launchAtLogin = !newValue
                         }
                     }
                 ))
-                Toggle("Enable Notifications", isOn: $settings.notificationsEnabled)
-                Toggle("Sound Feedback", isOn: $settings.soundFeedbackEnabled)
+                Toggle("Enable Notifications", isOn: $settings.general.notificationsEnabled)
+                Toggle("Sound Feedback", isOn: $settings.sound.feedbackEnabled)
             } header: {
                 Text("Startup")
             }
 
             Section {
-                Toggle(isOn: $settings.whisperModeEnabled) {
+                Toggle(isOn: $settings.whisper.modeEnabled) {
                     HStack {
                         Text("Whisper Mode")
                         Image(systemName: "waveform.badge.mic")
@@ -98,12 +98,12 @@ struct GeneralSettingsView: View {
 
     private func binding(for id: String) -> Binding<HotkeyConfig?> {
         Binding(
-            get: { settings.hotkeyConfigs[id] },
+            get: { settings.hotkeys.configs[id] },
             set: { newValue in
                 if let newValue = newValue {
-                    settings.hotkeyConfigs[id] = newValue
+                    settings.hotkeys.configs[id] = newValue
                 } else {
-                    settings.hotkeyConfigs.removeValue(forKey: id)
+                    settings.hotkeys.configs.removeValue(forKey: id)
                 }
             }
         )
@@ -278,7 +278,7 @@ struct TranscriptionSettingsView: View {
     var body: some View {
         Form {
             Section {
-                Picker("Provider", selection: $settings.selectedTranscriptionProvider) {
+                Picker("Provider", selection: $settings.transcription.provider) {
                     ForEach(providers, id: \.self) { provider in
                         Text(provider).tag(provider)
                     }
@@ -290,12 +290,12 @@ struct TranscriptionSettingsView: View {
 
             Section {
                 Toggle("Auto-detect Language", isOn: Binding(
-                    get: { settings.voiceModeConfigs[.basic]?.autoDetectLanguage ?? true },
+                    get: { settings.voiceModes.configs[.basic]?.autoDetectLanguage ?? true },
                     set: { newValue in
                         for mode in VoiceMode.allCases {
-                            var config = settings.voiceModeConfigs[mode] ?? VoiceModeConfig()
+                            var config = settings.voiceModes.configs[mode] ?? VoiceModeConfig()
                             config.autoDetectLanguage = newValue
-                            settings.voiceModeConfigs[mode] = config
+                            settings.voiceModes.configs[mode] = config
                         }
                     }
                 ))
@@ -305,8 +305,8 @@ struct TranscriptionSettingsView: View {
                 Text("When enabled, the transcription language is detected automatically. Disable to set a specific source language per voice mode.")
             }
 
-            if settings.selectedTranscriptionProvider != "Apple Speech"
-                && settings.selectedTranscriptionProvider != "Whisper.cpp"
+            if settings.transcription.provider != "Apple Speech"
+                && settings.transcription.provider != "Whisper.cpp"
             {
                 Section {
                     SecureField("API Key", text: $apiKeyInput)
@@ -331,17 +331,17 @@ struct TranscriptionSettingsView: View {
                 }
             }
 
-            if settings.selectedTranscriptionProvider == "Whisper.cpp" {
+            if settings.transcription.provider == "Whisper.cpp" {
                 Section {
                     TextField("Model path", text: Binding(
-                        get: { settings.whisperModelPath ?? "" },
-                        set: { settings.whisperModelPath = $0.isEmpty ? nil : $0 }
+                        get: { settings.whisper.modelPath ?? "" },
+                        set: { settings.whisper.modelPath = $0.isEmpty ? nil : $0 }
                     ))
                     .textFieldStyle(.roundedBorder)
 
                     TextField("Binary path", text: Binding(
-                        get: { settings.whisperBinaryPath ?? "" },
-                        set: { settings.whisperBinaryPath = $0.isEmpty ? nil : $0 }
+                        get: { settings.whisper.binaryPath ?? "" },
+                        set: { settings.whisper.binaryPath = $0.isEmpty ? nil : $0 }
                     ))
                     .textFieldStyle(.roundedBorder)
                 } header: {
@@ -360,14 +360,14 @@ struct TranscriptionSettingsView: View {
 
     private func loadAPIKey() {
         apiKeyInput = KeychainManager.shared.getTranscriptionAPIKey(
-            provider: settings.selectedTranscriptionProvider
+            provider: settings.transcription.provider
         ) ?? ""
     }
 
     private func saveAPIKey() {
         do {
             try KeychainManager.shared.saveTranscriptionAPIKey(
-                provider: settings.selectedTranscriptionProvider,
+                provider: settings.transcription.provider,
                 key: apiKeyInput
             )
             saveStatus = .saved
@@ -396,7 +396,7 @@ struct AISettingsView: View {
     var body: some View {
         Form {
             Section {
-                Picker("Provider", selection: $settings.selectedAIProvider) {
+                Picker("Provider", selection: $settings.ai.provider) {
                     ForEach(providers, id: \.self) { provider in
                         Text(provider).tag(provider)
                     }
@@ -436,12 +436,12 @@ struct AISettingsView: View {
     }
 
     private func loadAPIKey() {
-        apiKeyInput = KeychainManager.shared.getAIAPIKey(provider: settings.selectedAIProvider) ?? ""
+        apiKeyInput = KeychainManager.shared.getAIAPIKey(provider: settings.ai.provider) ?? ""
     }
 
     private func saveAPIKey() {
         do {
-            try KeychainManager.shared.saveAIAPIKey(provider: settings.selectedAIProvider, key: apiKeyInput)
+            try KeychainManager.shared.saveAIAPIKey(provider: settings.ai.provider, key: apiKeyInput)
             saveStatus = .saved
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 saveStatus = .idle
@@ -484,12 +484,12 @@ struct VoiceModesSettingsView: View {
     private func enabledBinding(for mode: VoiceMode) -> Binding<Bool> {
         Binding(
             get: {
-                settings.voiceModeConfigs[mode]?.enabled ?? true
+                settings.voiceModes.configs[mode]?.enabled ?? true
             },
             set: { newValue in
-                var config = settings.voiceModeConfigs[mode] ?? VoiceModeConfig()
+                var config = settings.voiceModes.configs[mode] ?? VoiceModeConfig()
                 config.enabled = newValue
-                settings.voiceModeConfigs[mode] = config
+                settings.voiceModes.configs[mode] = config
             }
         )
     }

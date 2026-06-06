@@ -33,9 +33,9 @@ public final class PopoverViewModel: ObservableObject {
 
     private let recording = RecordingCoordinator()
     private let transcriptionService = TranscriptionService.shared
-    private let aiService = AIProcessingService.shared
-    private let textInserter = TextInsertionService.shared
     private let dictionaryService = DictionaryService.shared
+    private let aiCoordinator = AIProcessingCoordinator()
+    private let insertionCoordinator = TextInsertionCoordinator()
     var aiProcessingTask: Task<Void, Never>?
 
     // MARK: - Init
@@ -97,22 +97,17 @@ public final class PopoverViewModel: ObservableObject {
         aiProcessingTask?.cancel()
         aiProcessingTask = Task {
             do {
-                guard aiService.isAvailable() else {
+                guard aiCoordinator.isAvailable else {
                     transcribedText = dictionaryText
                     return
                 }
 
-                // Use the *current* frontmost for the AI style prompt (per-app
-                // tone rules want the app the user is in *right now*), but
-                // DO NOT clobber lastAppBundleID — it stays at the value
-                // captured at startRecording so the focus-drift guard in
-                // stopRecording can detect a window switch.
                 let frontmostBundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
-                let stream = aiService.processStreaming(text: dictionaryText, appBundleID: frontmostBundleID)
-                for try await partial in stream {
-                    guard !Task.isCancelled else { return }
-                    transcribedText = partial
-                }
+                let stream = aiCoordinator.processStreaming(text: dictionaryText, appBundleID: frontmostBundleID)
+                await insertionCoordinator.resetStreaming()
+                let result = try await insertionCoordinator.streamingInserter.insertStreaming(stream, capturedBundleID: lastAppBundleID)
+                guard !Task.isCancelled else { return }
+                transcribedText = result
             } catch {
                 transcribedText = dictionaryText
             }
@@ -154,8 +149,6 @@ public final class PopoverViewModel: ObservableObject {
         isProcessing = true
 
         let frontmostBundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
-        // Note: lastAppBundleID was already captured in startRecording; we
-        // re-read here only to check whether the user switched windows.
         let focusDecision = InsertionFocusGuard.decide(captured: lastAppBundleID, current: frontmostBundleID)
 
         aiProcessingTask = Task {
@@ -169,11 +162,10 @@ public final class PopoverViewModel: ObservableObject {
                     finalText = processedText
                     lastRawText = recording.fullText
                     originalText = lastRawText
-                    detectedLang = SettingsStore.shared.recentLocales.first
+                    detectedLang = SettingsStore.shared.style.recentLocales.first
                 } else {
-                    // Full file-based transcription fallback
-                    let autoDetect = SettingsStore.shared.voiceModeConfigs[currentMode]?.autoDetectLanguage ?? true
-                    let language: String? = autoDetect ? nil : SettingsStore.shared.voiceModeConfigs[currentMode]?.sourceLanguage
+                    let autoDetect = SettingsStore.shared.voiceModes.configs[currentMode]?.autoDetectLanguage ?? true
+                    let language: String? = autoDetect ? nil : SettingsStore.shared.voiceModes.configs[currentMode]?.sourceLanguage
 
                     let result = try await transcriptionService.transcribe(audioURL: url, language: language)
                     guard !Task.isCancelled else { return }
@@ -184,8 +176,39 @@ public final class PopoverViewModel: ObservableObject {
 
                     let dictionaryText = dictionaryService.applyReplacements(to: rawText)
                     detectedLang = result.detectedLanguage ?? result.language
-                    finalText = try await processForMode(dictionaryText, audioURL: url)
-                    guard !Task.isCancelled else { return }
+
+                    if currentMode == .quickAnswer {
+                        if aiCoordinator.isAvailable {
+                            var lastResult = dictionaryText
+                            let stream = aiCoordinator.answerQuestionStreaming(text: dictionaryText, appBundleID: lastAppBundleID)
+                            for try await partial in stream {
+                                guard !Task.isCancelled else { return }
+                                lastResult = partial
+                                quickAnswerText = partial
+                            }
+                            showQuickAnswerActions = true
+                            finalText = lastResult
+                        } else {
+                            postError("Quick Answer requires an AI provider to be configured")
+                            finalText = dictionaryText
+                        }
+                    } else if currentMode == .basic || currentMode == .handsFree {
+                        if aiCoordinator.isAvailable {
+                            let stream = aiCoordinator.processStreaming(text: dictionaryText, appBundleID: lastAppBundleID)
+                            await insertionCoordinator.resetStreaming()
+                            let streamed = try await insertionCoordinator.streamingInserter.insertStreaming(stream, capturedBundleID: lastAppBundleID)
+                            guard !Task.isCancelled else { return }
+                            transcribedText = streamed
+                            finalText = streamed
+                        } else {
+                            finalText = dictionaryText
+                        }
+                    } else {
+                        let processingResult = try await aiCoordinator.processForMode(dictionaryText, mode: currentMode, appBundleID: lastAppBundleID)
+                        guard !Task.isCancelled else { return }
+                        finalText = processingResult.text
+                        detectedEditCommand = processingResult.editCommand
+                    }
                 }
 
                 if currentMode != .editSelected {
@@ -221,128 +244,26 @@ public final class PopoverViewModel: ObservableObject {
                 {
                     if currentMode == .editSelected {
                         if detectedEditCommand == nil {
-                            insertText()
+                            if let error = insertionCoordinator.insertText(transcribedText) {
+                                postError(error)
+                            }
                         }
                     } else {
-                        insertText()
+                        if let error = insertionCoordinator.insertText(transcribedText) {
+                            postError(error)
+                        }
                     }
                 } else if focusDecision == .fallbackToClipboard, !transcribedText.isEmpty {
-                    // The user moved to a different app. Don't risk a wrong
-                    // paste — copy to clipboard and tell them.
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(transcribedText, forType: .string)
+                    insertionCoordinator.copyToClipboard(transcribedText)
                     postError("You switched apps during processing — text copied to clipboard, paste manually (⌘V).")
                 }
 
                 recording.reset()
-                audioServiceCleanup(keepingRecent: 20)
+                AudioCaptureService.shared.cleanupTempFiles(keepingRecent: 20)
             } catch {
                 handleError(error)
             }
         }
-    }
-
-    private func audioServiceCleanup(keepingRecent count: Int) {
-        AudioCaptureService.shared.cleanupTempFiles(keepingRecent: count)
-    }
-
-    // MARK: - Mode Processing
-
-    private func processForMode(_ text: String, audioURL _: URL) async throws -> String {
-        switch currentMode {
-        case .basic, .handsFree:
-            return try await processBasic(text)
-        case .translate:
-            return try await processTranslate(text)
-        case .editSelected:
-            return try await processEditSelected(text)
-        case .quickAnswer:
-            return try await processQuickAnswer(text)
-        }
-    }
-
-    private func processBasic(_ text: String) async throws -> String {
-        guard aiService.isAvailable() else { return text }
-
-        var lastResult = text
-        let stream = aiService.processStreaming(text: text, appBundleID: lastAppBundleID)
-        do {
-            for try await partial in stream {
-                guard !Task.isCancelled else { return lastResult }
-                lastResult = partial
-                transcribedText = partial
-            }
-        } catch {
-            throw error
-        }
-        return lastResult
-    }
-
-    private func processTranslate(_ text: String) async throws -> String {
-        guard aiService.isAvailable() else { return text }
-        let targetLanguage = SettingsStore.shared.voiceModeConfigs[.translate]?.targetLanguage ?? "en"
-        let result = try await aiService.translate(text: text, from: "auto", to: targetLanguage, appBundleID: lastAppBundleID)
-        guard !Task.isCancelled else { return text }
-        return result
-    }
-
-    private func processEditSelected(_ voiceCommand: String) async throws -> String {
-        guard let selectedText = textInserter.getSelectedText(), !selectedText.isEmpty else {
-            detectedEditCommand = nil
-            return try await processBasic(voiceCommand)
-        }
-
-        guard aiService.isAvailable() else { return selectedText }
-
-        let command = EditCommandDetector.detect(from: voiceCommand)
-        let prompt = StyleProfileService.shared.buildEditPrompt(selectedText: selectedText, command: command, appBundleID: lastAppBundleID)
-        let result = try await aiService.processWithPrompt(prompt: prompt, text: selectedText)
-        guard !Task.isCancelled else { return selectedText }
-        detectedEditCommand = command
-
-        if command.isReadOnly {
-            textInserter.insertTextAfterSelection(result)
-        } else {
-            textInserter.replaceSelectedText(with: result)
-        }
-
-        return result
-    }
-
-    private func processPresetEdit(selectedText: String, instruction: String) async throws -> String {
-        guard aiService.isAvailable() else { return selectedText }
-
-        let prompt = StyleProfileService.shared.buildPresetPrompt(
-            selectedText: selectedText,
-            instruction: instruction,
-            bundleID: lastAppBundleID
-        )
-        let result = try await aiService.processWithPrompt(prompt: prompt, text: selectedText)
-        guard !Task.isCancelled else { return selectedText }
-        textInserter.replaceSelectedText(with: result)
-        return result
-    }
-
-    private func processQuickAnswer(_ text: String) async throws -> String {
-        guard aiService.isAvailable() else {
-            postError("Quick Answer requires an AI provider to be configured")
-            return text
-        }
-
-        var lastResult = text
-        let stream = aiService.answerQuestionStreaming(text: text, appBundleID: lastAppBundleID)
-        do {
-            for try await partial in stream {
-                guard !Task.isCancelled else { return lastResult }
-                lastResult = partial
-                quickAnswerText = partial
-            }
-        } catch {
-            throw error
-        }
-
-        showQuickAnswerActions = true
-        return lastResult
     }
 
     // MARK: - Error Handling
@@ -392,18 +313,15 @@ public final class PopoverViewModel: ObservableObject {
 
         if !originalText.isEmpty {
             Task { @MainActor in
-                do {
-                    try textInserter.insertText(originalText)
-                } catch {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(originalText, forType: .string)
+                if insertionCoordinator.insertText(originalText) != nil {
+                    insertionCoordinator.copyToClipboard(originalText)
                 }
             }
         }
     }
 
     public func applyPromptPreset(_ preset: PromptPreset) {
-        guard let selectedText = textInserter.getSelectedText(), !selectedText.isEmpty else {
+        guard let selectedText = insertionCoordinator.getSelectedText(), !selectedText.isEmpty else {
             postError("No text selected")
             return
         }
@@ -417,7 +335,7 @@ public final class PopoverViewModel: ObservableObject {
         aiProcessingTask?.cancel()
         aiProcessingTask = Task {
             do {
-                let result = try await processPresetEdit(selectedText: selectedText, instruction: preset.instruction)
+                let result = try await aiCoordinator.processPresetEdit(selectedText: selectedText, instruction: preset.instruction, appBundleID: lastAppBundleID)
                 guard !Task.isCancelled else { return }
                 transcribedText = result
                 isProcessing = false
@@ -440,23 +358,6 @@ public final class PopoverViewModel: ObservableObject {
         canSaveStyleExample = false
     }
 
-    func insertText() {
-        do {
-            try textInserter.insertText(transcribedText)
-        } catch let error as TextInsertionError {
-            switch error {
-            case .noAccessibilityPermission:
-                postError("需要辅助功能权限才能插入文本，请在系统设置中授权")
-            case .allMethodsFailed:
-                postError("文本已复制到剪贴板，请手动粘贴 (Cmd+V)")
-            default:
-                postError("文本插入失败: \(error.localizedDescription)")
-            }
-        } catch {
-            postError("文本插入失败: \(error.localizedDescription)")
-        }
-    }
-
     func openHistory() {
         NotificationCenter.default.post(name: .openHistoryWindow, object: nil)
     }
@@ -466,30 +367,18 @@ public final class PopoverViewModel: ObservableObject {
     }
 
     func copyToClipboard(_ text: String) {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
+        insertionCoordinator.copyToClipboard(text)
     }
 
     func insertQuickAnswer() {
-        do {
-            try textInserter.insertText(quickAnswerText)
-        } catch let error as TextInsertionError {
-            switch error {
-            case .noAccessibilityPermission:
-                postError("需要辅助功能权限才能插入文本，请在系统设置中授权")
-            case .allMethodsFailed:
-                postError("文本已复制到剪贴板，请手动粘贴 (Cmd+V)")
-            default:
-                postError("文本插入失败: \(error.localizedDescription)")
-            }
-        } catch {
-            postError("文本插入失败: \(error.localizedDescription)")
+        if let error = insertionCoordinator.insertText(quickAnswerText) {
+            postError(error)
         }
         showQuickAnswerActions = false
     }
 
     func copyQuickAnswer() {
-        copyToClipboard(quickAnswerText)
+        insertionCoordinator.copyToClipboard(quickAnswerText)
         showQuickAnswerActions = false
     }
 }

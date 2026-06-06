@@ -239,4 +239,49 @@ public class TextInsertionService {
     public func hasAccessibilityPermission() -> Bool {
         PermissionService.shared.checkAccessibilityPermission()
     }
+
+    // MARK: - Streaming / Incremental Insertion
+
+    /// Type text character-by-character using CGEvent keyboard events.
+    /// Avoids clipboard manipulation entirely. Slower than paste for long text,
+    /// but enables incremental/streaming insertion.
+    /// - Parameters:
+    ///   - text: The text to type
+    ///   - batchSize: Number of characters per batch (default 10)
+    ///   - interBatchDelay: Seconds between batches (default 0.02)
+    /// - Returns: true if at least some characters were typed
+    @discardableResult
+    public func insertViaTyping(_ text: String, batchSize: Int = 10, interBatchDelay: TimeInterval = 0.02) -> Bool {
+        guard PermissionService.shared.checkAccessibilityPermission() else { return false }
+        guard !text.isEmpty else { return true }
+
+        let source = CGEventSource(stateID: .hidSystemState)
+        let characters = Array(text)
+        var index = 0
+
+        while index < characters.count {
+            let end = min(index + batchSize, characters.count)
+            let batch = characters[index ..< end]
+
+            for char in batch {
+                var unicode = String(char).utf16.map { UInt16($0) }
+                guard !unicode.isEmpty else { continue }
+
+                if let keyDown = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: true),
+                   let keyUp = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: false)
+                {
+                    keyDown.keyboardSetUnicodeString(stringLength: unicode.count, unicodeString: &unicode)
+                    keyUp.keyboardSetUnicodeString(stringLength: unicode.count, unicodeString: &unicode)
+                    keyDown.post(tap: .cgAnnotatedSessionEventTap)
+                    keyUp.post(tap: .cgAnnotatedSessionEventTap)
+                }
+            }
+
+            index = end
+            if index < characters.count {
+                Thread.sleep(forTimeInterval: interBatchDelay)
+            }
+        }
+        return true
+    }
 }

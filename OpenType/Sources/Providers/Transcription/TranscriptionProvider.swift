@@ -9,13 +9,17 @@ import Models
 public protocol TranscriptionProvider: Sendable {
     var name: String { get }
     var supportsStreaming: Bool { get }
-
+    var supportsChunkedStreaming: Bool { get }
     func transcribe(audioURL: URL, language: String?) async throws -> TranscriptionResult
     func transcribeStreaming(audioURL: URL, language: String?) -> AsyncThrowingStream<String, Error>
 }
 
 public extension TranscriptionProvider {
     var supportsStreaming: Bool {
+        false
+    }
+
+    var supportsChunkedStreaming: Bool {
         false
     }
 
