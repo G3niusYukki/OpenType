@@ -14,6 +14,9 @@ public actor StreamingTextInserter {
     private let batchSize: Int
     private let interBatchDelay: TimeInterval
     private let focusCheckInterval: Int
+    /// Injectable typing function — defaults to real CGEvent typing.
+    /// Replace with a capture closure in tests to avoid posting system keystrokes.
+    private let typeText: (String, Int, TimeInterval) -> Bool
 
     /// Tracks how many characters have been typed so far.
     private var typedCount = 0
@@ -22,12 +25,16 @@ public actor StreamingTextInserter {
         textInsertionService: TextInsertionService = .shared,
         batchSize: Int = 10,
         interBatchDelay: TimeInterval = 0.02,
-        focusCheckInterval: Int = 5
+        focusCheckInterval: Int = 5,
+        typeText: ((String, Int, TimeInterval) -> Bool)? = nil
     ) {
         self.textInsertionService = textInsertionService
         self.batchSize = batchSize
         self.interBatchDelay = interBatchDelay
         self.focusCheckInterval = focusCheckInterval
+        self.typeText = typeText ?? { text, batch, delay in
+            textInsertionService.insertViaTyping(text, batchSize: batch, interBatchDelay: delay)
+        }
     }
 
     /// Consume a streaming AI response and type text incrementally.
@@ -61,7 +68,7 @@ public actor StreamingTextInserter {
                 return accumulated
             }
 
-            textInsertionService.insertViaTyping(delta, batchSize: batchSize, interBatchDelay: interBatchDelay)
+            _ = typeText(delta, batchSize, interBatchDelay)
             typedCount = accumulated.count
             lastAccumulated = accumulated
         }
