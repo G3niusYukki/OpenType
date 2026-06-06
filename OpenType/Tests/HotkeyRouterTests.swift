@@ -9,38 +9,41 @@ final class HotkeyRouterTests: XCTestCase {
     func test_basic_notification_opens_popover_and_starts_basic_recording() {
         let factory = PopoverViewModelFactoryStub()
         let r = HotkeyRouter(viewModelFactory: factory)
+        withExtendedLifetime(r) {
+            NotificationCenter.default.post(name: .hotkeyBasic, object: nil)
+            let exp = expectation(description: "dispatched")
+            DispatchQueue.main.async { exp.fulfill() }
+            self.wait(for: [exp], timeout: 0.5)
 
-        NotificationCenter.default.post(name: .hotkeyBasic, object: nil)
-        let exp = expectation(description: "dispatched")
-        DispatchQueue.main.async { exp.fulfill() }
-        wait(for: [exp], timeout: 0.5)
-
-        XCTAssertEqual(factory.lastStartMode, .basic)
-        XCTAssertEqual(factory.openCount, 1)
+            XCTAssertEqual(factory.lastStartMode, .basic)
+            XCTAssertEqual(factory.openCount, 1)
+        }
     }
 
     func test_translate_notification_starts_translate_mode() {
         let factory = PopoverViewModelFactoryStub()
         let r = HotkeyRouter(viewModelFactory: factory)
+        withExtendedLifetime(r) {
+            NotificationCenter.default.post(name: .hotkeyTranslate, object: nil)
+            let exp = expectation(description: "dispatched")
+            DispatchQueue.main.async { exp.fulfill() }
+            self.wait(for: [exp], timeout: 0.5)
 
-        NotificationCenter.default.post(name: .hotkeyTranslate, object: nil)
-        let exp = expectation(description: "dispatched")
-        DispatchQueue.main.async { exp.fulfill() }
-        wait(for: [exp], timeout: 0.5)
-
-        XCTAssertEqual(factory.lastStartMode, .translate)
+            XCTAssertEqual(factory.lastStartMode, .translate)
+        }
     }
 
     func test_editSelected_notification_starts_editSelected_mode() {
         let factory = PopoverViewModelFactoryStub()
         let r = HotkeyRouter(viewModelFactory: factory)
+        withExtendedLifetime(r) {
+            NotificationCenter.default.post(name: .hotkeyEditSelected, object: nil)
+            let exp = expectation(description: "dispatched")
+            DispatchQueue.main.async { exp.fulfill() }
+            self.wait(for: [exp], timeout: 0.5)
 
-        NotificationCenter.default.post(name: .hotkeyEditSelected, object: nil)
-        let exp = expectation(description: "dispatched")
-        DispatchQueue.main.async { exp.fulfill() }
-        wait(for: [exp], timeout: 0.5)
-
-        XCTAssertEqual(factory.lastStartMode, .editSelected)
+            XCTAssertEqual(factory.lastStartMode, .editSelected)
+        }
     }
 }
 

@@ -1,50 +1,56 @@
 import Foundation
 
-public actor AnthropicProvider: AIProvider {
+public actor AnthropicProvider: AIProvider, ProviderHTTPClient {
     public let name = "Anthropic Claude"
     private let baseURL = "https://api.anthropic.com/v1"
+    private let defaultModel = "claude-3-5-sonnet-20241022"
 
     public init() {}
 
     public func process(prompt: String, text: String, apiKey: String, model: String?) async throws -> String {
-        let url = URL(string: "\(baseURL)/messages")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("\(apiKey)", forHTTPHeaderField: "x-api-key")
-        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let body: [String: Any] = [
-            "model": model ?? "claude-3-5-sonnet-20241022",
-            "max_tokens": 4096,
-            "system": prompt,
-            "messages": [
-                ["role": "user", "content": text]
-            ],
-            "temperature": 0.3
-        ]
-
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw AIError.requestFailed
-        }
-
-        let result = try JSONDecoder().decode(AnthropicResponse.self, from: data)
-        if let content = result.content.first, content.type == "text" {
+        let body = AnthropicRequest(model: model ?? defaultModel, system: prompt, userText: text)
+        let response: AnthropicResponse = try await performJSONPost(
+            url: URL(string: "\(baseURL)/messages")!,
+            body: body,
+            apiKey: apiKey,
+            authHeaderName: "x-api-key",
+            authPrefix: "",
+            extraHeaders: ["anthropic-version": "2023-06-01"]
+        )
+        if let content = response.content.first, content.type == "text" {
             return content.text
         }
         return text
     }
-
 }
 
-private struct AnthropicResponse: Codable {
+// MARK: - Anthropic-specific request/response
+
+private struct AnthropicRequest: Encodable {
+    let model: String
+    let maxTokens: Int
+    let system: String
+    let messages: [Message]
+    let temperature: Double
+
+    struct Message: Encodable {
+        let role: String
+        let content: String
+    }
+
+    init(model: String, system: String, userText: String) {
+        self.model = model
+        self.maxTokens = 4096
+        self.system = system
+        self.messages = [.init(role: "user", content: userText)]
+        self.temperature = 0.3
+    }
+}
+
+private struct AnthropicResponse: Decodable {
     let content: [ContentBlock]
-    
-    struct ContentBlock: Codable {
+
+    struct ContentBlock: Decodable {
         let type: String
         let text: String
     }

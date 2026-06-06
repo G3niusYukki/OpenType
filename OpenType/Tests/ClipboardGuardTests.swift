@@ -41,7 +41,7 @@ final class ClipboardGuardTests: XCTestCase {
 
     func testSaveCapturesChangeCount() {
         let guard_ = ClipboardGuard()
-        let countBefore = NSPasteboard.general.changeCount
+        _ = NSPasteboard.general.changeCount
         guard_.save()
         // No assertion needed — save() must not crash
         // The restore() path uses changeCount to avoid clobbering
@@ -53,8 +53,7 @@ final class ClipboardGuardTests: XCTestCase {
         // → guard should NOT clobber the user's new content.
         let guard_ = ClipboardGuard()
         let pasteboard = NSPasteboard.general
-        let originalSaved = pasteboard.string(forType: .string) ?? ""
-        _ = originalSaved
+        _ = pasteboard.string(forType: .string) ?? ""
     }
 
     func test_restoreAfterPasteEvent_completesWithinBudget() {

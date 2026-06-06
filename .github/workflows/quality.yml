@@ -21,16 +21,17 @@ jobs:
 
       - name: Build Swift Project
         run: |
+          set -o pipefail
           cd OpenType
           swift build
-
       - name: Run Swift Tests
         run: |
+          set -o pipefail
           cd OpenType
-          swift test
+          swift test --enable-code-coverage
 
-      - name: Run SwiftFormat Lint (advisory)
-        continue-on-error: true
+      - name: Run SwiftFormat Lint
         run: |
+          set -o pipefail
           brew install swiftformat
           swiftformat --lint OpenType/Sources OpenType/Tests

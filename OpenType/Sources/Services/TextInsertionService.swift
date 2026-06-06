@@ -22,7 +22,7 @@ public class TextInsertionService {
         // is async — we use restoreAfterPasteEvent so the target can read
         // the pasted string before we put the original content back.
         if try insertViaAXSetValue(text) { return }
-        if try insertViaCGEventAsync(text) { return }
+        if insertViaCGEventAsync(text) { return }
         if try insertViaAppleScript(text) { return }
 
         // Last resort: copy to clipboard so user can paste manually
