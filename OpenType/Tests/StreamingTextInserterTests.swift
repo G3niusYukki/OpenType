@@ -3,7 +3,6 @@ import Providers
 import XCTest
 
 final class StreamingTextInserterTests: XCTestCase {
-
     /// Mutable box to capture typed deltas from the closure.
     private final class DeltaCapture: @unchecked Sendable {
         var deltas: [String] = []
